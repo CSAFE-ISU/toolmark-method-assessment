@@ -11,3 +11,10 @@ summ <- all %>% filter(!is.na(p_value)) %>% group_by(wv, wo, match, signif) %>% 
 summ$error <- with(summ, match != signif)
 summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
   facet_grid(match~wo, labeller="label_both")
+
+rates <- summ %>% group_by(wv, wo, match) %>% summarize(
+  rate = n[error==TRUE]/sum(n)
+)
+rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() +
+  facet_grid(match~wo, labeller="label_both") + ylim(c(0,.4)) +
+  geom_line()
