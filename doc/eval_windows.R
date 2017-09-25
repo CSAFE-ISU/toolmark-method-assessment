@@ -59,5 +59,14 @@ a$rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() + facet_grid(match~wo, 
     #   facet_grid(match~wo, labeller="label_both") + 
     #   geom_line()
     
+aa1<- read.csv2("./data/chumbley-out-wo-80-wv-50.csv",header = TRUE, sep = ",")
+xtabs(~signif+match, data =aa1)
 
+
+aa2<- read.csv2("./data/chumbley_wo-200_wv-50.csv",header = TRUE, sep = ",")
+xtabs(~signif+match, data =aa2)
+
+aa3<- read.csv2("./data/chumbley_wo-320_wv-50.csv",header = TRUE, sep = ",")
+xtabs(~signif+match, data =aa3)
     
+
