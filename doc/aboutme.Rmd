@@ -1,6 +1,6 @@
 ---
 title: "Adapting toolmark based chumbley score to bullets"
-author: "Ganesh, Heike"
+author: "Ganesh Krishnan, Heike Hofmann"
 date: "September 25, 2017"
 output: html_document
 ---
@@ -53,11 +53,13 @@ which generates the same_shift, different_shift, U-Stat and P_value parameters.
 
 For a significance level of 0.05
 
-```{r echo=FALSE}
+![](../doc/plots/error_pt05.png)
+For a significance level of 0.01
 
-```
+![](../doc/plots/error_pt01.png)
 
+For a significance level of 0.001
 
-
+![](../doc/plots/error_pt001.png)
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
