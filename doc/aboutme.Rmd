@@ -1,0 +1,85 @@
+---
+title: "Adapting toolmark based chumbley score to bullets"
+author: "Ganesh, Heike"
+date: "September 25, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Toolmarks:
+
+Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.
+
+The p-Values associated with each U-statistic, are calculated under the assumption that the nonmatch distribution is standard normal. As should be the case, the p-values for nonmatching pairs are approximately uniformly distributed between zero and one, while the p-values for matching pairs are concentrated on small values (suggesting that they would be declared to be “matching”).
+
+The classification rates corresponding to the p-values where the rows correspond to the known status of the tool marks and columns represent the model conclusion. Of 50 pairs of known matching marks, we misclassified three pairs as nonmatches for false-negative error rate of 6% and 0 pairs of known nonmatching tool marks were identified as being matches
+```{r cars, echo=FALSE}
+a<- matrix(NA, ncol = 3, nrow = 2)
+toolmark.falsepositive<- data.frame(a)
+colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
+toolmark.falsepositive$Classification<- c("Match", "Non-Match")
+toolmark.falsepositive$Match<- c(47,0)
+toolmark.falsepositive$`Non-Match`<- c(3,50)
+toolmark.falsepositive
+
+```
+
+Following on similar lines, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
+
+The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks.
+
+Bullet signatures being compared at this time are from the Hamby 44 and Hamby 252 data, which have the best set of known-matched and known non-matches.
+
+Bullet signatures are chosen by
+1. Filtering out Land_id for Profiles from the Hamby 44 and Hamby 252 data and removing 
+all NA values
+2. run_id = 3 is chosen, Seems like the signatures generated from this run_id give the closest
+match. Different run_id's have some different settings for generating the signatures
+(The level of smoothing does not seem to be one of them)
+3. The bullet signatures when generated already included the LOESS smoothing
+## Including Plots
+
+For a significance level of 0.05
+
+```{r echo=FALSE}
+#library(tidyverse)
+#install.packages("tidyverse")
+falspostive<- function(sig_alpha){
+  library(dplyr)
+  if(is.null(all)){
+    files <- dir("././data", pattern="csv")
+    all <- data.frame()
+    for (file in files) {
+      tmp <- read.csv(file=file.path(path="././data", file)) 
+      if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+      all <- rbind(all, tmp)
+    }
+  }
+    summ <- all %>% filter(!is.na(p_value)) %>%
+      mutate(signif = p_value < sig_alpha) %>%
+      group_by(wv, wo, match, signif) %>% tally()
+    summ$error <- with(summ, match != signif)
+    rates <- summ %>% group_by(wv, wo, match) %>% summarize(
+      rate = n[error==TRUE]/sum(n)
+    )
+    combo<- list(summ, rates)
+    names(combo)<- c("summ", "rates")
+    return(combo)
+}
+
+a<- falspostive(0.05)
+
+a$summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
+      facet_grid(match~wo, labeller="label_both")
+a$rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() + facet_grid(match~wo, labeller="label_both") +  geom_line()
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
