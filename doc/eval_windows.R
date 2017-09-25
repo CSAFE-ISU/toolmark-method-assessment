@@ -22,12 +22,19 @@ falspostive<- function(sig_alpha){
     return(combo)
 }
 
-    summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
-      facet_grid(match~wo, labeller="label_both")
+a<- falspostive(0.05)
 
-    rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() +
-      facet_grid(match~wo, labeller="label_both") +
-      geom_line()
+a$summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
+  facet_grid(match~wo, labeller="label_both")
+a$rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() + facet_grid(match~wo, labeller="label_both") +
+  geom_line()
+    
+# summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
+#       facet_grid(match~wo, labeller="label_both")
+# 
+#     rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() +
+#       facet_grid(match~wo, labeller="label_both") +
+#       geom_line()
 
     # library(tidyverse)
     # files <- dir("./data", pattern="csv")
