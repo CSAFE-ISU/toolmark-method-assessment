@@ -8,7 +8,7 @@ for (file in files) {
 }
 
 summ <- all %>% filter(!is.na(p_value)) %>%
-  mutate(signif = p_value < 0.001) %>%
+  mutate(signif = p_value < 0.05) %>%
   group_by(wv, wo, match, signif) %>% tally()
 summ$error <- with(summ, match != signif)
 summ %>% ggplot(aes( x  = factor(wv), weight = n, fill=error)) + geom_bar(position="fill") +
