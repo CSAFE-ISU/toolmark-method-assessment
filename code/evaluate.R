@@ -30,25 +30,29 @@ errors <- rbind(errorrate(all, 0.001),
                 errorrate(all, 0.005), 
                 errorrate(all, 0.01), 
                 errorrate(all, 0.05))
-errors %>% ggplot(aes(x = wv, y = beta, colour=factor(alpha))) + geom_point() +
+errors %>% filter(wv %in% c(30,50)) %>% ggplot(aes(x = wv, y = beta, colour=factor(alpha))) + geom_point() +
   facet_grid(.~wo, labeller="label_both") + 
   geom_line(aes(group=alpha))
 
-errors %>% ggplot(aes(x = wv, y = actual, colour=factor(alpha))) + geom_point() +
+errors %>% filter(wv %in% c(30,50)) %>% ggplot(aes(x = wv, y = actual, colour=factor(alpha))) + geom_point() +
   facet_grid(.~wo, labeller="label_both") + 
   geom_line(aes(group=alpha))
 
 greens <- RColorBrewer::brewer.pal(name="Greens", n = 6)
-errors %>% ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + geom_point() +
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
+  geom_point(aes(shape=factor(wv))) +
 #  facet_grid(.~wo, labeller="label_both") + 
   geom_smooth(aes(group=alpha), se=FALSE, method="loess") +
   theme_bw() +
   scale_colour_manual("Nominal type I error", values=greens[-(1:2)]) +
+  scale_shape_discrete("Size of \nvalidation window") +
   xlab("Window size for optimization") +
   ylab("Type II error rate")
 
 # Relative error for type I
-errors %>% ggplot(aes(x = wo, y = actual/alpha, colour=factor(alpha))) +
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual/alpha, colour=factor(alpha))) +
   geom_hline(yintercept = 1, colour="grey30", size=0.5) +
   geom_point() +
   #  facet_grid(.~wo, labeller="label_both") + 
@@ -59,11 +63,14 @@ errors %>% ggplot(aes(x = wo, y = actual/alpha, colour=factor(alpha))) +
   xlab("Window size for optimization") +
   scale_colour_brewer("Nominal type I error", palette="Set2")
 
-errors %>% ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + geom_point() +
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
+  geom_point(aes(shape=factor(wv))) +
   #  facet_grid(.~wo, labeller="label_both") + 
   geom_smooth(aes(group=alpha), se=FALSE, method="lm") +
   theme_bw() +
   scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
+  scale_shape_discrete("Size of \nvalidation window") +
   ylab("Observed type I error rate") +
   xlab("Window size for optimization") +
   scale_colour_brewer("Nominal type I error", palette="Set2")
