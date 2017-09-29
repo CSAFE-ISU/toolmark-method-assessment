@@ -38,12 +38,12 @@ errors %>% ggplot(aes(x = wv, y = actual, colour=factor(alpha))) + geom_point() 
   facet_grid(.~wo, labeller="label_both") + 
   geom_line(aes(group=alpha))
 
-
+greens <- RColorBrewer::brewer.pal(name="Greens", n = 6)
 errors %>% ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + geom_point() +
 #  facet_grid(.~wo, labeller="label_both") + 
   geom_smooth(aes(group=alpha), se=FALSE, method="loess") +
   theme_bw() +
-  scale_colour_brewer("Nominal type I error", palette="Greens") +
+  scale_colour_manual("Nominal type I error", values=greens[-(1:2)]) +
   xlab("Window size for optimization") +
   ylab("Type II error rate")
 
