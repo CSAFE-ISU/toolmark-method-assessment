@@ -1,8 +1,8 @@
 library(tidyverse)
-files <- dir("../data", pattern="csv")
+files <- dir("../data/signatures", pattern="csv")
 all <- data.frame()
 for (file in files) {
-  tmp <- read.csv(file=file.path(path="../data", file)) 
+  tmp <- read.csv(file=file.path(path="../data/signatures", file)) 
   if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
   all <- rbind(all, tmp)
 }

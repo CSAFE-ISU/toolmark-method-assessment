@@ -2,10 +2,10 @@
 falspostive<- function(sig_alpha){
   if(is.null(all)){
     library(tidyverse)
-    files <- dir("././data", pattern="csv")
+    files <- dir("./data/signatures", pattern="csv")
     all <- data.frame()
     for (file in files) {
-      tmp <- read.csv(file=file.path(path="././data", file)) 
+      tmp <- read.csv(file=file.path(path="./data/signatures", file)) 
       if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
       all <- rbind(all, tmp)
     }
@@ -59,14 +59,14 @@ a$rates %>% ggplot(aes(x = wv, y = rate)) + geom_point() + facet_grid(match~wo, 
     #   facet_grid(match~wo, labeller="label_both") + 
     #   geom_line()
     
-aa1<- read.csv2("./data/chumbley-out-wo-80-wv-50.csv",header = TRUE, sep = ",")
+aa1<- read.csv2("./data/signatures/chumbley-out-wo-80-wv-50.csv",header = TRUE, sep = ",")
 xtabs(~signif+match, data =aa1)
 
 
-aa2<- read.csv2("./data/chumbley_wo-200_wv-50.csv",header = TRUE, sep = ",")
+aa2<- read.csv2("./data/signatures/chumbley_wo-200_wv-50.csv",header = TRUE, sep = ",")
 xtabs(~signif+match, data =aa2)
 
-aa3<- read.csv2("./data/chumbley_wo-320_wv-50.csv",header = TRUE, sep = ",")
+aa3<- read.csv2("./data/signatures/chumbley_wo-320_wv-50.csv",header = TRUE, sep = ",")
 xtabs(~signif+match, data =aa3)
     
 
