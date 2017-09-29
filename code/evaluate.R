@@ -74,3 +74,15 @@ errors %>% filter(wv %in% c(30,50)) %>%
   ylab("Observed type I error rate") +
   xlab("Window size for optimization") +
   scale_colour_brewer("Nominal type I error", palette="Set2")
+
+# focus on wo = 120
+
+errors %>% filter(wo == 120) %>% ggplot(aes(x = wv, y = actual, colour=factor(alpha))) + geom_point() +
+  facet_grid(.~wo, labeller="label_both") + 
+  geom_line(aes(group=alpha))
+# type I error rate increases 
+
+errors %>% filter(wo == 120) %>% ggplot(aes(x = wv, y = beta, colour=factor(alpha))) + geom_point() +
+  facet_grid(.~wo, labeller="label_both") + 
+  geom_line(aes(group=alpha))
+
