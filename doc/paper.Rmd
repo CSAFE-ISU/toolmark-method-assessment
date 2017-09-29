@@ -1,15 +1,60 @@
 ---
-title: "Adapting toolmark based chumbley score to bullets"
-author: "Ganesh Krishnan, Heike Hofmann"
-date: "September 25, 2017"
-output: html_document
+title: Adaption of the Chumbley Score to matching of bullet striation marks
+
+# to produce blinded version set to 1
+blinded: 0
+
+authors: 
+- name: Ganesh Krishnan
+  thanks: The authors gratefully acknowledge ...
+  affiliation: Department of YYY, University of XXX
+  
+- name: Heike Hofmann
+  affiliation: Department of ZZZ, University of WWW
+
+keywords:
+- 3 to 6 keywords
+- that do not appear in the title
+
+abstract: |
+  
+bibliography: bibliography
+biblio-style: apsr
+
+output: 
+  pdf_document:
+    citation_package: natbib
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    template: template.tex
+
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  collapse = TRUE,
+  comment = "",
+  fig.height = 6,
+  fig.width = 6,
+  fig.align = "center",
+  out.width= '\\textwidth',
+  cache = FALSE,
+  fig.path='figures/',
+  echo=FALSE
+)
+options(knitr.table.format = "latex")
 ```
 
+## Introduction
 
+What is the chumbley score?
+ 
 ## Toolmarks
 
 Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.
