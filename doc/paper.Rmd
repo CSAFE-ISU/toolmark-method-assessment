@@ -31,6 +31,9 @@ output:
 
 ---
 
+\newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
+\newcommand{\cited}[1]{{\textcolor{red}{#1}}}
+
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(knitr)
@@ -92,18 +95,31 @@ errors <- rbind(errorrate(all, 0.001),
 
 # Introduction
 
-What is the chumbley score?
+\hh{Ganesh, could you start to flesh out the intro?}
+
+\begin{enumerate}
+\item Problem statement: same source matching based on striations
+\item Existing solution for toolmarks: Chumbley Score 
+\item How is the chumbley score computed? 
+\item Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings
+\item Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
+\end{enumerate}
  
 # Toolmarks
 
-Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.
+\hh{Ganesh, it's never a good idea to copy directly from another paper, even if you want to cite it. Always make sure to make it absolutely clear that it is not your work, otherwise you might be accused of plagiarism.}
 
-The p-Values associated with each U-statistic, are calculated under the assumption that the nonmatch distribution is standard normal. As should be the case, the p-values for nonmatching pairs are approximately uniformly distributed between zero and one, while the p-values for matching pairs are concentrated on small values (suggesting that they would be declared to be “matching”).
+Citation from \citet{chumbley}:
 
-The classification rates corresponding to the p-values where the rows correspond to the known status of the tool marks and columns represent the model conclusion. Of 50 pairs of known matching marks, we misclassified three pairs as nonmatches for false-negative error rate of 6% and 0 pairs of known nonmatching tool marks were identified as being matches.
+\cited{Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.}
 
-Null Hypothesis: The toolmarks were not made by the same tool.
-Alternate: Toolmarks made by the same tool.
+\cited{The p-Values associated with each U-statistic, are calculated under the assumption that the nonmatch distribution is standard normal. As should be the case, the p-values for nonmatching pairs are approximately uniformly distributed between zero and one, while the p-values for matching pairs are concentrated on small values (suggesting that they would be declared to be “matching”).}
+
+\cited{The classification rates corresponding to the p-values where the rows correspond to the known status of the tool marks and columns represent the model conclusion. Of 50 pairs of known matching marks, we misclassified three pairs as nonmatches for false-negative error rate of 6\% and 0 pairs of known nonmatching tool marks were identified as being matches.}
+
+\cited{Null Hypothesis: The toolmarks were not made by the same tool.
+Alternate: Toolmarks made by the same tool.}
+
 ```{r cars, echo=FALSE}
 a<- matrix(NA, ncol = 3, nrow = 2)
 toolmark.falsepositive<- data.frame(a)
@@ -114,6 +130,7 @@ toolmark.falsepositive$`Non-Match`<- c(3,50)
 toolmark.falsepositive
 
 ```
+
 # Bullets
 
 Following on similar lines, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
@@ -182,3 +199,20 @@ errors %>% filter(wv %in% c(30,50)) %>%
   ylab("Type II error rate")
 ```
 
+```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.  As the optimization window increase the observed type I error rate gets smaller. A smaller validation window tends to be associated with a higher type I error rate."}
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
+  geom_hline(aes(yintercept=alpha), colour="grey30") +
+  geom_point(aes(shape=factor(wv))) +
+  #  facet_grid(.~wo, labeller="label_both") + 
+  geom_smooth(aes(group=alpha), se=FALSE, method="lm") +
+  theme_bw() +
+#  scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
+  scale_shape_discrete("Size of \nvalidation window") +
+  ylab("Observed type I error rate") +
+  xlab("Window size for optimization") +
+  scale_colour_brewer("Nominal type I error alpha", palette="Set2") +
+  facet_wrap(~alpha, labeller="label_both", scales="free") +
+  theme(legend.position="bottom")
+  
+```
