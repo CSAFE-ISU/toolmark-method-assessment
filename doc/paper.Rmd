@@ -32,7 +32,7 @@ output:
 ---
 
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(knitr)
 knitr::opts_chunk$set(
   message = FALSE,
@@ -49,13 +49,52 @@ knitr::opts_chunk$set(
   echo=FALSE
 )
 options(knitr.table.format = "latex")
+library(tidyverse)
 ```
 
-## Introduction
+```{r functions}
+errorrate <- function(data, alpha) {
+  summ <- data %>% filter(!is.na(p_value)) %>%
+    mutate(signif = p_value < alpha) %>%
+    group_by(wv, wo, match, signif) %>% tally()
+  summ$error <- with(summ, match != signif)
+  summ$alpha <- alpha
+  
+  rates <- summ %>% group_by(wv, wo, match, alpha) %>% summarize(
+    rate = n[error==TRUE]/sum(n)
+  )
+  rates %>% spread(match,rate) %>% rename(
+    actual = `FALSE`,
+    beta = `TRUE`
+  )
+}
+```
+
+```{r data}
+if (!file.exists("../data/all-sigs.rds")) {
+  files <- dir("../data/signatures", pattern="csv")
+  all <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/signatures", file)) 
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    all <- rbind(all, tmp)
+  }
+  saveRDS(all, file="../data/all-sigs.rds")
+} else {
+  all <- readRDS("../data/all-sigs.rds")
+}
+
+errors <- rbind(errorrate(all, 0.001), 
+                errorrate(all, 0.005), 
+                errorrate(all, 0.01), 
+                errorrate(all, 0.05))
+```
+
+# Introduction
 
 What is the chumbley score?
  
-## Toolmarks
+# Toolmarks
 
 Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.
 
@@ -75,7 +114,7 @@ toolmark.falsepositive$`Non-Match`<- c(3,50)
 toolmark.falsepositive
 
 ```
-## Bullets
+# Bullets
 
 Following on similar lines, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
 
@@ -121,19 +160,25 @@ bullet.falsepositive
 
 ```
 
-## Including Plots
+# Results
 
-For a significance level of 0.05
+## Signatures
 
-![](../doc/plots/error_pt05.png)
-For a significance level of 0.01
+Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered.
 
-![](../doc/plots/error_pt01.png)
+Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step.
 
-For a significance level of 0.001
+```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $wo$. For a window size of $wo = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $wv$ are typically associated with a smaller type II error."}
+greens <- RColorBrewer::brewer.pal(name="Greens", n = 6)
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
+  geom_point(aes(shape=factor(wv))) +
+#  facet_grid(.~wo, labeller="label_both") + 
+  geom_smooth(aes(group=alpha), se=FALSE, method="loess") +
+  theme_bw() +
+  scale_colour_manual("Nominal type I error", values=greens[-(1:2)]) +
+  scale_shape_discrete("Size of \nvalidation window") +
+  xlab("Window size for optimization") +
+  ylab("Type II error rate")
+```
 
-![](../doc/plots/error_pt001.png)
-
-![](../doc/plots/rate_pt001.png)
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
