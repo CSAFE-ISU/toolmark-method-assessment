@@ -229,13 +229,17 @@ errors %>% filter(wv %in% c(30,50)) %>%
 
 \hh{Some of the test results are missing - we should look into the numbers and parameter settings for those.}
 
-```{r}
+```{r, fig.width=8, fig.height=5, fig.cap="Number of failed tests."}
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ss = mean(same_shift_n),
   n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
   miss = sum(is.na(p_value))
 )
 ns %>% filter(wv %in% c(30, 50)) %>% 
-  ggplot(aes(x = match, y = n_ds, shape=match, colour = factor(wv))) + 
-  geom_point() + geom_line(aes(group=wv)) + facet_wrap(~wo)
+  ggplot(aes(x = wo, y = miss, shape=factor(wv), colour = factor(match))) + 
+  geom_point() + 
+  theme_bw() +
+  ylab("Number of failed tests.")
 ```
