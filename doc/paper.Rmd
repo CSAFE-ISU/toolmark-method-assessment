@@ -207,7 +207,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
   ylab("Type II error rate")
 ```
 
-Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table XXX. 
+Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table XXX. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty). This might be related to the increasing number of tests that fail for larger window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
 
 ```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.  As the optimization window increase the observed type I error rate gets smaller. A smaller validation window tends to be associated with a higher type I error rate."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -229,7 +229,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
 
 \hh{Some of the test results are missing - we should look into the numbers and parameter settings for those.}
 
-```{r, fig.width=8, fig.height=5, fig.cap="Number of failed tests."}
+```{r missings, fig.width=8, fig.height=5, fig.cap="Number of failed tests."}
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ss = mean(same_shift_n),
   n_ds = mean(diff_shift_n),
@@ -238,8 +238,8 @@ ns <- all %>% group_by(wv, wo, match) %>% summarize(
   miss = sum(is.na(p_value))
 )
 ns %>% filter(wv %in% c(30, 50)) %>% 
-  ggplot(aes(x = wo, y = miss, shape=factor(wv), colour = factor(match))) + 
+  ggplot(aes(x = wo, y = miss/85491*100, shape=factor(wv), colour = factor(match))) + 
   geom_point() + 
   theme_bw() +
-  ylab("Number of failed tests.")
+  ylab("Percent of failed tests.")
 ```
