@@ -82,6 +82,7 @@ if (!file.exists("../data/all-sigs.rds")) {
     if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
     all <- rbind(all, tmp)
   }
+  all <- all %>% filter(land1_id < land2_id)
   saveRDS(all, file="../data/all-sigs.rds")
 } else {
   all <- readRDS("../data/all-sigs.rds")
@@ -181,9 +182,16 @@ bullet.falsepositive
 
 ## Signatures
 
-Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered.
+Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
+
+We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) in the following manner:
+
+\hh{ XXX maybe we should include a table with an overview of the different parameter settings}
+
+### Signatures
 
 Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step.
+
 
 ```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $wo$. For a window size of $wo = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $wv$ are typically associated with a smaller type II error."}
 greens <- RColorBrewer::brewer.pal(name="Greens", n = 6)
@@ -198,6 +206,8 @@ errors %>% filter(wv %in% c(30,50)) %>%
   xlab("Window size for optimization") +
   ylab("Type II error rate")
 ```
+
+Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table XXX. 
 
 ```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.  As the optimization window increase the observed type I error rate gets smaller. A smaller validation window tends to be associated with a higher type I error rate."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -215,4 +225,17 @@ errors %>% filter(wv %in% c(30,50)) %>%
   facet_wrap(~alpha, labeller="label_both", scales="free") +
   theme(legend.position="bottom")
   
+```
+
+\hh{Some of the test results are missing - we should look into the numbers and parameter settings for those.}
+
+```{r}
+ns <- all %>% group_by(wv, wo, match) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  miss = sum(is.na(p_value))
+)
+ns %>% filter(wv %in% c(30, 50)) %>% 
+  ggplot(aes(x = match, y = n_ds, shape=match, colour = factor(wv))) + 
+  geom_point() + geom_line(aes(group=wv)) + facet_wrap(~wo)
 ```
