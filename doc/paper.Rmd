@@ -102,7 +102,7 @@ errors <- rbind(errorrate(all, 0.001),
 \item Problem statement: same source matching based on striations
 \item Existing solution for toolmarks: Chumbley Score 
 \item How is the chumbley score computed? 
-\item Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings
+\item Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers.
 \item Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
 \end{enumerate}
  
@@ -154,27 +154,31 @@ which generates the same_shift, different_shift, U-Stat and P_value parameters.
 
 WO 320 wv 50
 ```{r echo=FALSE}
-a<- matrix(NA, ncol = 3, nrow = 2)
-bullet.falsepositive<- data.frame(a)
-colnames(bullet.falsepositive)<- c("Classification", "FALSe", "TRUe")
-bullet.falsepositive$Classification<- c("FALSe", "TRUe")
-bullet.falsepositive$FALSe<- c(77564,412)
-bullet.falsepositive$TRUe<- c(4022,674)
-bullet.falsepositive
+# a<- matrix(NA, ncol = 3, nrow = 2)
+# bullet.falsepositive<- data.frame(a)
+# colnames(bullet.falsepositive)<- c("Classification", "FALSe", "TRUe")
+# bullet.falsepositive$Classification<- c("FALSe", "TRUe")
+# bullet.falsepositive$FALSe<- c(77564,412)
+# bullet.falsepositive$TRUe<- c(4022,674)
+# bullet.falsepositive
 
+all %>% filter(wo==320, wv==50) %>% xtabs(data=., ~signif+match)
 ```
 Wo 200 WV 50
 ```{r echo=FALSE}
-bullet.falsepositive$FALSe<- c(78817,383)
-bullet.falsepositive$TRUe<- c(4004,798)
-bullet.falsepositive
+# bullet.falsepositive$FALSe<- c(78817,383)
+# bullet.falsepositive$TRUe<- c(4004,798)
+# bullet.falsepositive
 
+all %>% filter(wo==200, wv==50) %>% xtabs(data=., ~signif+match)
 ```
 Wo 80 wv 50
 ```{r echo=FALSE}
-bullet.falsepositive$FALSe<- c(78817,450)
-bullet.falsepositive$TRUe<- c(4680,775)
-bullet.falsepositive
+# bullet.falsepositive$FALSe<- c(78817,450)
+# bullet.falsepositive$TRUe<- c(4680,775)
+# bullet.falsepositive
+
+all %>% filter(wo==80, wv==50) %>% xtabs(data=., ~signif+match)
 
 ```
 
@@ -242,4 +246,13 @@ ns %>% filter(wv %in% c(30, 50)) %>%
   geom_point() + 
   theme_bw() +
   ylab("Percent of failed tests.")
+```
+
+```{r wo120, fig.width = 8, fig.height=4.5}
+wo120 <- errors %>% filter(wo==120)
+wo120 %>% gather(type, error, actual:beta) %>%
+  ggplot(aes(x = wv, y = error, colour = factor(alpha)))  + 
+  geom_line() + geom_point() + facet_wrap(~type, scales="free") +
+  theme_bw()+ 
+  theme(legend.position="bottom")
 ```
