@@ -243,9 +243,14 @@ ns <- all %>% group_by(wv, wo, match) %>% summarize(
 )
 ns %>% filter(wv %in% c(30, 50)) %>% 
   ggplot(aes(x = wo, y = miss/85491*100, shape=factor(wv), colour = factor(match))) + 
+  geom_smooth(method="lm", size=.5, se=FALSE) +
   geom_point() + 
   theme_bw() +
-  ylab("Percent of failed tests.")
+  ylab("Percent of failed tests.") +
+  xlab("Size of optimization window") +
+  scale_colour_brewer("Match", palette="Set1") +
+  scale_shape_discrete("Size of \nvalidation\nwindow")
+
 ```
 
 ```{r wo120, fig.width = 8, fig.height=4.5}
