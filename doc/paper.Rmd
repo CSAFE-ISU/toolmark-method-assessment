@@ -113,7 +113,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ```
 
 ```{r data}
-if (!file.exists("./all-sigs.rds")) {
+if (!file.exists("../all-sigs.rds")) {
   files <- dir("../data/signatures", pattern="csv")
   all <- data.frame()
   for (file in files) {
