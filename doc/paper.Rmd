@@ -1,34 +1,26 @@
 ---
-title: Adaption of the Chumbley Score to matching of bullet striation marks
-
-# to produce blinded version set to 1
-blinded: 0
-
-authors: 
-- name: Ganesh Krishnan
+title: "Adaption of the Chumbley Score to matching of bullet striation marks"
+authors:
+- affiliation: Department of YYY, University of XXX
+  name: Ganesh Krishnan
   thanks: The authors gratefully acknowledge ...
-  affiliation: Department of YYY, University of XXX
-  
-- name: Heike Hofmann
-  affiliation: Department of ZZZ, University of WWW
-
+- affiliation: Department of ZZZ, University of WWW
+  name: Heike Hofmann
+biblio-style: apsr
+output:
+  pdf_document:
+    citation_package: natbib
+    fig_caption: yes
+    keep_tex: yes
+    latex_engine: pdflatex
+    template: template.tex
+  html_document: default
+blinded: 0
 keywords:
 - 3 to 6 keywords
 - that do not appear in the title
-
-abstract: |
-  
 bibliography: bibliography
-biblio-style: apsr
-
-output: 
-  pdf_document:
-    citation_package: natbib
-    keep_tex: true
-    fig_caption: true
-    latex_engine: pdflatex
-    template: template.tex
-
+abstract: null
 ---
 
 \newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
@@ -71,10 +63,57 @@ errorrate <- function(data, alpha) {
     beta = `TRUE`
   )
 }
+
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+  #  ref: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 ```
 
 ```{r data}
-if (!file.exists("../data/all-sigs.rds")) {
+if (!file.exists("./all-sigs.rds")) {
   files <- dir("../data/signatures", pattern="csv")
   all <- data.frame()
   for (file in files) {
@@ -85,7 +124,7 @@ if (!file.exists("../data/all-sigs.rds")) {
   all <- all %>% filter(land1_id < land2_id)
   saveRDS(all, file="../data/all-sigs.rds")
 } else {
-  all <- readRDS("../data/all-sigs.rds")
+  all <- readRDS("./all-sigs.rds")
 }
 
 errors <- rbind(errorrate(all, 0.001), 
@@ -96,45 +135,103 @@ errors <- rbind(errorrate(all, 0.001),
 
 # Introduction
 
-\hh{Ganesh, could you start to flesh out the intro?}
+## Problem statement: same source matching based on striations
 
-\begin{enumerate}
-\item Problem statement: same source matching based on striations
-\item Existing solution for toolmarks: Chumbley Score 
-\item How is the chumbley score computed? 
-\item Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers.
-\item Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
-\end{enumerate}
- 
-# Toolmarks
+Striation marks created on Bullets by the Barrel of a firearm are considered to be unique to the barrel of the firearm. This was first stated by the AFTE Criteria fo Identification Committee in 1992 (AFTE 1992 article). The maximum number of consecutively matching striae (CMS) as first seen by Biasotti 1959 and later mentioned in Chu et al. 2013 are the striated markings that line up exactly without any dissimilarity. This definition involves counting a single peak as a striae. A modified meaning of the terminology as explained by (Hare, Hofmann and Carriquiry) includes both peaks and valleys as means of identifying striae. Such identification methods more often than not include subject bia and are error prone and in case of CMS as seen in the work of Miller 1998 the number of CMS may turn to out to be high even when the bullet is not fires by the same firearm.
 
-\hh{Ganesh, it's never a good idea to copy directly from another paper, even if you want to cite it. Always make sure to make it absolutely clear that it is not your work, otherwise you might be accused of plagiarism.}
+Thus, an important aspect of same source matching in firearms is identification of bullet microtopographies that are unique to be chosen for a match, Bullet profiles and signatures prove to be such features. The choice of a bullet signature to uniquely define a bullet depends on finding first, a stable region on a Bullet land which minimal noise and many pronounced striation marks. (Hare, Hofmann and Carriquiry)
 
-Citation from \citet{chumbley}:
+The method employed by Hare, Hofmann and Carriquiry uses the cross correlation factor as a means to identify the stable region. The markings or striae in this region are supposed to have a high CCF with each other. Therefore a Bullet profile is chosen from this region by taking the cross section at a given height.
+A loess fit on the bullet profile produces  residuay which are termed as signatures and can be used as a unique identifier that can be used while matching two bullets to a firearm.
 
-\cited{Used an optimization window size of n = 500 and a validation window size of m = 50. It is visually clear that when the two tool marks match, the U-statistic tends to be relatively large, and when they do not match, the value tends to be relatively small.}
+## Existing solution for toolmarks: Chumbley Score
 
-\cited{The p-Values associated with each U-statistic, are calculated under the assumption that the nonmatch distribution is standard normal. As should be the case, the p-values for nonmatching pairs are approximately uniformly distributed between zero and one, while the p-values for matching pairs are concentrated on small values (suggesting that they would be declared to be “matching”).}
+Compairing pairs of toolmarks with the intention of matching it to a tool has been studied in the past, and Chumbley et al. have described in their paper an algorithm and analytic method that compares two toolmarks and comes to the conclusion if they are from the same tool. The motivation for this lies in the idea of developing analytical methods for which error rates can be found. This moves reduces subject bias and empirical based studies to designate two toolmarks as matches or non-matches, although Chumbley et. al do use this kind of a setup to validate their proposed analytic and quantitative algorithm.
 
-\cited{The classification rates corresponding to the p-values where the rows correspond to the known status of the tool marks and columns represent the model conclusion. Of 50 pairs of known matching marks, we misclassified three pairs as nonmatches for false-negative error rate of 6\% and 0 pairs of known nonmatching tool marks were identified as being matches.}
+The data that is used by Chumbley et al. is generated by a surface profileometer that gives the height in terms of distance along a linear trace. This is taken perpendicular to the striations present in the toolmark. Two such trace are then compared using the algorithm. 
 
-\cited{Null Hypothesis: The toolmarks were not made by the same tool.
-Alternate: Toolmarks made by the same tool.}
+Th algoritm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated. Hadler et al. in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters (due to serial correlation in surface depth values of a toolmark and because of a random sampling sub step in the validation phase which makes a group of pixels to be chosen more than once and hence introduces lack of independence) in certain steps, especially because the Mann-Whitney U statistic that is later calculated in the algorithm and used as a measure to differentiate between matches and non-matches works under the assumption of independence of parameters.
 
-```{r cars, echo=FALSE}
-a<- matrix(NA, ncol = 3, nrow = 2)
-toolmark.falsepositive<- data.frame(a)
-colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
-toolmark.falsepositive$Classification<- c("Match", "Non-Match")
-toolmark.falsepositive$Match<- c(47,0)
-toolmark.falsepositive$`Non-Match`<- c(3,50)
-toolmark.falsepositive
+Since we are only interested in a non-parameteric U statistic, Hadler et al. proposed a normalization procedure in the Validation step that goes to some extent to address the issue of mutual dependence. Also the same shift and different shift substep was modified to use a deterministic rule for sampling sam-shhift and dofferent shift-samples as opposed to the originally proposed random samples.
 
-```
+## How is the chumbley score computed?
 
-# Bullets
+Chumbley Algorithm and Chumbley score
 
-Following on similar lines, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
+###Optimization step
+The idea behind this step is to first identify the area of best agreement in the two toolmark data.
+
+Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500.
+This window is henceforth referred to as Window of optimization.
+
+A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases of matches ( which is intuitively what we expect) and non matches (which is not what we intuitively expect)
+
+First, there are a very large number of correlations calculated, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. Can be thought of ordered arrangements without replacement where n = 1001 and r = 1.
+
+This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other
+
+
+###Aside (Bullets):
+Window of optimization will be shorterr as the signatures are smaller. Idea is to keep the number of windows of optimization sufficiently large. This means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) and lets us compare smaller segments of one signature to another.
+
+This introduces a problem as if we go too small in the window of optimization the unique feature of the trace segments are lost and seem similar, and too large sizes vastly reduces the weightage of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
+
+This means it has a direct influence on whether we are
+Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II)
+
+Hence identification of the optimum size of window of optimization is very important.
+
+
+###Validation Step
+
+####Same-shift: 
+In this step a series of windows are chosen at random (originally by chumbley et al) and deterministically (by hadler et al), but at a common distance (rigid-shift) from the window identified as the region of best agreement in the vaildation step.
+The correlation of these windows would be as intuitively assumed i.e. lower than the maximum correlation window (Optimization step), but the significance is that these same shift windows will still have large enough correlation values for two toolmarks or signatures that are in reality a match.
+
+This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows.
+
+
+####Different Shift:
+Primary reason for this substep is to give perpective to the correlation values of the same shift window correlation values.
+
+This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by Chumbley et al. and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk.
+
+Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier.
+
+Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows,
+and if they are not a match the correlations in the two sets will be very similar.
+
+###U Statistic:
+
+This is computed from the joint rank of all correlations of both the same and different shift samples.
+As given by Hadler et al.\citet{hadler}
+
+Null Hypothesis: The toolmarks were not match i.e not made by the same tool.
+
+Let ns and nd be the number of same shift and different shift windows
+N = ns + nd
+
+The mann whitney U statistic is given by
+$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$
+
+with the standardized version which includes provision for rank ties
+$\overline{U}= \dfrac{U-M}{\sqrt{V}}$
+
+where the mean 
+$M = n_{s}\left(\dfrac{N+1}{2}\right)$
+
+and variance 
+
+$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{ns}R_{s}\left(i\right)^{2}+\Sigma^{nd}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$
+ of the unnormalized U-statistic
+
+## Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers.
+
+Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by Hare, Hofmann and Carriquiry \citet{hare1} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreoverr, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
+
+## Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
+
+Following on similar lines to the setup of toolamrks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
 
 The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks.
 
@@ -150,34 +247,137 @@ match. Different run_id's have some different settings for generating the signat
 The bullet signatures when generated already included the LOWESS smoothing.
 Therefore, the coarseness factor is set to 1 while running the chumbley_non_random()
 which generates the same_shift, different_shift, U-Stat and P_value parameters.
+ 
+
+```{r cars, echo=FALSE}
+a<- matrix(NA, ncol = 3, nrow = 2)
+toolmark.falsepositive<- data.frame(a)
+colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
+toolmark.falsepositive$Classification<- c("Match", "Non-Match")
+toolmark.falsepositive$Match<- c(47,0)
+toolmark.falsepositive$`Non-Match`<- c(3,50)
+toolmark.falsepositive
+
+asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
+
+sigs_graphics<- readRDS("./sigs_generate_window.rds")
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+# Matching signature
+#gi<-
+#sigs_graphics.match<- sigs_graphics.match %>% filter(land_id == c(1,9))  
+#sigs_graphics.match<- sigs_graphics.match %>% select(y, l30, land_id)
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==19,arr.ind = TRUE),]
+data1<-d1 %>%select(l30)
+#data1<- data1$y
+data2<- d2 %>%select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+  
+
+  s1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    s1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-window_val, xmax= max_corr_opt_loc[1,2]- 2*window_val, ymin=-Inf, ymax=Inf)
+       s1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  s2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    s2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       s2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ window_val, xmax= max_corr_opt_loc[1,1]+ 2*window_val, ymin=-Inf, ymax=Inf)
+       
+p1<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=s1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p2<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=s2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+ ##########
+ 
+ d1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    d1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-2*window_opt, xmax= max_corr_opt_loc[1,2]-2*window_opt-window_val, ymin=-Inf, ymax=Inf)
+       d1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  d2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    d2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       d2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ 4*window_val, xmax= max_corr_opt_loc[1,1]+ 5*window_val, ymin=-Inf, ymax=Inf)
+       
+p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=d1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p4<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=d2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+  
+
+multiplot(p1, p2, p3, p4, cols=2)
+```
 
 
-WO 320 wv 50
+window Optimization 320 Window Validation 50
 ```{r echo=FALSE}
-# a<- matrix(NA, ncol = 3, nrow = 2)
-# bullet.falsepositive<- data.frame(a)
-# colnames(bullet.falsepositive)<- c("Classification", "FALSe", "TRUe")
-# bullet.falsepositive$Classification<- c("FALSe", "TRUe")
-# bullet.falsepositive$FALSe<- c(77564,412)
-# bullet.falsepositive$TRUe<- c(4022,674)
-# bullet.falsepositive
-
 all %>% filter(wo==320, wv==50) %>% xtabs(data=., ~signif+match)
 ```
-Wo 200 WV 50
+window Optimization 120 Window Validation 50
 ```{r echo=FALSE}
-# bullet.falsepositive$FALSe<- c(78817,383)
-# bullet.falsepositive$TRUe<- c(4004,798)
-# bullet.falsepositive
-
-all %>% filter(wo==200, wv==50) %>% xtabs(data=., ~signif+match)
+all %>% filter(wo==120, wv==50) %>% xtabs(data=., ~signif+match)
 ```
-Wo 80 wv 50
+window Optimization 80 Window Validation 50
 ```{r echo=FALSE}
-# bullet.falsepositive$FALSe<- c(78817,450)
-# bullet.falsepositive$TRUe<- c(4680,775)
-# bullet.falsepositive
-
 all %>% filter(wo==80, wv==50) %>% xtabs(data=., ~signif+match)
 
 ```
@@ -190,7 +390,13 @@ Signatures of lands for all Hamby-44 and Hamby-252 scans made available through 
 
 We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) in the following manner:
 
-\hh{ XXX maybe we should include a table with an overview of the different parameter settings}
+\hh{table with an overview of the different parameter settings}
+```{r echo=FALSE}
+param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
+param_setting
+param_setting %>% tally() 
+```
+
 
 ### Signatures
 
