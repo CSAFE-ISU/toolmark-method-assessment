@@ -437,7 +437,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
   
 ```
 
-\hh{Some of the test results are missing - we should look into the numbers and parameter settings for those.}
+
 
 ```{r missings, fig.width=8, fig.height=5, fig.cap="Number of failed tests."}
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
@@ -445,10 +445,11 @@ ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ds = mean(diff_shift_n),
   zero_ss = sum(same_shift_n==0),
   zero_ds = sum(diff_shift_n==0),
-  miss = sum(is.na(p_value))
+  miss = sum(is.na(p_value)),
+  missperc = miss/85491*100
 )
 ns %>% filter(wv %in% c(30, 50)) %>% 
-  ggplot(aes(x = wo, y = miss/85491*100, shape=factor(wv), colour = factor(match))) + 
+  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match))) + 
   geom_smooth(method="lm", size=.5, se=FALSE) +
   geom_point() + 
   theme_bw() +
@@ -457,6 +458,19 @@ ns %>% filter(wv %in% c(30, 50)) %>%
   scale_colour_brewer("Match", palette="Set1") +
   scale_shape_discrete("Size of \nvalidation\nwindow")
 
+```
+Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. 
+Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. 
+
+```{r lms, results='asis'}
+nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()
+nsnest <- nsnest %>% mutate(
+  model = data %>% purrr::map(.f = function(d) lm(I(missperc*100)~wo, data=d)),
+  coefs = model %>% purrr::map(.f = broom::tidy)
+)
+tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
+  select(-term, -statistic, -p.value)
+knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
 ```
 
 ```{r wo120, fig.width = 8, fig.height=4.5}
