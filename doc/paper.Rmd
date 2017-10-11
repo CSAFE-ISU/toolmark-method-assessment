@@ -137,7 +137,7 @@ errors <- rbind(errorrate(all, 0.001),
 
 ## Problem statement: same source matching based on striations
 
-\hh{'considered to be unique' by AFTE - that is right, but we should not use this argument, and I don't think we have to. It's better to focus on the problem at hand: striation marks are used to determine same source for bullets. XXX we could include some figures here XXX Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the PCAST report in 2009 is the subjectivity involved in this comparison. There are different approaches used to achieve more objectivity and assess error rates. XXX here we need some examples of approaches XXX
+\hh{'considered to be unique' by AFTE - that is right, but we should not use this argument, and I don't think we have to. It's better to focus on the problem at hand: striation marks are used to determine same source for bullets. XXX we could include some figures here XXX Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citep{NAS:2009}. There are different approaches used to achieve more objectivity and assess error rates. XXX here we need some examples of approaches XXX
 For toolmarks, the Chumbley score has been suggested to determine same-source. XXX summary of results from original paper and the adjustment XXX
 In this paper we are interested in how this method has to be adjusted to best be applied to the smaller marks on bullets. }
 
