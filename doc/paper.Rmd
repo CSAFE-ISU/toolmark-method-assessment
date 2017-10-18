@@ -1,10 +1,10 @@
 ---
 title: "Adaption of the Chumbley Score to matching of bullet striation marks"
 authors:
-- affiliation: Department of YYY, University of XXX
+- affiliation: Department of Statistics, Iowa State University 
   name: Ganesh Krishnan
   thanks: The authors gratefully acknowledge ...
-- affiliation: Department of ZZZ, University of WWW
+- affiliation: Department of Statistics and csafe, Iowa State University 
   name: Heike Hofmann
 biblio-style: apsr
 output:
@@ -41,7 +41,8 @@ knitr::opts_chunk$set(
   out.width= '\\textwidth',
   cache = FALSE,
   fig.path='figures/',
-  echo=FALSE
+  echo=FALSE,
+  cache=TRUE
 )
 options(knitr.table.format = "latex")
 library(tidyverse)
@@ -113,7 +114,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ```
 
 ```{r data}
-if (!file.exists("../all-sigs.rds")) {
+if (!file.exists("../data/all-sigs.rds")) {
   files <- dir("../data/signatures", pattern="csv")
   all <- data.frame()
   for (file in files) {
@@ -124,7 +125,7 @@ if (!file.exists("../all-sigs.rds")) {
   all <- all %>% filter(land1_id < land2_id)
   saveRDS(all, file="../data/all-sigs.rds")
 } else {
-  all <- readRDS("../all-sigs.rds")
+  all <- readRDS("../data/all-sigs.rds")
 }
 
 errors <- rbind(errorrate(all, 0.001), 
@@ -135,11 +136,24 @@ errors <- rbind(errorrate(all, 0.001),
 
 # Introduction
 
-## Problem statement: same source matching based on striations
+## Problem statement and motivation
 
 \hh{'considered to be unique' by AFTE - that is right, but we should not use this argument, and I don't think we have to. It's better to focus on the problem at hand: striation marks are used to determine same source for bullets. XXX we could include some figures here XXX Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citep{NAS:2009}. There are different approaches used to achieve more objectivity and assess error rates. XXX here we need some examples of approaches XXX
 For toolmarks, the Chumbley score has been suggested to determine same-source. XXX summary of results from original paper and the adjustment XXX
 In this paper we are interested in how this method has to be adjusted to best be applied to the smaller marks on bullets. }
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{images/B6-B2-L6.png}
+```{r, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'}
+land <- read.csv("../data/b6b2l6.csv")
+land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw()
+```
+
+\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification.}
+
+\end{figure}
+
 
 Striation marks created on Bullets by the Barrel of a firearm are considered to be unique to the barrel of the firearm. This was first stated by the AFTE Criteria fo Identification Committee in 1992 (AFTE 1992 article) \citet{afte-article1992}. The maximum number of consecutively matching striae (CMS) as first seen by Biasotti 1959 \citet{biasotti} and later mentioned in \citet{chu2013} are the striated markings that line up exactly without any dissimilarity. This definition involves counting a single peak as a striae. A modified meaning of the terminology as explained by (Hare, Hofmann and Carriquiry) includes both peaks and valleys as means of identifying striae. Such identification methods more often than not include subject bia and are error prone and in case of CMS as seen in the work of \citet{miller} the number of CMS may turn to out to be high even when the bullet is not fires by the same firearm.
 
@@ -150,10 +164,14 @@ A loess fit on the bullet profile produces  residuay which are termed as signatu
 
 ## Existing solution for toolmarks: Chumbley Score
 
-Compairing pairs of toolmarks with the intention of matching it to a tool has been studied in the past, and \citet{chumbley} have described in their paper an algorithm and analytic method that compares two toolmarks and comes to the conclusion if they are from the same tool. The motivation for this lies in the idea of developing analytical methods for which error rates can be found. This moves reduces subject bias and empirical based studies to designate two toolmarks as matches or non-matches, although \citet{chumbley} use this kind of a setup to validate their proposed analytic and quantitative algorithm.
+Compairing pairs of toolmarks with the intention of matching it to a tool has been studied in the past, and \citet{chumbley} have described in their paper an algorithm and analytic method that compares two toolmarks and comes to the conclusion if they are from the same tool. 
+\hh{XXX anything to do with motivation has to come first - move this to the first paragraph of the intro XXX}
+The motivation for this lies in the idea of developing analytical methods for which error rates can be found. This moves reduces subject bias and empirical based studies to designate two toolmarks as matches or non-matches, although \citet{chumbley} use this kind of a setup to validate their proposed analytic and quantitative algorithm.
 
-The data that is used by \citet{chumbley} is generated by a surface profileometer that gives the height in terms of distance along a linear trace. This is taken perpendicular to the striations present in the toolmark. Two such trace are then compared using the algorithm. 
+\hh{XXX data and results come after the intro to chumbley.}
+The data that is used by \citet{chumbley} is generated by a surface profilometer that gives the height in terms of distance along a linear trace. This is taken perpendicular to the striations present in the toolmark. Two such trace are then compared using the algorithm. 
 
+\hh{XXX start with defining the data, i.e. we are working with random processes $x(t)$ and $y(t)$ ... you should also go into the coarseness parameter here - that is a pre-processing step before the optimization. }
 Th algoritm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated. \citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters (due to serial correlation in surface depth values of a toolmark and because of a random sampling sub step in the validation phase which makes a group of pixels to be chosen more than once and hence introduces lack of independence) in certain steps, especially because the Mann-Whitney U statistic that is later calculated in the algorithm and used as a measure to differentiate between matches and non-matches works under the assumption of independence of parameters.
 
 Since we are only interested in a non-parameteric U statistic, Hadler et al. proposed a normalization procedure in the Validation step that goes to some extent to address the issue of mutual dependence. Also the same shift and different shift substep was modified to use a deterministic rule for sampling sam-shhift and dofferent shift-samples as opposed to the originally proposed random samples.
@@ -166,8 +184,9 @@ The idea behind this step is to first identify the area of best agreement in the
 Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500.
 This window is henceforth referred to as Window of optimization.
 
-A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases of matches ( which is intuitively what we expect) and non matches (which is not what we intuitively expect)
+A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases of matches ( which is intuitively what we expect) and non matches (which is not what we intuitively expect) \hh{XXX get rid of the parentheses - put the content into a sentence after your first statement.}
 
+\hh{XXX the process you describe below is the cross-correlation of two series $x(t)$ and $y(t)$. }
 First, there are a very large number of correlations calculated, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. Can be thought of ordered arrangements without replacement where n = 1001 and r = 1.
 
 This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other
@@ -176,7 +195,8 @@ This is the number of windows we have for one toolmark and each window is compar
 ###Aside (Bullets):
 Window of optimization will be shorter as the signatures are smaller. Idea is to keep the number of windows of optimization sufficiently large. This means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) and lets us compare smaller segments of one signature to another.
 
-This introduces a problem as if we go too small in the window of optimization the unique feature of the trace segments are lost and seem similar, and too large sizes vastly reduces the weightage of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
+\hh{XXX discussion of limitations should come after introducing the method. }
+This introduces a problem as if we go too small in the window of optimization the unique feature of the trace segments are lost and seem similar, and too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
 
 This means it has a direct influence on whether we are
 Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II)
@@ -192,68 +212,7 @@ The correlation of these windows would be as intuitively assumed i.e. lower than
 
 This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows.
 
-
-####Different Shift:
-Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values.
-
-This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by \citet{chumbley} and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk.
-
-Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier.
-
-Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows,
-and if they are not a match the correlations in the two sets will be very similar.
-
-###U Statistic:
-
-This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler}
-
-Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
-
-Let ns and nd be the number of same shift and different shift windows
-$N = n_{s} + n_{d}$
-
-The mann whitney U statistic is given by
-$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$
-
-with the standardized version which includes provision for rank ties
-
-$\overline{U}= \dfrac{U-M}{\sqrt{V}}$
-
-where prior to normalization the U-statistic has the mean as
-
-$M = n_{s}\left(\dfrac{N+1}{2}\right)$
-
-and variance 
-
-$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$
- 
-
-
-## Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers.
-
-Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by Hare, Hofmann and Carriquiry \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreoverr, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
-
-## Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
-
-Following on similar lines to the setup of toolamrks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
-
-The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks.
-
-Bullet signatures being compared at this time are from the Hamby 44 and Hamby 252 data, which have the best set of known-matched and known non-matches.
-
-Bullet signatures are chosen by
-1. Filtering out Land_id for Profiles from the Hamby 44 and Hamby 252 data and removing 
-all NA values
-2. run_id = 3 is chosen, Seems like the signatures generated from this run_id give the closest
-match. Different run_id's have some different settings for generating the signatures
-(The level of smoothing does not seem to be one of them)
-
-The bullet signatures when generated already included the LOWESS smoothing.
-Therefore, the coarseness factor is set to 1 while running the chumbley_non_random()
-which generates the same_shift, different_shift, U-Stat and P_value parameters.
- 
-
-```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair"}
+```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
 a<- matrix(NA, ncol = 3, nrow = 2)
 toolmark.falsepositive<- data.frame(a)
 colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
@@ -371,6 +330,68 @@ p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() +
 multiplot(p1, p2, p3, p4, cols=2)
 ```
 
+####Different Shift:
+Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values.
+
+This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by \citet{chumbley} and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk.
+
+Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier.
+
+Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows,
+and if they are not a match the correlations in the two sets will be very similar.
+
+###U Statistic:
+
+This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler}
+
+Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
+
+Let ns and nd be the number of same shift and different shift windows
+$N = n_{s} + n_{d}$
+
+The mann whitney U statistic is given by
+$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$
+
+with the standardized version which includes provision for rank ties
+
+$\overline{U}= \dfrac{U-M}{\sqrt{V}}$
+
+where prior to normalization the U-statistic has the mean as
+
+$M = n_{s}\left(\dfrac{N+1}{2}\right)$
+
+and variance 
+
+$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$
+ 
+
+
+## Potential limitations in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers.
+
+Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by Hare, Hofmann and Carriquiry \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreoverr, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
+
+## Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
+
+Following on similar lines to the setup of toolamrks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
+
+The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks.
+
+Bullet signatures being compared at this time are from the Hamby 44 and Hamby 252 data, which have the best set of known-matched and known non-matches.
+
+Bullet signatures are chosen by
+1. Filtering out Land_id for Profiles from the Hamby 44 and Hamby 252 data and removing 
+all NA values
+2. run_id = 3 is chosen, Seems like the signatures generated from this run_id give the closest
+match. Different run_id's have some different settings for generating the signatures
+(The level of smoothing does not seem to be one of them)
+
+The bullet signatures when generated already included the LOWESS smoothing.
+Therefore, the coarseness factor is set to 1 while running the chumbley_non_random()
+which generates the same_shift, different_shift, U-Stat and P_value parameters.
+ 
+
+
+
 
 window Optimization 320 Window Validation 50
 ```{r echo=FALSE}
@@ -416,7 +437,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
 #  facet_grid(.~wo, labeller="label_both") + 
   geom_smooth(aes(group=alpha), se=FALSE, method="loess") +
   theme_bw() +
-  scale_colour_brewer(expression("Nominal type I error"~alpha), palette="Set2") +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
   scale_shape_discrete("Size of validation\nwindow, wv") +
   xlab(expression("Window size for optimization, "~wo)) +
   ylab("Type II error rate")
