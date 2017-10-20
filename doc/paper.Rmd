@@ -195,7 +195,7 @@ The idea behind this step is to first identify the area of best agreement in the
 
 A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches \gk{done}\hh{XXX get rid of the parentheses - put the content into a sentence after your first statement.}
 
-\hh{XXX the process you describe below is the cross-correlation of two series $x(t)$ and $y(t)$. }
+\hh{XXX the process you describe below is the cross-correlation of two series $x(t)$ and $y(t)$.}
 
 First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. Can be thought of ordered arrangements without replacement where n = 1001 and r = 1.
 
