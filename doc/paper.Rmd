@@ -525,4 +525,4 @@ Another important aspect is the range of horizontal values (which is referred to
 
 Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
 
-The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function LOWESS used in the chumbley algorithm).
+The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function LOWESS used in the chumbley algorithm)
