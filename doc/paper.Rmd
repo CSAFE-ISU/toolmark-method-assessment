@@ -67,6 +67,21 @@ errorrate <- function(data, alpha) {
   )
 }
 
+errorratecoarse <- function(data, alpha) {
+  summ <- data %>% filter(!is.na(p_value)) %>%
+    mutate(signif = p_value < alpha) %>%
+    group_by(wv, wo, coarse, match, signif) %>% tally()
+  summ$error <- with(summ, match != signif)
+  summ$alpha <- alpha
+  
+  rates <- summ %>% group_by(wv, wo, coarse, match, alpha) %>% summarize(
+    rate = n[error==TRUE]/sum(n)
+  )
+  rates %>% spread(match,rate) %>% rename(
+    actual = `FALSE`,
+    beta = `TRUE`
+  )
+}
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -130,11 +145,37 @@ if (!file.exists("../data/all-sigs.rds")) {
   all <- readRDS("../data/all-sigs.rds")
 }
 
+errors2 <- rbind(errorratecoarse(all, 0.001), 
+                errorratecoarse(all, 0.005), 
+                errorratecoarse(all, 0.01), 
+                errorratecoarse(all, 0.05))
+```
+
+```{r data-profiles}
+if (!file.exists("../data/all-profiles.rds")) {
+  files <- dir("../data/profiles/", pattern="csv")
+  all <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/profiles", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coar-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    all <- rbind(all, tmp)
+  }
+  all <- all %>% filter(land1_id < land2_id)
+  all <- all %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(all, file="../data/all-profiles.rds")
+} else {
+  all <- readRDS("../data/all-profiles.rds")
+}
+
 errors <- rbind(errorrate(all, 0.001), 
                 errorrate(all, 0.005), 
                 errorrate(all, 0.01), 
                 errorrate(all, 0.05))
 ```
+
 
 # Introduction and Background
 
@@ -526,6 +567,14 @@ Another important aspect is the range of horizontal values (which is referred to
 
 Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
 
+\hh{XXX ideas should go to the previous section on setting up the study; in this section we focus on results only XXX}
 The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function LOWESS used in the chumbley algorithm)
+
+```{r, fig.cap="Type II errors for different levels of coarseness. XXX We need more values around .25"}
+errors2 %>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")
+```
 
 ## Discussion
