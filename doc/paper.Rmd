@@ -54,34 +54,24 @@ library(tidyverse)
 errorrate <- function(data, alpha) {
   summ <- data %>% filter(!is.na(p_value)) %>%
     mutate(signif = p_value < alpha) %>%
-    group_by(wv, wo, match, signif) %>% tally()
-  summ$error <- with(summ, match != signif)
-  summ$alpha <- alpha
-  
-  rates <- summ %>% group_by(wv, wo, match, alpha) %>% summarize(
-    rate = n[error==TRUE]/sum(n)
-  )
-  rates %>% spread(match,rate) %>% rename(
-    actual = `FALSE`,
-    beta = `TRUE`
-  )
-}
-
-errorratecoarse <- function(data, alpha) {
-  summ <- data %>% filter(!is.na(p_value)) %>%
-    mutate(signif = p_value < alpha) %>%
-    group_by(wv, wo, coarse, match, signif) %>% tally()
+    group_by(wv, wo, match, coarse, signif) %>% tally()
   summ$error <- with(summ, match != signif)
   summ$alpha <- alpha
   
   rates <- summ %>% group_by(wv, wo, coarse, match, alpha) %>% summarize(
     rate = n[error==TRUE]/sum(n)
   )
-  rates %>% spread(match,rate) %>% rename(
+  totals <- summ %>% group_by(wv, wo, coarse, alpha) %>% summarize(
+    total= sum(n[error==TRUE])/sum(n)
+  )
+  rates <- rates %>% spread(match,rate) %>% rename(
     actual = `FALSE`,
     beta = `TRUE`
   )
+  left_join(rates, totals)
 }
+
+
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -145,10 +135,11 @@ if (!file.exists("../data/all-sigs.rds")) {
   all <- readRDS("../data/all-sigs.rds")
 }
 
-errors2 <- rbind(errorratecoarse(all, 0.001), 
-                errorratecoarse(all, 0.005), 
-                errorratecoarse(all, 0.01), 
-                errorratecoarse(all, 0.05))
+all$coarse <- 1
+errors <- rbind(errorrate(all, 0.001), 
+                errorrate(all, 0.005), 
+                errorrate(all, 0.01), 
+                errorrate(all, 0.05))
 ```
 
 ```{r data-profiles}
@@ -170,7 +161,7 @@ if (!file.exists("../data/all-profiles.rds")) {
   all <- readRDS("../data/all-profiles.rds")
 }
 
-errors <- rbind(errorrate(all, 0.001), 
+errors2 <- rbind(errorrate(all, 0.001), 
                 errorrate(all, 0.005), 
                 errorrate(all, 0.01), 
                 errorrate(all, 0.05))
@@ -577,4 +568,10 @@ errors2 %>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")
 ```
 
+### comparison of total error with signatures and profiles
+
+```{r}
+errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +
+  geom_point(data=errors2, aes(shape="profiles"))
+```
 ## Discussion
