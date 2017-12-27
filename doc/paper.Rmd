@@ -603,7 +603,7 @@ Therefore rigid same shifts might not necessarily compare the right set of windo
 ## Dependence on the delta of new windows from the original same shift window
 
 From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the
-penultimate pvalue and U statistic that we look at.
+the pvalue and U statistic that we look at.
 
-So the question that arises is how much of a movement is reasonable and should be used?
-Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable.
+### how much of a movement is reasonable and should be used?
+Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable.
