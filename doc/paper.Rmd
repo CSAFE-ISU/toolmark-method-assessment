@@ -575,3 +575,35 @@ errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")
   geom_point(data=errors2, aes(shape="profiles"))
 ```
 ## Discussion
+
+## Results of Chumbley score
+- Nominal alpha value shows dependency on the size of the window of optimization
+- Test Fail depends on whether known-match or known non-matches has predictive value
+- Type II error least bad for window of validation 30 and window of optimization 120
+
+# Algorithm Modification
+
+The proposed algorithm modification is at the same shift step which comes after the shift distance is identified by finding two windows in the two markings that have the highest correlation.
+
+The modification allows for a "wiggle" room in the second marking of the two sets of markings being compared. This means that each set of same shift windows that are being compared, the second marking will window that is under consideration is allowd to move a little towards the left and a little towards the right.
+
+This gives us a new set of 4 windows, 2 to the left and 2 to the right of the original comparison window. Then the correlations for each one of these 5 windows with the window under consideration of the 1st marking is retrieved (from the validation step correlation matrix) or computed.
+
+Then the window that has the maximum correlation (from the set of 5 windows in the 2nd marking) with the window of the 1st marking is chosen.
+
+This new maximum correlation is then used to compute the U-statistics using the same method as before.
+
+## Expected advantage of modification
+
+We are expecting that this modification would improve the type I and II errors for the good. Less number of false negatives and false positives.
+The reason for this expectation is many a times the bullet markings are not made at the same distances for two or more bullets because of the way it comes out of the barrel.
+
+Therefore rigid same shifts might not necessarily compare the right set of windows. In the same shift step for one set of windows, allowing the window in the 2nd marking to wiggle left and right and finding the best match to the window in the 1st marking, lets us adjust for situations where markings are compressed or elongated.
+
+## Dependence on the delta of new windows from the original same shift window
+
+From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the
+penultimate pvalue and U statistic that we look at.
+
+So the question that arises is how much of a movement is reasonable and should be used?
+Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable.
