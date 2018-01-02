@@ -460,7 +460,7 @@ param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% sele
 #t(param_setting)
 #param_setting %>% tally() 
 library(kableExtra)
-knitr::kable(t(param_setting), digits=0, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down"))
+knitr::kable(t(param_setting), digits=10, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down"))
 ```
 
 
