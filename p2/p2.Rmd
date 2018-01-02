@@ -472,17 +472,23 @@ which generates the same_shift, different_shift, U-Stat and P_value parameters.
 ```{r }
 library(kableExtra)
 a27<- all %>% filter(wo==200, wv==30) %>% xtabs(data= ., ~signif+match)
+a27<- as.data.frame(a27)
+a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
 knitr::kable(a27, digits=0, caption = "Window of Optimization 320 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
 
 ```
 
 ```{r}
 a27<- all %>% filter(wo==120, wv==30) %>% xtabs(data= ., ~signif+match)
+a27<- as.data.frame(a27)
+a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
 knitr::kable(a27, digits=0, caption = "Window of Optimization 120 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
 ```
 
 ```{r}
 a27<- all %>% filter(wo==80, wv==30) %>% xtabs(data= ., ~signif+match)
+a27<- as.data.frame(a27)
+a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
 knitr::kable(a27, digits=0, caption = "Window of Optimization 80 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
 ```
 
