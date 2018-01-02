@@ -474,22 +474,23 @@ library(kableExtra)
 a27<- all %>% filter(wo==200, wv==30) %>% xtabs(data= ., ~signif+match)
 a27<- as.data.frame(a27)
 a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
-knitr::kable(a27, digits=0, caption = "Window of Optimization 320 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
+#knitr::kable(a27, digits=0, caption = "Window of Optimization 320 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
 
 ```
 
 ```{r}
-a27<- all %>% filter(wo==120, wv==30) %>% xtabs(data= ., ~signif+match)
-a27<- as.data.frame(a27)
-a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
-knitr::kable(a27, digits=0, caption = "Window of Optimization 120 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
+a28<- all %>% filter(wo==120, wv==30) %>% xtabs(data= ., ~signif+match)
+a28<- as.data.frame(a28)
+a28$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
+#knitr::kable(a27, digits=0, caption = "Window of Optimization 120 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
 ```
 
 ```{r}
-a27<- all %>% filter(wo==80, wv==30) %>% xtabs(data= ., ~signif+match)
-a27<- as.data.frame(a27)
-a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
-knitr::kable(a27, digits=0, caption = "Window of Optimization 80 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
+a29<- all %>% filter(wo==80, wv==30) %>% xtabs(data= ., ~signif+match)
+a29<- as.data.frame(a29)
+a29$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
+
+knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for different optimization window sizes", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"), "striped", full_width = F) %>% group_rows("Window of Optimization 200 and Window of Validation 30",1,5) %>% group_rows("Window of Optimization 120 and Window of Validation 30", 6, 10) %>%  group_rows("Window of Optimization 80 and Window of Validation 30", 11,14)
 ```
 
 
