@@ -4,7 +4,7 @@ authors:
 - affiliation: Department of Statistics, Iowa State University 
   name: Ganesh Krishnan
   thanks: The authors gratefully acknowledge ...
-- affiliation: Department of Statistics and csafe, Iowa State University 
+- affiliation: Department of Statistics and CSAFE, Iowa State University 
   name: Heike Hofmann
 biblio-style: apsr
 output:
@@ -631,7 +631,7 @@ Therefore for the sake of comparison the run_id = 3 is still chosen so as to ens
 \hh{XXX ideas should go to the previous section on setting up the study; in this section we focus on results only XXX}
 The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function LOWESS used in the chumbley algorithm)
 
-```{r, fig.cap="Type II errors for different levels of coarseness. XXX We need more values around .25"}
+```{r, fig.cap="Type II errors for different levels of coarseness."}
 errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
   geom_point() + geom_line() +
   theme_bw() +
