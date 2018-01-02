@@ -237,7 +237,7 @@ land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw()
 \end{figure}
 
 
-## The Chumbley Score Test
+# The Chumbley Score Test
 
 
 \hh{You need to distinguish between $x(t)$ and $x(t_1)$ - $x(t)$ is a spatial process for some $t$. $x(t_1)$ is the realization of the process in $t_1$. - Alternatively you could also follow the notation in Hadler et al on 'digitized toolmarks at a pixel level' - where our 'pixel' is the resolution of the confocal light microscope, i.e. a pixel corresponds to 0.645 microns.}
@@ -444,7 +444,7 @@ This introduces a problem as, if we go too small in the window of optimization, 
 Thus the Window of Optimization has a direct influence on whether we are
 Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important.
 
-## Testing setup:
+## Testing setup
 \hh{Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly}
 
 Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
