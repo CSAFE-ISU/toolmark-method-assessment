@@ -462,18 +462,9 @@ The idea therefore is to first use these raw values of the profile directly in t
 
 \pagebreak
 
-```{r }
-
-#knitr::kable(a27, digits=0, caption = "Window of Optimization 320 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
-
-```
-
-```{r}
-
-#knitr::kable(a27, digits=0, caption = "Window of Optimization 120 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
-```
-
-```{r param, echo=FALSE, results='asis'}
+# Results
+We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the table \ref{tab:param}.
+```{r param}
 param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
 #param_setting<- data.frame(matrix(param_setting, nrow = 16))
 #t(param_setting)
@@ -503,13 +494,6 @@ a29$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)
 
 knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for different optimization window sizes with validation window size as 30", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"), "striped", full_width = F) %>% group_rows("Size of Optimization Window = 200",1,5) %>% group_rows("Size of Optimization Window = 120", 6, 10) %>%  group_rows("Size of Optimization Window = 80", 11,14)
 ```
-
-
-
-
-# Results
-
-We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the table \ref{tab:param}.
 
 
 
