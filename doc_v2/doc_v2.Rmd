@@ -28,7 +28,7 @@ abstract: null
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
 
 \tableofcontents
-
+\newpage
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(knitr)
 knitr::opts_chunk$set(
@@ -48,6 +48,7 @@ knitr::opts_chunk$set(
 )
 options(knitr.table.format = "latex")
 library(tidyverse)
+library(kableExtra)
 ```
 
 ```{r functions}
@@ -209,7 +210,7 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 
 # Introduction and Background
 
-## Problem statement and motivation
+## Motivation
 
 Striation marks are used to determine same source for bullets. Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citep{NAS:2009}. The issue of subjectivity of a firearms examiner has been reviewed by many authors where things like scientific principle testability and error rates are considered to be defining aspects for an objective analysis such that without identifying the uncertainities associated with a method of comparison, it is inconclusive to regards an analysis complete. This means that with the usual method of visual comparison that is adopted by firearms examiners, lies the problem of lack of any systemized quantification and as such there seems no certain way of associating it with any kind of mathematical probability. Since determining error rates has been duly noted as a fundamental problem in forensic science \citep{NAS:2009}, there is a need of methods that address this problem. Some of the methods that have been used to estimate error rates in firearm examinations include Automatic cartridge case comparison where same source identification of cartridge cases and associated error rates have been provided by \citep{riva}, although as noted by \citep{aoas}, in this case alignments of striae involves roation of planes, which cannot be generalized for bullets. In case of methods that use machine learning algorithms some methods which are bootsrap based methods often tend to give over-estimated error rates \citep{efron}, but there are alternate error estimation techniques as described by \citep{aoas}, \citep{efron} and  \citep{vorburger2016} which give better results.
 
@@ -224,6 +225,24 @@ The method employed by \citet{aoas} uses the cross correlation factor as a means
 Compairing pairs of toolmarks on the otherhand, with the intention of matching it to a tool has been studied relatively more in the past as compared to bullets, and \citet{chumbley} have described in their paper an algorithm and analytic method that compares two toolmarks and come to the conclusion if they are from the same tool or not. The method also determines the error rates, reduces subject bias and designate the two toolmarks as matches or non-matches with respect to a source. \citet{chumbley} used an empirical based setup to validate their proposed analytic and quantitative algorithm.
 
 \citep{chumbley} found that the algorithm gives false-positives in slightly over 2 cases (or 2%) of the time and about 9 false-negatives (or 9%) for every 100 comparisons. \citep{hadler} on the other hand, in the improved version of the algorithm first described by \citep{chumbley} found false-positives for 0 cases and 3 false-negatives (or 6%) for 50 comparisons of knwon matches.
+```{r}
+a<- matrix(NA, ncol = 3, nrow = 2)
+toolmark.falsepositive<- data.frame(a)
+colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
+toolmark.falsepositive$Classification<- c("Match", "Non-Match")
+toolmark.falsepositive$Match<- c(47,0)
+toolmark.falsepositive$`Non-Match`<- c(3,50)
+
+knitr::kable(toolmark.falsepositive, digits=0, format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("hold"))
+```
+
+## Potential limitations of the Chumbley Score adaptation to bullets 
+Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by  \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreover, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
+
+Also when in the optimization step, the Window of optimization for bullets will be shorter as the signatures are smaller. The idea is to keep the number of windows of optimization sufficiently large, which means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) that lets us compare smaller segments of one signature to another. This introduces a problem as, if we go too small in the window of optimization, the unique features of the trace segments are lost and seem similar, while too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
+
+Thus the Window of Optimization has a direct influence on whether we are Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important. This raises important questions about what parameter settings need to be chosen for bullet land comparison. Something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers where optimum window sizes are determined. There is a need to figure out the best parameter settings which minimizes the errors for unsmoothed markings and pre-processed signatures as determined by \citet{aoas}. An analysis of these error rates and comparison with other methods will help us understand the adaptibility of the chumbley score to bullets.
+
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{images/B6-B2-L6.png}
@@ -271,14 +290,6 @@ The correlation of these windows would be as intuitively assumed i.e. lower than
 This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows.
 
 ```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
-a<- matrix(NA, ncol = 3, nrow = 2)
-toolmark.falsepositive<- data.frame(a)
-colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
-toolmark.falsepositive$Classification<- c("Match", "Non-Match")
-toolmark.falsepositive$Match<- c(47,0)
-toolmark.falsepositive$`Non-Match`<- c(3,50)
-
-knitr::kable(toolmark.falsepositive, digits=0, format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("hold"))
 
 asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
 
@@ -425,23 +436,6 @@ and variance
 $$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$
  
 
-
- 
-
-
-## Potential limitations of the Chumbley Score
-
-\hh{in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers. XXX work in }
-
-Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by  \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreover, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
-
-Also when in the optimization step, the Window of optimization for bullets will be shorter as the signatures are smaller. The idea is to keep the number of windows of optimization sufficiently large, which means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) that lets us compare smaller segments of one signature to another.
-
-This introduces a problem as, if we go too small in the window of optimization, the unique features of the trace segments are lost and seem similar, while too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
-
-Thus the Window of Optimization has a direct influence on whether we are
-Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important.
-
 ## Testing setup
 
 Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
@@ -456,42 +450,6 @@ Bullet signatures being compared at this time are therefore from the Hamby 44 an
 
 The bullet signatures when generated by this process already includes a loess smoothing. Therefore, the coarseness factor is set to 1 while running the chumbley non random algorithm for comparing different optimization windows.The algorithm generates the same_shift, different_shift, U-Stat and P_value parameters which are then used to calculate the errors associated with different sets of window sizes.
 
-We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the following table.
-
-```{r param, echo=FALSE, results='asis'}
-param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
-#param_setting<- data.frame(matrix(param_setting, nrow = 16))
-#t(param_setting)
-#param_setting %>% tally() 
-library(kableExtra)
-knitr::kable(t(param_setting)[,1:17], digits=0, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down", "hold"))
-
-knitr::kable(t(param_setting)[,18:33], digits=0, format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down","hold"))
-
-# library(xtable)
-# strCaption <- "Overview of parameter settings used for optimization and validation windows for bullet land signatures."
-#   
-#   # set up xtable output
-# print(xtable(t(param_setting)[,1:17], 
-#              caption = strCaption, label = ""),
-#       include.rownames = TRUE,
-#       include.colnames = FALSE,
-#       caption.placement = "top",
-#       comment=FALSE,
-#       floating=FALSE
-#       )
-# print(xtable(t(param_setting)[,17:33],label = ""),
-#       include.rownames = FALSE,
-#       include.colnames = FALSE,
-#       caption.placement = "bottom",
-#       comment=FALSE,
-#       floating=TRUE
-#       #table.placement = "!ht"
-#       )
-```
-
-
-
 ### Profiles
 
 The profiles are cross-sectional values of the the bullet striation mark which are chosen at an optimum height (x as used by \citet{aoas}). This x or height is not a randomly chosen level. The rationale behind the choice has been explained by \citet{aoas}. A region is first chosen where the cross-correlation seems to change very less and in this region an optimum height is chosen. The profiles generally resemble a curve which is more or less similar to a quadratic curve (a quadratic fit to the raw data values of the profile is not an exact fit but it does show a similar trend). Profiles are the set of raw values representing the striation marks, and signatures are generated from these by removal of the inherent curvature and applying some smoothing (the signatures generated by \citet{aoas} use a loess function for smoothing). 
@@ -500,8 +458,9 @@ Similar to signatures the run_id = 3 was used when applying the chumbley algorit
 
 Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
 
-The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function lowess used in the chumbley algorithm)
+The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function lowess used in the chumbley algorithm).
 
+\pagebreak
 
 ```{r }
 
@@ -512,6 +471,20 @@ The idea therefore is to first use these raw values of the profile directly in t
 ```{r}
 
 #knitr::kable(a27, digits=0, caption = "Window of Optimization 120 and Window of Validation 50", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"))
+```
+
+```{r param, echo=FALSE, results='asis'}
+param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
+#param_setting<- data.frame(matrix(param_setting, nrow = 16))
+#t(param_setting)
+#param_setting %>% tally() 
+library(kableExtra)
+#knitr::kable(t(param_setting)[,1:17], digits=0, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down", "hold"))
+
+par_tab1<-t(param_setting)[,1:18]
+par_tab2<-t(param_setting)[,19:33]
+knitr::kable(list(par_tab1,par_tab2), digits=0,caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down","hold"))%>% kableExtra::kable_styling(latex_options = c("scale_down","hold")) #%>% group_rows("",1,2) %>% group_rows("",3,4)
+
 ```
 
 ```{r confusion}
@@ -536,9 +509,14 @@ knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for differe
 
 # Results
 
+We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the table \ref{tab:param}.
+
+
+
 ### Signatures
 
-Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step.
+
+Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step. Two levels of validation window size 30 and 50 were chosen as to compare the error rates for different nominal type I errors. We notice that the trends for these nominal type I errors are similar and in most cases a validation window of 50 has higher type II error than for 30. A change in this trend is seen for a 0.05 $\alpha$ level, although the difference between the two windows is very small for this case. We can also notice an obvious trend of increase in the Type II error as the window of optimization increases and see a minimum around the optimization window size of 120 pixels. Hence we are inclined to choose a smaller validation window size and optimization window as 120.
 
 
 ```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $wo$. For a window size of $wo = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $wv$ are typically associated with a smaller type II error."}
@@ -557,9 +535,9 @@ errors %>% filter(wv %in% c(30,50)) %>%
 labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
 
-Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table \ref{tab:param}. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty). This might be related to the increasing number of tests that fail for larger window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
+Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table \ref{tab:param}. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty)or As the optimization window increase the observed type I error rate gets smaller, while, A smaller validation window tends to be associated with a higher type I error rate. This can be better imagined for a given window of optimization, when the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error although increases negligibly, it does not seem to vary as much as it varies with the optimization window sizes. This might be related to the increasing number of tests that fail for larger window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
 
-```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.  As the optimization window increase the observed type I error rate gets smaller. A smaller validation window tends to be associated with a higher type I error rate."}
+```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errors %>% filter(wv %in% c(30,50)) %>%
   ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
   geom_hline(aes(yintercept=alpha), colour="grey30") +
@@ -601,8 +579,7 @@ ns %>% filter(wv %in% c(30, 50)) %>%
   scale_colour_brewer("Match", palette="Set1") +
   scale_shape_discrete("Size of \nvalidation\nwindow, wv")
 ```
-Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. 
-Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. 
+Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. 
 
 ```{r lms, results='asis'}
 nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()
