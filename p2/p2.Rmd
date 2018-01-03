@@ -626,7 +626,7 @@ wo120 %>% gather(type, error, actual:beta) %>%
 
 ### Profiles
 
-```{r, fig.cap="Type II errors for different levels of coarseness of profiles."}
+```{r, fig.cap="Type II errors for different levels of coarseness."}
 e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
   geom_point() + geom_line() +
   theme_bw() +
@@ -648,7 +648,7 @@ multiplot(e1,e2, cols = 1)
 #errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
 
 total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error")
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error")
 
 total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error")
@@ -656,7 +656,7 @@ total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(a
 
 ```
 
-```{r prof_missings, fig.width=8, fig.height=5, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source."}
+```{r prof_missings, fig.width=8, fig.height=5, fig.cap="Bottom row shows Total error and Number of failed tests by the window validation size, wv, and ground truth, while the top row shows Total error and Number of failed tests with Coarseness for both profiles and signatures"}
 nsp <- allp %>% group_by(wv, wo, match, coarse) %>% summarize(
   n_ss = mean(same_shift_n),
   n_ds = mean(diff_shift_n),
@@ -685,7 +685,7 @@ miss_1<- nsp %>% filter(wv == 30) %>%
   theme_bw() +
   ylab("Percent of failed tests.") +
   xlab("Coarseness") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2)# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2)# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
   #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
 
 miss_2<- nsp %>% filter(coarse == 0.25) %>%
