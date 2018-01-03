@@ -704,12 +704,17 @@ multiplot(plotlist = list(total1, total2, miss_1, miss_2), cols = 2)#, matrix(c(
 ## Discussion
 
 ## Results of Chumbley score
-- Nominal alpha value shows dependency on the size of the window of optimization
+
+Compairing pairs of toolmarks with the intention of matching it to a tool has been studied relatively more in the past as compared to bullets, and \citet{chumbley} have described in their paper an algorithm and a deterministic method that compares
+two toolmarks and come to the conclusion if they are from the same tool or not. The method also determines the error rates, reduces subject bias and designate the two toolmarks as matches or non-matches with respect to a source. This project tries to adapt the Chumbley algorithm as modified by \citet{hadler}, to bullets which are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. The majority of Bullet profiles and signatures extracted by procedures mentioned by  \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreover, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets. Another important aspect of adapting the algorithm is to find the sizes of the two comparison windows  \citet{hadler} that minimizes the associated errors. This identification is not obvious as,  if we go too small in the comparison windows, the unique features of the trace segments are lost and seem similar, while too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
+
+- Nominal alpha value shows dependency on the size of the window of optimization and the window of validation. For a given window of optimization the actual Type I error is near the nominal significance level only for validation window sizes around 30 to 50
 - Test Fail depends on whether known-match or known non-matches has predictive value
 - Type II error least bad for window of validation 30 and window of optimization 120
 - Type II error for profiles increases with the amount of smoothing and least for LOWESS smoothing coarseness value about 0.25 or 0.3.
-- Profiles in comparison with Signatures seem to perform worse with total error either equal or more for all sizes of validation window.
-- 
+- On comparing Profiles and Signatures with respect to validation window size,  have a total error greater than or equal to the total error of signatures for all sizes of validation window.
+- Profiles also fail (i.e. incorrect classification of a same source match) more number of times than signatures, which lets us conclude that the behaviour of the algorithm for the raw profiles instead of pre-processed signatures is not better. 
+
 
 # Algorithm Modification
 
