@@ -480,7 +480,7 @@ knitr::kable(list(par_tab1,par_tab2), digits=0,caption = "Overview of parameter 
 
 ```{r confusion}
 library(kableExtra)
-a27<- all %>% filter(wo==200, wv==30) %>% xtabs(data= ., ~signif+match)
+a27<- all %>% filter(wo==280, wv==30) %>% xtabs(data= ., ~signif+match)
 a27<- as.data.frame(a27)
 a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
 
@@ -492,16 +492,17 @@ a29<- all %>% filter(wo==80, wv==30) %>% xtabs(data= ., ~signif+match)
 a29<- as.data.frame(a29)
 a29$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
 
-knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for different optimization window sizes with validation window size as 30", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"), "striped", full_width = F) %>% group_rows("Size of Optimization Window = 200",1,5) %>% group_rows("Size of Optimization Window = 120", 6, 10) %>%  group_rows("Size of Optimization Window = 80", 11,14)
+knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for different optimization window sizes with validation window size as 30.", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"), "striped", full_width = F) %>% group_rows("Size of Optimization Window = 280",1,5) %>% group_rows("Size of Optimization Window = 120", 6, 10) %>%  group_rows("Size of Optimization Window = 80", 11,14)
 ```
 
 
-
-### Signatures
+## Sigatures
 
 
 Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step. Two levels of validation window size 30 and 50 were chosen as to compare the error rates for different nominal type I errors. We notice that the trends for these nominal type I errors are similar and in most cases a validation window of 50 has higher type II error than for 30. A change in this trend is seen for a 0.05 $\alpha$ level, although the difference between the two windows is very small for this case. We can also notice an obvious trend of increase in the Type II error as the window of optimization increases and see a minimum around the optimization window size of 120 pixels. Hence we are inclined to choose a smaller validation window size and optimization window as 120.
 
+
+Table \ref{tab:confusion} shows the confusion tables with the classification of type I and type II errors and how the numbers change with a change in the optimization window. The windows represent areas to the left of the window with minimum type II, near the minimum type II window and to the far right of the minimum type II error
 
 ```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $wo$. For a window size of $wo = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $wv$ are typically associated with a smaller type II error."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -549,7 +550,7 @@ wo120 %>% gather(type, error, actual:beta) %>%
   theme(legend.position="bottom")
 ```
 
-
+The actual type I error and type II error for signatures were also compared for different validation window sizes. Figure \ref{fig:wo120} shows the actual rates for different nominal $\alpha$ levels. We can see that the actual $\alpha$ levels are well below the nominal rates for all validation windows, while the type II error rises with higher validation windows for the smaller nominal $\alpha$ levels while for the nominal $\alpha$ = 0.05 its almost constant.
 ```{r }
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ss = mean(same_shift_n),
@@ -605,9 +606,14 @@ tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
 knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
 ```
 Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source. For known non-matches there is a higher possibility that in the optimization pair of windows where cross-correlations are maximum are too far apart, and same shifts of this order hit the end of the signature. 
-### Profiles
 
-### Comparison of signatures and profiles
+## Effect of coarseness
+
+Figure \ref{fig:prof_missings} (a) shows the type II error rates for profiles for the optimization window 120 and validation window 30 with varying level of coarseness. We can see that the type II error for all the nominal $\alpha$ levels is lowest in the range of 0.20 to 0.35. Therefore, a value of 0.25 can be used keeping in mind it keeps the type II error lowest while runnning simulations. Thus for comparisons of different window sizes etc as seen in the differnt parts of Figure \ref{fig:prof_missings} this coarseness value is used.
+
+On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
+
+### Comparison of profiles and signatures
 
 Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
 
