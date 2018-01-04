@@ -540,46 +540,6 @@ errors %>% filter(wv %in% c(30,50)) %>%
 ```
 
 
-
-```{r missings, fig.width=8, fig.height=5, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth."}
-ns <- all %>% group_by(wv, wo, match) %>% summarize(
-  n_ss = mean(same_shift_n),
-  n_ds = mean(diff_shift_n),
-  zero_ss = sum(same_shift_n==0),
-  zero_ds = sum(diff_shift_n==0),
-  miss = sum(is.na(p_value)),
-  missperc = miss/85491*100
-)
-
-#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
-ns %>% filter(wv %in% c(30, 50)) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match))) + 
-  geom_smooth(method="lm", size=.5, se=FALSE) +
-  geom_point() + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("Size of optimization window, wo") +
-  scale_colour_brewer("Match", palette="Set1") +
-  scale_shape_discrete("Size of \nvalidation\nwindow, wv")
-```
-Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source. For known non-matches there is a higher possibility that in the optimization pair of windows where cross-correlations are maximum are too far apart, and same shifts of this order hit the end of the signature. 
-
-Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(c) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
-
-In figure \ref{fig:prof_missings}(c) and (d), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(d) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
-
-```{r lms, results='asis'}
-nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()
-nsnest <- nsnest %>% mutate(
-  model = data %>% purrr::map(.f = function(d) lm(I(missperc*100)~wo, data=d)),
-  coefs = model %>% purrr::map(.f = broom::tidy)
-)
-tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
-  select(-term, -statistic, -p.value)
-knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
-```
-
 ```{r wo120, fig.width = 8, fig.height=4.5, fig.cap="For optimization window size 120 and different validation window size how Actual and Type II (beta) errors vary for various chosen nominal alpha levels"}
 wo120 <- errors %>% filter(wo==120)
 wo120 %>% gather(type, error, actual:beta) %>%
@@ -589,39 +549,17 @@ wo120 %>% gather(type, error, actual:beta) %>%
   theme(legend.position="bottom")
 ```
 
-### Profiles
 
-```{r, fig.cap="Type II errors for different levels of coarseness."}
-e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
-  ylab("Type II error")
+```{r }
+ns <- all %>% group_by(wv, wo, match) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/85491*100
+)
 
-e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error")
-
-multiplot(e1,e2, cols = 1)
-
-```
-
-### Comparison of total error with signatures and profiles
-
-```{r}
-#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
-
-total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(a)")
-
-total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(b)")
-
-
-```
-
-```{r prof_missings, fig.width=8, fig.height=5, fig.cap="Bottom row shows Total error and Number of failed tests by the window validation size, wv, and ground truth, while the top row shows Total error and Number of failed tests with Coarseness for both profiles and signatures"}
 nsp <- allp %>% group_by(wv, wo, match, coarse) %>% summarize(
   n_ss = mean(same_shift_n),
   n_ds = mean(diff_shift_n),
@@ -640,6 +578,79 @@ ns_sig_c <- all_sig_c %>% group_by(wv, wo, match, coarse) %>% summarize(
   missperc = miss/85491*100
 )
 
+```
+
+```{r missings, fig.width=5, fig.height=2, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth.",fig.align = "center"}
+#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
+ns %>% filter(wv %in% c(30, 50)) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match)), size=.3) + 
+  geom_smooth(method="lm", size=.2, se=FALSE) +
+  geom_point() + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab("Size of optimization window, wo") +
+  scale_colour_brewer("Match", palette="Set1") +
+  scale_shape_discrete("Size of \nvalidation\nwindow, wv")
+```
+
+```{r lms, results='asis'}
+nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()
+nsnest <- nsnest %>% mutate(
+  model = data %>% purrr::map(.f = function(d) lm(I(missperc*100)~wo, data=d)),
+  coefs = model %>% purrr::map(.f = broom::tidy)
+)
+tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
+  select(-term, -statistic, -p.value)
+knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
+```
+Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source. For known non-matches there is a higher possibility that in the optimization pair of windows where cross-correlations are maximum are too far apart, and same shifts of this order hit the end of the signature. 
+### Profiles
+
+### Comparison of signatures and profiles
+
+Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
+
+In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
+
+The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
+
+
+
+
+
+```{r, fig.cap="Type II errors for different levels of coarseness."}
+e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
+  ylab("Type II error") + ggtitle(label = "(a)")
+
+e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error") + ggtitle(label = "(b)")
+
+#multiplot(e1,e2, cols = 1)
+
+```
+
+
+
+```{r}
+#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
+
+total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
+
+total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
+
+
+```
+
+```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Bottom row shows Total error and Number of failed tests by the window validation size, wv, and ground truth, while the top row shows Total error and Number of failed tests with Coarseness for both profiles and signatures"}
+
 
 #ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
 miss_1<- nsp %>% filter(wv == 30) %>%
@@ -650,7 +661,7 @@ miss_1<- nsp %>% filter(wv == 30) %>%
   theme_bw() +
   ylab("Percent of failed tests.") +
   xlab("Coarseness") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(c)")
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")
 # + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
   #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
 
@@ -662,38 +673,9 @@ miss_2<- nsp %>% filter(coarse == 0.25) %>%
   theme_bw() +
   ylab("Percent of failed tests.") +
   xlab("wv") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")#+ scale_colour_brewer("Match", palette="Set2")
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(f)")#+ scale_colour_brewer("Match", palette="Set2")
 
-multiplot(plotlist = list(total1, total2, miss_1, miss_2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+#multiplot(plotlist = list(total1, total2, miss_1, miss_2, e1, e2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
 ```
-
-## Discussion
-
-
-
-# Algorithm Modification
-
-The proposed algorithm modification is at the same shift step which comes after the shift distance is identified by finding two windows in the two markings that have the highest correlation.
-
-The modification allows for a "wiggle" room in the second marking of the two sets of markings being compared. This means that each set of same shift windows that are being compared, the second marking will window that is under consideration is allowd to move a little towards the left and a little towards the right.
-
-This gives us a new set of 4 windows, 2 to the left and 2 to the right of the original comparison window. Then the correlations for each one of these 5 windows with the window under consideration of the 1st marking is retrieved (from the validation step correlation matrix) or computed.
-
-Then the window that has the maximum correlation (from the set of 5 windows in the 2nd marking) with the window of the 1st marking is chosen.
-
-This new maximum correlation is then used to compute the U-statistics using the same method as before.
-
-## Expected advantage of modification
-
-We are expecting that this modification would improve the type I and II errors for the good. Less number of false negatives and false positives.
-The reason for this expectation is many a times the bullet markings are not made at the same distances for two or more bullets because of the way it comes out of the barrel.
-
-Therefore rigid same shifts might not necessarily compare the right set of windows. In the same shift step for one set of windows, allowing the window in the 2nd marking to wiggle left and right and finding the best match to the window in the 1st marking, lets us adjust for situations where markings are compressed or elongated.
-
-## Dependence on the delta of new windows from the original same shift window
-
-From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the
-the pvalue and U statistic that we look at. 
-
-### other questions
-How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable.
+ \pagebreak
