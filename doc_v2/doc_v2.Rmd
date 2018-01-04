@@ -541,7 +541,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
 ```
 
 
-```{r wo120, fig.width = 8, fig.height=4.5, fig.cap="For optimization window size 120 and different validation window size how Actual and Type II (beta) errors vary for various chosen nominal alpha levels"}
+```{r wo120, fig.width = 8, fig.height=4.5, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
 wo120 <- errors %>% filter(wo==120)
 wo120 %>% gather(type, error, actual:beta) %>%
   ggplot(aes(x = wv, y = error, colour = factor(alpha)))  + 
@@ -651,7 +651,7 @@ total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(a
 
 ```
 
-```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Bottom row shows Total error and Number of failed tests by the window validation size, wv, and ground truth, while the top row shows Total error and Number of failed tests with Coarseness for both profiles and signatures"}
+```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures"}
 
 
 #ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
