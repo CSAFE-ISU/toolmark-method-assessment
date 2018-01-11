@@ -243,15 +243,19 @@ Also when in the optimization step, the Window of optimization for bullets will 
 
 Thus the Window of Optimization has a direct influence on whether we are Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important. This raises important questions about what parameter settings need to be chosen for bullet land comparison. Something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers where optimum window sizes are determined. There is a need to figure out the best parameter settings which minimizes the errors for unsmoothed markings and pre-processed signatures as determined by \citet{aoas}. An analysis of these error rates and comparison with other methods will help us understand the adaptibility of the chumbley score to bullets.
 
+\hh{figure \ref{fig:rgl} needs to be mentioned somewhere in the write-up}
+
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{images/B6-B2-L6.png}
-```{r, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'}
+\includegraphics[width=\textwidth]{images/B6-B2-L6-rescaled.png}
+```{r, eval=FALSE, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'}
 land <- read.csv("../data/b6b2l6.csv")
-land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw()
+land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep="")))
 ```
 
-\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification.}
+\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification (top) and a chart of the corresponding signature of the same land (bottom). The dotted lines connect some peaks visible in both visualizations.}
 
 \end{figure}
 
