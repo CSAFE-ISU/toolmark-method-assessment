@@ -232,7 +232,7 @@
     cols_star_diffshift<- max_wiggle_corr_loc_diffshift[2]
     
     # diff shift error
-    diff_shift <- rbind(diff_shift, c(rows, cols_star_diffshift, corr_mat_val[rows,cols_star]))
+    diff_shift <- rbind(diff_shift, c(rows, cols_star_diffshift, corr_mat_val[rows,cols_star_diffshift]))
     #diff_shift <- rbind(diff_shift, c(rows, cols, corr_mat_val[rows,cols]))
     
     
