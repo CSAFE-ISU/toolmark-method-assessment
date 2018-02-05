@@ -99,89 +99,92 @@
 
 \subsection{Motivation}\label{motivation}
 
-Striation marks are used to determine same source for bullets. Current
-standards ask for a visual inspection of the marks under a comparison
-microscope by a firearms examiner. One of the problems raised by the NAS
-report in 2009 is the subjectivity involved in this comparison and the
-need for determining error rates \citet{NAS:2009}. The issue of
-subjectivity of a firearms examiner has been reviewed by many authors
-where things like scientific principle testability and error rates are
-considered to be defining aspects for an objective analysis such that
-without identifying the uncertainities associated with a method of
-comparison, it is inconclusive to regards an analysis complete. This
-means that with the usual method of visual comparison that is adopted by
-firearms examiners, lies the problem of lack of any systemized
-quantification and as such there seems no certain way of associating it
-with any kind of mathematical probability. Since determining error rates
-has been duly noted as a fundamental problem in forensic science
-\citet{NAS:2009}, there is a need of methods that address this problem.
-Some of the methods that have been used to estimate error rates in
-firearm examinations include Automatic cartridge case comparison where
-same source identification of cartridge cases and associated error rates
-have been provided by \citet{riva}, although as noted by \citet{aoas},
-in this case alignments of striae involves roation of planes, which
-cannot be generalized for bullets. In case of methods that use machine
-learning algorithms some methods which are bootsrap based methods often
-tend to give over-estimated error rates \citet{efron}, but there are
-alternate error estimation techniques as described by \citet{aoas},
-\citet{efron} and \citet{vorburger2016} which give better results.
+Compairing pairs of toolmarks with the intention of matching it to a
+tool has been studied many times in the past. Extensive examples in
+literature for tools and toolmark research ranging from screwdrivers to
+groove pliers to slip-joint pliers can be found in the work of
+\citet{manytoolmarks1}, \citet{manytoolmarks2}, \citet{miller},
+\cite{afte-chumbley} and many more. In comparison to this, same source
+matching of bullets to firearms has not been examined as prominently as
+that of toolmarks, with even less information available on validity of
+methods and error rates associated with firearms examination. The
+National Academy of Sciences in its report in 2009 \citep{NAS:2009}
+discussed the need for determining error rates in methods proposed for
+firearms examination. In the context of same source matching and error
+rates determination, as seen in the case of most forensic applications,
+the first step involves identification of unique features that are
+characteristic of the object at hand. For the case of bullets and
+firearms, striation marks on the surface of the bullet are considered to
+be such markings that can be used in methods for same source matching.
+These marks are often a product of rifling and impurities and defects
+due to manufacturing in the barrel of the gun, which leads to engravings
+on the bullet surface \citep{afte-article1992}. In current practice,
+firearm examiners invariably make visual comparisons of bullet striae
+and use visual assesment tools to dignify bullets as being matches and
+non-matches. One way of accomplishing anykind of comparison between
+bullets is to do a comparison between surface marking of two or more
+bullet lands. Bullet Lands are considered to be areas between grooves
+made by the rifling action of the barrel. These marking are considered
+to be unique. The land engraved markings or sometimes termed as Bullet
+profiles \citep{aoas} are striation marks made on Bullet lands and often
+used for these land to land comparisons. Bullet Signatures is another
+word used in literature as seen in the work of \citet{chu2013} and
+\citet{aoas}. In our context bullet signatures refer to a processed
+version of the raw land engraved markings or profiles. The generation of
+bullet signatures involves first extraction of a bullet profile by
+taking the cross-sectional of the surface at a given height and then
+using loess fits to model the structure. The residuals of this fit are
+called signatures, which are considered to be noise free and a good
+reflection of the class charecteristics and unique features of a bullet.
+A more detailed version of the extraction technique of signatures is
+discussed by \citet{aoas}, where comprehensive details about the height
+at which profile is to be selected, removing curvature, smoothing,
+identifying groove locations are explained.
 
-In case of methods that do not use machine learning algorithm, matching
-two striation marks with each other in order to identify if it is from
-the same source, can also be done using a well defined comparative
-statistical algorithm. The statistical algorithm is therefore expected
-to go through a step by step procedure of identifying the class
-characteristics i.e striation marks for bullets, choosing the striae,
-and then follow a systematic procedure of comparing two striae with each
-other on the basis of criteria like cross-correlation (or others). Such
-a methodology would make it possible to determine error rates too and
-give definite results regarding what proportion of cases would the
-analysis be successful in identifying a match correctly and in how many
-cases would it end up being a false positive.
-
-Identification criteria like consecutively matching striae (CMS) as
-first seen by Biasotti 1959 \citet{biasotti} and later mentioned in
-\citet{chu2013} more often than not include subject bias and are error
-prone and as seen in the work of \citet{miller} the number of CMS may
-turn out to be high even when the bullet is not fired by the same
-firearm. Parameters like cross-correlation factor as seen in the
-extensive comparisons made by \citep{aoas} seem to perform much better
-for matching purposes.
-
-An important aspect of same source matching in firearms is
-identification of bullet microtopographies that are unique to be chosen
-for a match, Bullet profiles and signatures prove to be such features.
-The choice of a bullet signature to uniquely define a bullet depends on
-finding first, a stable region on a Bullet land which minimal noise and
-many pronounced striation marks. \citet{aoas}
-
-The method employed by \citet{aoas} uses the cross correlation factor as
-a means to identify the stable region. The markings or striae in this
-region are supposed to have a high CCF with each other. Therefore a
-Bullet profile is chosen from this region by taking the cross section at
-a given height. A loess fit on the bullet profile produces residuals
-which are termed as signatures and can be used as a unique identifier
-that can be used while matching two bullets to a firearm.
-
-Compairing pairs of toolmarks on the otherhand, with the intention of
-matching it to a tool has been studied relatively more in the past as
-compared to bullets, and \citet{chumbley} have described in their paper
-an algorithm and analytic method that compares two toolmarks and come to
-the conclusion if they are from the same tool or not. The method also
-determines the error rates, reduces subject bias and designate the two
-toolmarks as matches or non-matches with respect to a source.
+In the study conducted by \citet{aoas} a machine learning based
+algorithm was developed for same source matching of bullets and error
+rates were discussed using the database from the Hamby Study
+\citep{hamby}. In this paper, we first try to adapt a deterministic
+algorithm and method developed for toolmarks by \citet{chumbley} and
+improved by \citet{hadler}, to bullets. Then we consequently discuss
+about the efforts in doing so along with the associated error rates. The
+data used in this paper also belongs to the Hamby Study \citep{hamby}.
+This gives us a common platform for comparing the performance of the
+chumbley method on bullets with an already existing method proposed by
+\citet{aoas} for bullets. The proposed algorithm and method of
+\citet{chumbley}, in their paper, compares two toolmarks with the
+intention of determining if it comes from the same source (same tool).
+The method also provides a means to determine error rates and claims to
+reduce subject bias. As mentioned earlier, subject bias and error rate
+determination have been a long standing issue in firearm examination
+\citep{NAS:2009}. This remains one of the motivations to explore the
+adaptibility of the Chumbley score methodology to bullets.
 \citet{chumbley} used an empirical based setup to validate their
-proposed analytic and quantitative algorithm.
+proposed algorithm and quantitative method which calculates a U-statisic
+for the purpose of classification of toolmarks as matching or
+non-matching. The data for their study was obtained from 50 sequentially
+manufactured screwdriver tips, and preselected comparison window sizes
+were given as inputs to the algorithm. The algorithm then compares the
+two toolmarks and comes up with a U-statistic and an associated p-value
+to designate them as matches or non-matches. The performance for every
+100 comparisons, of the algorithm proposed by \citet{chumbley} and the
+improvement proposed by \citet{hadler} are listed in the table below.
 
-\citet{chumbley} found that the algorithm gives false-positives in
-slightly over 2 cases (or 2\%) of the time and about 9 false-negatives
-(or 9\%) for every 100 comparisons. \citet{hadler} on the other hand, in
-the improved version of the algorithm first described by
-\citet{chumbley} found false-positives for 0 cases and 3 false-negatives
-(or 6\%) for 50 comparisons of knwon matches.
-
-\begin{table}[!h]
-\centering
+\begin{table}[!htb]
+    \begin{minipage}{.5\linewidth}
+      \caption{Chumbley et al. 2010}
+      \centering 
+\begin{tabular}{lrr}
+\toprule
+Classification & Match & Non-Match\\
+\midrule
+Match & 41 & 9\\
+Non-Match & 2 & 48\\
+\bottomrule
+\end{tabular} \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        \caption{Hadler et. al. (2017)} 
 \begin{tabular}{lrr}
 \toprule
 Classification & Match & Non-Match\\
@@ -189,7 +192,7 @@ Classification & Match & Non-Match\\
 Match & 47 & 3\\
 Non-Match & 0 & 50\\
 \bottomrule
-\end{tabular}
+\end{tabular} \end{minipage} 
 \end{table}
 
 \subsection{Potential limitations of the Chumbley Score adaptation to
@@ -778,28 +781,7 @@ classifications.
 
 }
 
-\caption{The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120}\label{fig:wo120-profile}
-\end{figure}\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/failtest-coarseness-1} 
-
-}
-
-\caption{The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120}\label{fig:failtest-coarseness}
-\end{figure}\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/failtest-wv-1} 
-
-}
-
-\caption{The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120}\label{fig:failtest-wv}
-\end{figure}\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/failtest-wo-1} 
-
-}
-
-\caption{The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120}\label{fig:failtest-wo}
+\caption{The figure shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120}\label{fig:wo120-profile}
 \end{figure}
 
 \bibliographystyle{agsm}
