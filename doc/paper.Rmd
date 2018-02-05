@@ -4,7 +4,7 @@ authors:
 - affiliation: Department of Statistics, Iowa State University 
   name: Ganesh Krishnan
   thanks: The authors gratefully acknowledge ...
-- affiliation: Department of Statistics and csafe, Iowa State University 
+- affiliation: Department of Statistics and CSAFE, Iowa State University 
   name: Heike Hofmann
 biblio-style: apsr
 output:
@@ -28,7 +28,7 @@ abstract: null
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
 
 \tableofcontents
-
+\newpage
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 library(knitr)
 knitr::opts_chunk$set(
@@ -48,6 +48,7 @@ knitr::opts_chunk$set(
 )
 options(knitr.table.format = "latex")
 library(tidyverse)
+library(kableExtra)
 ```
 
 ```{r functions}
@@ -72,6 +73,16 @@ errorrate <- function(data, alpha) {
 }
 
 
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -117,7 +128,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
-  #  ref: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+#  ref: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 ```
 
 ```{r data}
@@ -145,71 +156,114 @@ errors <- rbind(errorrate(all, 0.001),
 ```{r data-profiles}
 if (!file.exists("../data/all-profiles.rds")) {
   files <- dir("../data/profiles/", pattern="csv")
-  allprofiles <- data.frame()
+  allp <- data.frame()
   for (file in files) {
     tmp <- read.csv(file=file.path(path="../data/profiles", file)) 
     #print(names(tmp))
     if (length(grep("coarse",names(tmp))) == 0)
       tmp$coarse <- gsub(".*coar-(.*).csv", "\\1", file)
     if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
-    allprofiles <- rbind(allprofiles, tmp)
+    allp <- rbind(allp, tmp)
   }
-  allprofiles <- allprofiles %>% filter(land1_id < land2_id)
-  allprofiles <- allprofiles %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
-  saveRDS(allprofiles, file="../data/all-profiles.rds")
+  allp <- allp %>% filter(land1_id < land2_id)
+  allp <- allp %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(allp, file="../data/all-profiles.rds")
 } else {
-  allprofiles <- readRDS("../data/all-profiles.rds")
+  allp <- readRDS("../data/all-profiles.rds")
 }
 
-errors2 <- rbind(errorrate(allprofiles, 0.001), 
-                errorrate(allprofiles, 0.005), 
-                errorrate(allprofiles, 0.01), 
-                errorrate(allprofiles, 0.05))
+errors2 <- rbind(errorrate(allp, 0.001), 
+                errorrate(allp, 0.005), 
+                errorrate(allp, 0.01), 
+                errorrate(allp, 0.05))
+
+
+```
+
+```{r data-sig-coars}
+if (!file.exists("../data/all-sig-c.rds")) {
+  files <- dir("../data/sig_diff_coarseness/", pattern="csv")
+  all_sig_c <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/sig_diff_coarseness/", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coarse-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    all_sig_c <- rbind(all_sig_c, tmp)
+  }
+  all_sig_c <- all_sig_c %>% filter(land1_id < land2_id)
+  all_sig_c <- all_sig_c %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(all_sig_c, file="../data/all-sig-c.rds")
+} else {
+  all_sig_c <- readRDS("../data/all-sig-c.rds")
+}
+
+errors_sig_c <- rbind(errorrate(all_sig_c, 0.001), 
+                errorrate(all_sig_c, 0.005), 
+                errorrate(all_sig_c, 0.01), 
+                errorrate(all_sig_c, 0.05))
+
+
 ```
 
 
 # Introduction and Background
 
-## Problem statement and motivation
+## Motivation
 
-\hh{'considered to be unique' by AFTE - that is right, but we should not use this argument, and I don't think we have to. It's better to focus on the problem at hand: striation marks are used to determine same source for bullets. XXX we could include some figures here XXX Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citep{NAS:2009}. There are different approaches used to achieve more objectivity and assess error rates. XXX here we need some examples of approaches XXX
-For toolmarks, the Chumbley score has been suggested to determine same-source. XXX summary of results from original paper and the adjustment XXX
-In this paper we are interested in how this method has to be adjusted to best be applied to the smaller marks on bullets. }
-\gk{done}
-
-Striation marks are used to determine same source for bullets. Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citep{NAS:2009}. The issue of subjectivity of a firearms examiner has been reviewed by many authors where things like scientific principle testability and error rates are considered to be defining aspects for an objective analysis such that without identifying the uncertainities associated with a method of comparison, it is inconclusive to regards an analysis complete. This means that with the usual method of visual comparison that is adopted by firearms examiners, lies the problem of lack of any systemized quantification and as such there seems no certain way of associating it with any kind of mathematical probability. Since determining error rates has been duly noted as a fundamental problem in forensic science \citep{NAS:2009}, there is a need of methods that address this problem. Some of the methods that have been used to estimate error rates in firearm examinations include Automatic cartridge case comparison where same source identification of cartridge cases and associated error rates have been provided by \citep{riva}, although as noted by \citep{aoas}, in this case alignments of striae involves a rotation of planes, which cannot be generalized for bullets. In case of methods that use machine learning algorithms some methods which are bootsrap based methods often tend to give over-estimated error rates \citep{efron}, but there are alternate error estimation techniques as described by \citep{aoas}, \citep{efron} and  \citep{vorburger2016} which give better results. \hh{XXX give examples for these techniques}
+Striation marks are used to determine same source for bullets. Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citet{NAS:2009}. The issue of subjectivity of a firearms examiner has been reviewed by many authors where things like scientific principle testability and error rates are considered to be defining aspects for an objective analysis such that without identifying the uncertainities associated with a method of comparison, it is inconclusive to regards an analysis complete. This means that with the usual method of visual comparison that is adopted by firearms examiners, lies the problem of lack of any systemized quantification and as such there seems no certain way of associating it with any kind of mathematical probability. Since determining error rates has been duly noted as a fundamental problem in forensic science \citet{NAS:2009}, there is a need of methods that address this problem. Some of the methods that have been used to estimate error rates in firearm examinations include Automatic cartridge case comparison where same source identification of cartridge cases and associated error rates have been provided by \citet{riva}, although as noted by \citet{aoas}, in this case alignments of striae involves roation of planes, which cannot be generalized for bullets. In case of methods that use machine learning algorithms some methods which are bootsrap based methods often tend to give over-estimated error rates \citet{efron}, but there are alternate error estimation techniques as described by \citet{aoas}, \citet{efron} and  \citet{vorburger2016} which give better results.
 
 In case of methods that do not use machine learning algorithm, matching two striation marks with each other in order to identify if it is from the same source, can also be done using a well defined comparative statistical algorithm. The statistical algorithm is therefore expected  to go through a step by step procedure of identifying the class characteristics i.e striation marks for bullets, choosing the striae, and then follow a systematic procedure of comparing two striae with each other on the basis of criteria like cross-correlation (or others). Such a methodology would make it possible to determine error rates too and give definite results regarding what proportion of cases would the analysis be successful in identifying a match correctly and in how many cases would it end up being a false positive.
 
-Identification criteria like consecutively matching striae (CMS) as first seen by Biasotti 1959 \citet{biasotti} and later mentioned in \citet{chu2013} more often than not include subject bias and are error prone and as seen in the work of \citet{miller} the number of CMS may turn to out to be high even when the bullet is not fires by the same firearm. Parameters like cross-correlation factor as seen in the extensive comparisons made by \citep{aoas} seem to perform much better matching purposes.
+Identification criteria like consecutively matching striae (CMS) as first seen by Biasotti 1959 \citet{biasotti} and later mentioned in \citet{chu2013} more often than not include subject bias and are error prone and as seen in the work of \citet{miller} the number of CMS may turn out to be high even when the bullet is not fired by the same firearm. Parameters like cross-correlation factor as seen in the extensive comparisons made by \citep{aoas} seem to perform much better for matching purposes.
 
-An important aspect of same source matching in firearms is identification of bullet microtopographies that are unique to be chosen for a match, Bullet profiles and signatures prove to be such features. The choice of a bullet signature to uniquely define a bullet depends on finding first, a stable region on a Bullet land with minimal noise and pronounced striation marks \citep{aoas}.
+An important aspect of same source matching in firearms is identification of bullet microtopographies that are unique to be chosen for a match, Bullet profiles and signatures prove to be such features. The choice of a bullet signature to uniquely define a bullet depends on finding first, a stable region on a Bullet land which minimal noise and many pronounced striation marks. \citet{aoas}
 
 The method employed by \citet{aoas} uses the cross correlation factor as a means to identify the stable region. The markings or striae in this region are supposed to have a high CCF with each other. Therefore a Bullet profile is chosen from this region by taking the cross section at a given height. A loess fit on the bullet profile produces  residuals which are termed as signatures and can be used as a unique identifier that can be used while matching two bullets to a firearm.
 
 Compairing pairs of toolmarks on the otherhand, with the intention of matching it to a tool has been studied relatively more in the past as compared to bullets, and \citet{chumbley} have described in their paper an algorithm and analytic method that compares two toolmarks and come to the conclusion if they are from the same tool or not. The method also determines the error rates, reduces subject bias and designate the two toolmarks as matches or non-matches with respect to a source. \citet{chumbley} used an empirical based setup to validate their proposed analytic and quantitative algorithm.
 
-\citep{chumbley} found that the algorithm gives false-positives in slightly over 2 cases (or 2%) of the time and about 9 false-negatives (or 9%) for every 100 comparisons. \citep{hadler} on the other hand, in the improved version of the algorithm first described by \citep{chumbley} found false-positives for 0 cases and 3 false-negatives (or 6%) for 50 comparisons of knwon matches.
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{images/B6-B2-L6.png}
-```{r, echo=FALSE, fig.width=8, fig.height=3, fig.align="center", out.width='.9\\textwidth'}
-land <- read.csv("../data/b6b2l6.csv")
-land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
-  theme(axis.text.y = element_blank(), axis.title.y = element_blank())
+\citet{chumbley} found that the algorithm gives false-positives in slightly over 2 cases (or 2%) of the time and about 9 false-negatives (or 9%) for every 100 comparisons. \citet{hadler} on the other hand, in the improved version of the algorithm first described by \citet{chumbley} found false-positives for 0 cases and 3 false-negatives (or 6%) for 50 comparisons of knwon matches.
+```{r}
+a<- matrix(NA, ncol = 3, nrow = 2)
+toolmark.falsepositive<- data.frame(a)
+colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
+toolmark.falsepositive$Classification<- c("Match", "Non-Match")
+toolmark.falsepositive$Match<- c(47,0)
+toolmark.falsepositive$`Non-Match`<- c(3,50)
+
+knitr::kable(toolmark.falsepositive, digits=0, format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("hold"))
 ```
 
-\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification.}
+## Potential limitations of the Chumbley Score adaptation to bullets 
+Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by  \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreover, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
+
+Also when in the optimization step, the Window of optimization for bullets will be shorter as the signatures are smaller. The idea is to keep the number of windows of optimization sufficiently large, which means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) that lets us compare smaller segments of one signature to another. This introduces a problem as, if we go too small in the window of optimization, the unique features of the trace segments are lost and seem similar, while too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
+
+Thus the Window of Optimization has a direct influence on whether we are Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important. This raises important questions about what parameter settings need to be chosen for bullet land comparison. Something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers where optimum window sizes are determined. There is a need to figure out the best parameter settings which minimizes the errors for unsmoothed markings and pre-processed signatures as determined by \citet{aoas}. An analysis of these error rates and comparison with other methods will help us understand the adaptibility of the chumbley score to bullets.
+
+\hh{figure \ref{fig:rgl} needs to be mentioned somewhere in the write-up}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{images/B6-B2-L6-rescaled.png}
+```{r, eval=FALSE, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'}
+land <- read.csv("../data/b6b2l6.csv")
+land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep="")))
+```
+
+\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification (top) and a chart of the corresponding signature of the same land (bottom). The dotted lines connect some peaks visible in both visualizations.}
 
 \end{figure}
 
 
-## The Chumbley Score Test
+# The Chumbley Score Test
 
 
-\hh{You need to distinguish between $x(t)$ and $x(t_1)$ - $x(t)$ is a spatial process for some $t$. $x(t_1)$ is the realization of the process in $t_1$. - Alternatively you could also follow the notation in Hadler et al on 'digitized toolmarks at a pixel level' - where our 'pixel' is the resolution of the confocal light microscope, i.e. a pixel corresponds to 0.645 microns.}
-
-The Chumbley score algorithm takes input as two vectorized processes $x(t_1)$ and $y(t_2)$ which denote two sets of marks or striae. These marks or striae are potentially from two different bullets or two different toolmarks whose source needs to be identified as being same or different. The marks or striae are indexed by the pixel location where $t_1$ is for the first striae referred to as $x$ and $t_2$ is for the second striae which is referred as $y$. $t_1$ and $t_2$ need not be the same but are usually of similar lenghtsThe similarity is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels say $k$ taken from the two indexed marks $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller that length of the two striae or marks which is the same as $t_1$ and $t_2$. Depending on the what stage of the algorithm we are in, matching of different pixel lengths and locations is done, which at the end effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not, which also lets us assess the error rates by checking for a large number of cases.
+The Chumbley score algorithm takes input as two vectorized processes $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ which denote two sets of marks or striae. Here the processes are of the form $z(s)$ which is a spatial process for some $t$, while $z(s_1)$ is the realization of the process in $s_1$. The $t_1$ and $t_2$ can be better understood as equally spaced pixel locations for the two marks under consideration, where a 'pixel' is the resolution of the confocal light microscope. In the case for bullet signatures a pixel corresponds to 0.645 microns. These marks or striae are potentially from two different bullets or two different toolmarks whose source needs to be identified as being same or different. The marks or striae are indexed by the pixel location where $t_1$ is for the first striae referred to as $x$ and $t_2$ is for the second striae which is referred as $y$. $T_1$ and $T_2$ being the respective lengths of the markings, need not be the same but are usually of similar lenghtsThe similarity is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels say $k$ taken from the two indexed marks $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller that length of the two striae or marks which is the same as $t_1$ and $t_2$. Depending on the what stage of the algorithm we are in, matching of different pixel lengths and locations is done, which at the end effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not, which also lets us assess the error rates by checking for a large number of cases.
 
 The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the LOWESS smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The LOWESS smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
 
@@ -221,14 +275,12 @@ The data that is used by \citet{chumbley} is generated by a surface profilometer
 
 ## Detailed algorithm
 
-### Optimization step
-The idea behind this step is to first identify the area of best agreement in the two toolmark data. Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by \citet{chumbley} and \citet{hadler} as around 10 percent of the length of the toolmarks, which was around 500. \hh{XXX it's not clear that the 500 is referring to the 10 percent.} This window is henceforth referred to as Window of optimization.
+###Optimization step
+The idea behind this step is to first identify the area of best agreement in the two toolmark data. Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500. This window is henceforth referred to as Window of optimization.
 
-A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches \gk{done} \hh{XXX get rid of the parentheses - put the content into a sentence after your first statement.}
+A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches 
 
-\hh{XXX the process you describe below is the cross-correlation of two series $x(t)$ and $y(t)$.}
-
-First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. Can be thought of ordered arrangements without replacement where n = 1001 and r = 1.
+First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. 
 
 This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other
 
@@ -241,17 +293,7 @@ The correlation of these windows would be as intuitively assumed i.e. lower than
 
 This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows.
 
-\hh{XXX Figure~\ref{win-comparison} is an orphan - cite it in the correct place.}
-\hh{XXX let's include two or three more windows. We won't be able to use color - so we need to think of  a different way to distinguish between optimization and validation and link corresponding validation windows. Also include the code in the folder on the repo that generates sigs\_generate\_windows.rds }
-
-```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair. "}
-a<- matrix(NA, ncol = 3, nrow = 2)
-toolmark.falsepositive<- data.frame(a)
-colnames(toolmark.falsepositive)<- c("Classification", "Match", "Non-Match")
-toolmark.falsepositive$Classification<- c("Match", "Non-Match")
-toolmark.falsepositive$Match<- c(47,0)
-toolmark.falsepositive$`Non-Match`<- c(3,50)
-toolmark.falsepositive
+```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
 
 asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
 
@@ -362,6 +404,7 @@ p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() +
 multiplot(p1, p2, p3, p4, cols=2)
 ```
 
+
 ####Different Shift:
 Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values.
 
@@ -379,101 +422,91 @@ This is computed from the joint rank of all correlations of both the same and di
 Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
 
 Let ns and nd be the number of same shift and different shift windows
-$N = n_{s} + n_{d}$
+$$N = n_{s} + n_{d}$$
 
 The mann whitney U statistic is given by
-$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$
+$$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$$
 
 with the standardized version which includes provision for rank ties
 
-$\overline{U}= \dfrac{U-M}{\sqrt{V}}$
+$$\overline{U}= \dfrac{U-M}{\sqrt{V}}$$
 
 where prior to normalization the U-statistic has the mean as
 
-$M = n_{s}\left(\dfrac{N+1}{2}\right)$
+$$M = n_{s}\left(\dfrac{N+1}{2}\right)$$
 
 and variance 
 
-$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$
+$$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$
  
 
-
-## Potential limitations of the Chumbley Score
-
-\hh{in the application to striation marks on bullet lands: smaller in width and curved - need to adjust parameter settings; something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers. XXX work in }
-
-Bullets are much smaller in length, width, are not flat and curved in the cross-sectional topography as opposed to tools like screw driver tips which produced longer and pronounced markings. This means the makings made by barrels in comparison to toolmarks may have a problem in distinctiveness. The majority of Bullet profiles and signatures extracted by procedures mentioned by  \citet{aoas} are almost 1/4 th the size of toolmarks as used by \citet{chumbley} or even smaller. Striations on Bullets are made on their curved surfaces, whereas the algorithm developed by \citet{chumbley} and \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature. Therefore, using methods proposed for toolmarks may need adaptation in order to give tangible results for bullets. Moreover, in order to to get flat bullet signatures and remove the curvatures some kind of smoothing needs to be applied as a pre-step which needs further investigation as to whether the level of smoothing does effect the working of the algorithm on Bullets.
-
-Also when in the optimization step, the Window of optimization for bullets will be shorter as the signatures are smaller. The idea is to keep the number of windows of optimization sufficiently large, which means shorter Trace segments (partition of signature or toolmark with length = size of window of optimization) that lets us compare smaller segments of one signature to another.
-
-This introduces a problem as, if we go too small in the window of optimization, the unique features of the trace segments are lost and seem similar, while too large sizes vastly reduces the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement.
-
-Thus the Window of Optimization has a direct influence on whether we are
-Falsely rejecting the null when it is true (Type I) or Falsely accepting the null when it is false (Type II) making identification of the optimum size of window of optimization very important.
-
-# Testing setup:
-\hh{Using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly}
+## Testing setup
 
 Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
 
-The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks.
+The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks, using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
 
-Bullet signatures being compared at this time are from the Hamby 44 and Hamby 252 data, which have the best set of known-matched and known non-matches.
-
-Bullet signatures are chosen by
-1. Filtering out Land_id for Profiles from the Hamby 44 and Hamby 252 data and removing 
-all NA values
-2. run_id = 3 is chosen, Seems like the signatures generated from this run_id give the closest
-match. Different run_id's have some different settings for generating the signatures
-(The level of smoothing does not seem to be one of them)
-
-The bullet signatures when generated already included the LOWESS smoothing.
-Therefore, the coarseness factor is set to 1 while running the chumbley_non_random()
-which generates the same_shift, different_shift, U-Stat and P_value parameters.
- 
-
-
-
-
-window Optimization 320 Window Validation 50
-```{r echo=FALSE}
-all %>% filter(wo==320, wv==50) %>% xtabs(data=., ~signif+match)
-```
-window Optimization 120 Window Validation 50
-```{r echo=FALSE}
-all %>% filter(wo==120, wv==50) %>% xtabs(data=., ~signif+match)
-```
-window Optimization 80 Window Validation 50
-```{r echo=FALSE}
-all %>% filter(wo==80, wv==50) %>% xtabs(data=., ~signif+match)
-
-```
-
-## Study setup
+### Signatures
 
 Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
-We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) in the following manner:
+Bullet signatures being compared at this time are therefore from the Hamby 44 and Hamby 252 data. The database setup and pre-processing system used for choosing the Bullet signatures are as described by \citet{aoas}. In order to choose the bullet signatures we first filter out Land_id for Profiles from the Hamby 44 and Hamby 252 data and remove all NA values. Then run_id = 3 is chosen as the signatures generated from this run_id give the closest match. Different run_id's have some different settings for generating the signatures.(The level of smoothing does not seem to be one of them)
 
+The bullet signatures when generated by this process already includes a loess smoothing. Therefore, the coarseness factor is set to 1 while running the chumbley non random algorithm for comparing different optimization windows.The algorithm generates the same_shift, different_shift, U-Stat and P_value parameters which are then used to calculate the errors associated with different sets of window sizes.
 
-```{r, echo=FALSE, results='asis'}
+### Profiles
+
+The profiles are cross-sectional values of the the bullet striation mark which are chosen at an optimum height (x as used by \citet{aoas}). This x or height is not a randomly chosen level. The rationale behind the choice has been explained by \citet{aoas}. A region is first chosen where the cross-correlation seems to change very less and in this region an optimum height is chosen. The profiles generally resemble a curve which is more or less similar to a quadratic curve (a quadratic fit to the raw data values of the profile is not an exact fit but it does show a similar trend). Profiles are the set of raw values representing the striation marks, and signatures are generated from these by removal of the inherent curvature and applying some smoothing (the signatures generated by \citet{aoas} use a loess function for smoothing). 
+
+Similar to signatures the run_id = 3 was used when applying the chumbley algorithm using the database setup given by \citet{aoas} of Hamby-44 and Hamby-252 datasets, on the profiles. The run_id not only defines the level of smoothing but also signifies the chosen height at which the profiles were selected initially. Another important aspect is the range of horizontal values (which is referred to as the y values in \citet{aoas}) in the signatures. These have already been pre-processed in the database to not include any grooves.
+
+Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
+
+The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function lowess used in the chumbley algorithm).
+
+\pagebreak
+
+# Results
+We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the table \ref{tab:param}.
+```{r param}
 param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
 #param_setting<- data.frame(matrix(param_setting, nrow = 16))
 #t(param_setting)
 #param_setting %>% tally() 
 library(kableExtra)
-knitr::kable(t(param_setting), digits=10, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down"))
+#knitr::kable(t(param_setting)[,1:17], digits=0, caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down", "hold"))
+
+par_tab1<-t(param_setting)[,1:18]
+par_tab2<-t(param_setting)[,19:33]
+knitr::kable(list(par_tab1,par_tab2), digits=0,caption = "Overview of parameter settings used for optimization and validation windows for bullet land signatures.", format = "latex" ,booktabs=TRUE) %>% kableExtra::kable_styling(latex_options = c("scale_down","hold"))%>% kableExtra::kable_styling(latex_options = c("scale_down","hold")) #%>% group_rows("",1,2) %>% group_rows("",3,4)
+
+```
+
+```{r confusion}
+library(kableExtra)
+a27<- all %>% filter(wo==280, wv==30) %>% xtabs(data= ., ~signif+match)
+a27<- as.data.frame(a27)
+a27$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
+
+a28<- all %>% filter(wo==120, wv==30) %>% xtabs(data= ., ~signif+match)
+a28<- as.data.frame(a28)
+a28$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
+
+a29<- all %>% filter(wo==80, wv==30) %>% xtabs(data= ., ~signif+match)
+a29<- as.data.frame(a29)
+a29$Type<- c("True Negative","False Positive (Type I)","False Negative (Type II)","True Positive")
+
+knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for different optimization window sizes with validation window size as 30.", format = "latex" ,booktabs=TRUE)%>% kableExtra::kable_styling(latex_options = c("hold"), "striped", full_width = F) %>% group_rows("Size of Optimization Window = 280",1,5) %>% group_rows("Size of Optimization Window = 120", 6, 10) %>%  group_rows("Size of Optimization Window = 80", 11,14)
 ```
 
 
-# Results
+## Signatures
 
 
+Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step. Two levels of validation window size 30 and 50 were chosen as to compare the error rates for different nominal type I errors. We notice that the trends for these nominal type I errors are similar and in most cases a validation window of 50 has higher type II error than for 30. A change in this trend is seen for a 0.05 $\alpha$ level, although the difference between the two windows is very small for this case. We can also notice an obvious trend of increase in the Type II error as the window of optimization increases and see a minimum around the optimization window size of 120 pixels. Hence we are inclined to choose a smaller validation window size and optimization window as 120.
 
-### Signatures
 
-Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step.
-
+Table \ref{tab:confusion} shows the confusion tables with the classification of type I and type II errors and how the numbers change with a change in the optimization window. The windows represent areas to the left of the window with minimum type II, near the minimum type II window and to the far right of the minimum type II error
 
 ```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $wo$. For a window size of $wo = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $wv$ are typically associated with a smaller type II error."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -491,9 +524,9 @@ errors %>% filter(wv %in% c(30,50)) %>%
 labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
 
-Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table XXX. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty). This might be related to the increasing number of tests that fail for larger window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
+Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table \ref{tab:param}. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty). This means as the optimization window increase the observed type I error rate gets smaller. A smaller validation window on the other hand, tends to be associated with a higher type I error rate. This can be better imagined for a given window of optimization, where the actual Type I error is comparable to the nominal level for only a select few validation window sizes. For these comparable validation window sizes of 30 and 50 as done here, the actual type I error increases very slightly and can be seen in Figure \ref{fig:type1}. This increase is not as much when compared to the variation seen with the optimization window sizes. This effect might be related to the increasing number of tests that fail for larger optimization window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
 
-```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.  As the optimization window increase the observed type I error rate gets smaller. A smaller validation window tends to be associated with a higher type I error rate."}
+```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errors %>% filter(wv %in% c(30,50)) %>%
   ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
   geom_hline(aes(yintercept=alpha), colour="grey30") +
@@ -512,8 +545,17 @@ errors %>% filter(wv %in% c(30,50)) %>%
 ```
 
 
+```{r wo120, fig.width = 4, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
+wo120 <- errors %>% filter(wo==120)
+wo120 %>% gather(type, error, beta) %>%#actual:beta) %>%
+  ggplot(aes(x = wv, y = error, colour = factor(alpha)))  +
+  geom_line() + geom_point() + facet_wrap(~type, scales="free") +
+  theme_bw()+
+  theme(legend.position="bottom") +  ggtitle("Signatures" , subtitle = "Varying validation window sizes, Optimization window = 120")
+```
 
-```{r missings, fig.width=8, fig.height=5, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source."}
+The actual type I error and type II error for signatures were also compared for different validation window sizes. Figure \ref{fig:wo120} shows the actual rates for different nominal $\alpha$ levels. We can see that the type II error rises with higher validation windows for the smaller nominal $\alpha$ levels while for the nominal $\alpha$ = 0.05 its almost constant.
+```{r }
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ss = mean(same_shift_n),
   n_ds = mean(diff_shift_n),
@@ -522,18 +564,41 @@ ns <- all %>% group_by(wv, wo, match) %>% summarize(
   miss = sum(is.na(p_value)),
   missperc = miss/85491*100
 )
-ns %>% filter(wv %in% c(30, 50)) %>% 
-  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match))) + 
-  geom_smooth(method="lm", size=.5, se=FALSE) +
+
+nsp <- allp %>% group_by(wv, wo, match, coarse) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/85491*100
+)
+
+ns_sig_c <- all_sig_c %>% group_by(wv, wo, match, coarse) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/85491*100
+)
+
+```
+
+```{r missings, fig.width=6, fig.height=4, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth.",fig.align = "center"}
+#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
+missings<- ns %>% filter(wv %in% c(30, 50)) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match)), size=.3) + 
+  geom_smooth(method="lm", size=.2, se=FALSE) +
   geom_point() + 
   theme_bw() +
   ylab("Percent of failed tests.") +
   xlab("Size of optimization window, wo") +
   scale_colour_brewer("Match", palette="Set1") +
   scale_shape_discrete("Size of \nvalidation\nwindow, wv")
+missings
 ```
-Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. 
-Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. 
 
 ```{r lms, results='asis'}
 nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()
@@ -545,71 +610,160 @@ tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
   select(-term, -statistic, -p.value)
 knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
 ```
+Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source. For known non-matches there is a higher possibility that in the optimization pair of windows where cross-correlations are maximum are too far apart, and same shifts of this order hit the end of the signature. 
 
-```{r wo120, fig.width = 8, fig.height=4.5}
-wo120 <- errors %>% filter(wo==120)
-wo120 %>% gather(type, error, actual:beta) %>%
-  ggplot(aes(x = wv, y = error, colour = factor(alpha)))  + 
-  geom_line() + geom_point() + facet_wrap(~type, scales="free") +
-  theme_bw()+ 
-  theme(legend.position="bottom")
-```
+## Profiles
 
-### Profiles
+Figure \ref{fig:prof_missings} (a) shows the type II error rates for profiles for the optimization window 120 and validation window 30 with varying level of coarseness. We can see that the type II error for all the nominal $\alpha$ levels is lowest in the range of 0.20 to 0.35. Therefore, a value of 0.25 can be used keeping in mind it keeps the type II error lowest while runnning simulations. Thus for comparisons of different window sizes etc as seen in the differnt parts of Figure \ref{fig:prof_missings} this coarseness value is used.
 
-The profiles are cross-sectional values of the the bullet striation mark which are chosen at an optimum height (x as used by \citet{aoas}). This x or height is not a randomly chosen level. The rationale behind the choice has been explained by \citet{aoas}. A region is first chosen where the cross-correlation seems to change very less and in this region an optimum height is chosen. The profiles generally resemble a curve which is more or less similar to a quadratic curve (a quadratic fit to the raw data values of the profile is not an exact fit but it does show a similar trend). Profiles are the set of raw values representing the striation marks, and signatures are generated from these by removal of the inherent curvature and applying some smoothing (the signatures generated by \citet{aoas} use a loess function for smoothing). 
+On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
 
-Coming back to the database of Hamby-44 and Hamby-252 datasets, the run_id = 3 was used when applying the chumbley algorithm on the signatures. The run_id not only defines the level of smoothing but also signifies the chosen height at which the profiles were selected initially.
-Another important aspect is the range of horizontal values (which is referred to as the y values in \citet{aoas}) in the signatures. Thes have already been pre-processed in the database to not include any grooves.
+### Comparison of profiles and signatures
 
-Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
+Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
 
-\hh{XXX ideas should go to the previous section on setting up the study; in this section we focus on results only XXX}
-The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function LOWESS used in the chumbley algorithm)
+In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
 
-```{r, fig.cap="Type II errors for different levels of coarseness. XXX We need more values around .25"}
-errors2 %>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
+
+```{r, fig.cap="Type II errors for different levels of coarseness."}
+e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
   geom_point() + geom_line() +
   theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
+  ylab("Type II error") + ggtitle(label = "(a)")
+
+e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error") + ggtitle(label = "(b)")
+
+#multiplot(e1,e2, cols = 1)
+
 ```
 
-### comparison of total error with signatures and profiles
+
 
 ```{r}
-errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +
-  geom_point(data=errors2, aes(shape="profiles"))
+#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
+
+total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
+
+total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
+
+
 ```
-## Discussion
 
-## Results of Chumbley score
-- Nominal alpha value shows dependency on the size of the window of optimization
-- Test Fail depends on whether known-match or known non-matches has predictive value
-- Type II error least bad for window of validation 30 and window of optimization 120
+```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures"}
 
-# Algorithm Modification
 
-The proposed algorithm modification is at the same shift step which comes after the shift distance is identified by finding two windows in the two markings that have the highest correlation.
+#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
+miss_1<- nsp %>% filter(wv == 30) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = coarse, y = missperc, shape= "profile", colour = factor(match))) + 
+  #geom_smooth(method="auto", size=.5, se=FALSE) +
+  geom_point(size = 2) + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab("Coarseness") +
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")
+# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
+  #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
 
-The modification allows for a "wiggle" room in the second marking of the two sets of markings being compared. This means that each set of same shift windows that are being compared, the second marking will window that is under consideration is allowd to move a little towards the left and a little towards the right.
+miss_2<- nsp %>% filter(coarse == 0.25) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = wv, y = missperc, shape= "profile", colour = factor(match))) + 
+  #geom_smooth(method="auto", size=.5, se=FALSE) +
+  geom_point(size = 2) + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab("wv") +
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(f)")#+ scale_colour_brewer("Match", palette="Set2")
 
-This gives us a new set of 4 windows, 2 to the left and 2 to the right of the original comparison window. Then the correlations for each one of these 5 windows with the window under consideration of the 1st marking is retrieved (from the validation step correlation matrix) or computed.
+#multiplot(plotlist = list(total1, total2, miss_1, miss_2, e1, e2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
+```
+ \pagebreak
 
-Then the window that has the maximum correlation (from the set of 5 windows in the 2nd marking) with the window of the 1st marking is chosen.
+## Conclusion
 
-This new maximum correlation is then used to compute the U-statistics using the same method as before.
+The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
+A Test Fail, i.e. tests in which a particular parameter setting did not return a valid result, happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation, depends on whether known-match or known non-matches has predictive value, with test results from different sources having a much higher chance to fail. On conducting an analysis of all known bullet lands using the adjusted chumbley algorithm, Type II error was identified to be least bad for window of validation 30 and window of optimization 120. In case of unsmoothed raw marks (profiles), Type II error increases with the amount of smoothing and least for LOWESS smoothing coarseness value about 0.25 or 0.3. In an effort to identify the level of adaptiveness of the algorithm, comparisons were made between signatures and profiles. Their comparison with respect to validation window size for a fixed optimization window size suggested that, profiles have a total error (i.e all incorrect classification of known-matches and known non-matches) greater than or equal to the total error of signatures for all sizes of validation window. Profiles also fail more number of times than signatures in a test fail (for different coarseness keeping windows fixed and also for different validation windows keeping coarseness fixed) which lets us conclude that the behaviour of the algorithm for the profiles instead of pre-processed signatures is not better. Finally it should be noted that the current version of the adjusted chumbley algorithm seems to fall short when compared to other machine-learning based methods \citet{aoas}, and some level of modification to the deterministic algorithm needs to be identified and tested that would reduce the number of incorrect classifications.
 
-## Expected advantage of modification
+```{r wo120-profile, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
+wo120_profile <- errors2 %>% filter(wo==120, coarse == 0.25) %>% 
+  #gather(type, error, actual:beta) %>% 
+  gather(type, error, beta) %>% 
+  ggplot(aes(x = wv, y = error, colour = factor(alpha)))  + 
+  geom_line() + geom_point() + facet_wrap(~type, scales="free") +
+    theme_bw()+ 
+  theme(legend.position="bottom") + ggtitle("Profile" , subtitle = "Varying validation window sizes, Optimization window = 120, Coarseness = 0.25")
 
-We are expecting that this modification would improve the type I and II errors for the good. Less number of false negatives and false positives.
-The reason for this expectation is many a times the bullet markings are not made at the same distances for two or more bullets because of the way it comes out of the barrel.
+#combined120 <- full_join(errors2 %>% filter(wo==120, coarse == 0.25), wo120 %>% 
 
-Therefore rigid same shifts might not necessarily compare the right set of windows. In the same shift step for one set of windows, allowing the window in the 2nd marking to wiggle left and right and finding the best match to the window in the 1st marking, lets us adjust for situations where markings are compressed or elongated.
+wo120_1<- wo120 %>% gather(type, error, beta) %>%  
+  ggplot(aes(x = wv, y = error, colour = factor(alpha)))+
+  geom_line(linetype=5)+  geom_point(shape= 24) + facet_wrap(~type, scales="free") +
+  theme_bw()+ 
+  theme(legend.position="bottom") + ggtitle("Signatures" , subtitle = "Varying validation window sizes, Optimization window = 120")
 
-## Dependence on the delta of new windows from the original same shift window
+combined120<- 
+  ggplot(data = wo120 %>% gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha)))+
+  geom_line(aes(linetype="Signatures"))+  geom_point(shape= 24) + 
+  geom_line(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
+  gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha), linetype = "Profiles")) +       geom_point(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
+  gather(type, error, beta)) +
+  facet_wrap(~type, scales="free") +
+  scale_linetype_manual("Lines",values=c("Signatures"=2,"Profiles"=1))+
+  guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1),
+    colour=guide_legend(keywidth = 3, keyheight = 1))+
+  theme_bw()+ 
+  theme(legend.position="right") + ggtitle("Type II error with Validation window" , subtitle = "Profiles at coarseness 0.25") + xlab("Type II error")
+    
+combined120
+#wo120_profile
+#wo120_1
+#multiplot(wo120_1, wo120_profile1)
+```
+```{r failtest-coarseness, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
 
-From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the
-the pvalue and U statistic that we look at. 
+miss_1
+```
+```{r failtest-wv, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
 
-### other questions
-How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable.
+miss_2
+```
+```{r failtest-wo, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
+
+miss_2
+```
+
+<!-- # Algorithm Modification -->
+
+<!-- The proposed algorithm modification is at the same shift step which comes after the shift distance is identified by finding two windows in the two markings that have the highest correlation. -->
+
+<!-- The modification allows for a "wiggle" room in the second marking of the two sets of markings being compared. This means that each set of same shift windows that are being compared, the second marking will window that is under consideration is allowd to move a little towards the left and a little towards the right. -->
+
+<!-- This gives us a new set of 4 windows, 2 to the left and 2 to the right of the original comparison window. Then the correlations for each one of these 5 windows with the window under consideration of the 1st marking is retrieved (from the validation step correlation matrix) or computed. -->
+
+<!-- Then the window that has the maximum correlation (from the set of 5 windows in the 2nd marking) with the window of the 1st marking is chosen. -->
+
+<!-- This new maximum correlation is then used to compute the U-statistics using the same method as before. -->
+
+<!-- ## Expected advantage of modification -->
+
+<!-- We are expecting that this modification would improve the type I and II errors for the good. Less number of false negatives and false positives. -->
+<!-- The reason for this expectation is many a times the bullet markings are not made at the same distances for two or more bullets because of the way it comes out of the barrel. -->
+
+<!-- Therefore rigid same shifts might not necessarily compare the right set of windows. In the same shift step for one set of windows, allowing the window in the 2nd marking to wiggle left and right and finding the best match to the window in the 1st marking, lets us adjust for situations where markings are compressed or elongated. -->
+
+<!-- ## Dependence on the delta of new windows from the original same shift window -->
+
+<!-- From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the -->
+<!-- the pvalue and U statistic that we look at.  -->
+
+<!-- ### other questions -->
+<!-- How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable. -->
