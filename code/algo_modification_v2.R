@@ -396,7 +396,7 @@ sigs_nest <- sigs %>% group_by(land_id, profile_id, run_id) %>% tidyr::nest()
 wo <- 120
 wv <- 30
 coarse <- 1
-eps<- 1
+eps<- 4
 
 k <- 1
 n <- nrow(sigs_nest)
@@ -429,10 +429,10 @@ xtabs(~signif+match, data =dframe)
 
 #saveRDS(object = dframe, file = "chumbley_wo-280_wv-30")
 
-write.table(dframe, file = "algo-mod_v2_sig_chumbley_wo-120_wv-30_coarse1_eps1.csv", sep = ",", append = FALSE, col.names = TRUE)
+write.table(dframe, file = "algo-mod_v2_sig_chumbley_wo-120_wv-30_coarse1_eps4.csv", sep = ",", append = FALSE, col.names = TRUE)
 
 }
-aa<- read.csv2("./data/Algo_modification/Signatures/algo-mod2_v2_sig_chumbley_wo-120_wv-30_coarse1_eps1.csv",header = TRUE, sep = ",")
+aa<- read.csv2("./data/Algo_modification/Signatures/algo-mod2_v2_sig_chumbley_wo-120_wv-30_coarse1_eps4.csv",header = TRUE, sep = ",")
 
 #  dframe<- read.csv2("./toolmark-method-assessment/data/chumbley_wo-320_wv-50.csv",header = TRUE, sep = ",")
 # dframe$U<- as.numeric(as.character(dframe$U))
