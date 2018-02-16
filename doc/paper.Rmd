@@ -304,37 +304,41 @@ land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
 \end{figure}
 
 
-# The Chumbley Score Test
+## The Chumbley Score Test
 
-The Chumbley score algorithm takes input as two vectorized processes $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ which denote two sets of marks or striae. Here the processes are of the form $z(s)$ which is a spatial process for some $t$, while $z(s_1)$ is the realization of the process in $s_1$. The $t_1$ and $t_2$ can be better understood as equally spaced pixel locations for the two marks under consideration, where a 'pixel' is the resolution of the confocal light microscope. In the case for bullet signatures extracted from NIST scans of the Hamby study, a pixel corresponds to approximately 1.56 microns. These marks or striae are potentially from two different bullets or two different toolmarks whose source needs to be identified as being same or different. The marks or striae are indexed by the pixel location where $t_1$ is for the first striae referred to as $x$ and $t_2$ is for the second striae which is referred as $y$. $T_1$ and $T_2$ being the respective lengths of the markings, need not be the same but are usually of similar lenghts. The similarity is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels say $k$ taken from the two indexed marks $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller that length of the two striae or marks which is the same as $t_1$ and $t_2$. Depending on the what stage of the algorithm we are in, matching of different pixel lengths and locations is done, which at the end effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not, which also lets us assess the error rates by checking for a large number of cases.
+The Chumbley score algorithm takes input as two vectorized processes.  Here the processes are of the form $z(t)$ which is a spatial process for some location indexed with $t$. This means that while $z(t)$ represents any striae, $z_1(t_1)$ is a realization of the spatial process. $t$ on the other hand is a vector of equally spaced pixel locations for the striation marks under consideration. The word 'pixel' refers to the resolution of the confocal light microscope. In the case for bullet signatures extracted from NIST scans of the Hamby study, a pixel corresponds to approximately 1.56 microns. The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two realizations of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths. The striation marks under consideration are potentially from two different bullets whose source needs to be identified as being same or different. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done, which at the end effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not, which also lets us assess the error rates by checking for a large number of cases.
 
-The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
+The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated as a measure to differentiate between matches and non-matches. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
+The algorithm starts with the optimization step where the area of best agreement in the two markings being compared is identified. Comparison window size is predefined. Each window of the first marking is compared with all windows of the second marking. A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what is intuitively expected for matches, and not expected intuitively for non matches. 
+\citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters. The mututal dependence was due to the serial correlation in surface depth values of a marking. Also a random sampling sub step in the validation phase makes a group of pixels to be chosen more than once and hence introduces lack of independence in certain steps. The reason for removing the mutual dependence was the Mann-Whitney U statistic works under the assumption of independence of parameters.
+The validation step builds on this with two sub-steps namely, same shift and different shift. As the aim is to come up with a non-parameteric U statistic, \citet{hadler} proposed a normalization procedure in the validation step which goes to some extent to address the issue of mutual dependence. A series of windows are chosen in both the same and different shift sub-steps for the purpose of comparison. Both substeps were modified by \citet{hadler} who introduced a deterministic rule for sampling of windows in the same-shift and different shift as opposed to the originally proposed random sampling by \citet{chumbley}.
+In th same shift substep the chosen series of windows are at a common distance (rigid-shifts) from the window earlier identified as the region of best agreement in the optimization step. The correlation of these windows generally turn out to be lower than the maximum correlation window. The significance is that these same shift windows still have large enough correlation values for the two markings being compared that are in reality a match. Any choice of maximum correlation windows (where correlation values are often near 1) for non-matches in the optimization step are also validated by this sub-step. This is because the same-shift correlations would not be anywhere as large for same-shift windows when all windows in the sub-step are compared.
+The different shift substep on the other hand gives perspective to the correlation values of the same shift window correlation values. There are no rigid-shifts but different shifts where distance from the maximum correlation window are chosen randomly by \citet{chumbley} and deterministically as per \citet{hadler}. This means that there is an equal possibilty of comparing a trace segment from one marking to any trace segment or window in the second marking.
 
-\citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters (due to serial correlation in surface depth values of a toolmark and because of a random sampling sub step in the validation phase which makes a group of pixels to be chosen more than once and hence introduces lack of independence) in certain steps, especially because the Mann-Whitney U statistic that is later calculated in the algorithm and used as a measure to differentiate between matches and non-matches works under the assumption of independence of parameters.
-
-Since we are only interested in a non-parameteric U statistic, \citet{hadler} proposed a normalization procedure in the Validation step that goes to some extent to address the issue of mutual dependence. Also the same shift and different shift substep was modified by \citet{hadler} to use a deterministic rule for sampling same-shift and different shift-samples as opposed to the originally proposed random samples.
+Neither of above sets of correlation in the two sub-steps are allowed to include the maximum correlation window as identified earlier. Therefore the assumption is that if two markings match each other, the same-shift correlations would be larger than the different-shift windows.
+And if they are not a match the correlations in the two sets will be very similar. The U-statistic tests for the null hypothesis that the two markings are not a match and are therefore not made by the same source.  As given by \citet{hadler}, it is computed from the joint rank of all correlations of both the same and different shift samples. 
 
 <!-- The data that is used by \citet{chumbley} is generated by a surface profilometer that gives the height in terms of distance along a linear trace. This is taken perpendicular to the striations present in the toolmark. Two such trace are then compared using the algorithm. -->
 
-## Detailed algorithm
+<!-- ## Detailed algorithm -->
 
-###Optimization step
-The idea behind this step is to first identify the area of best agreement in the two toolmark data. Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500. This window is henceforth referred to as Window of optimization.
+<!-- ###Optimization step -->
+<!-- The idea behind this step is to first identify the area of best agreement in the two toolmark data. Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500. This window is henceforth referred to as Window of optimization. -->
 
-A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches 
+<!-- A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches  -->
 
-First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001. 
+<!-- First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001.  -->
 
-This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other
+<!-- This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other -->
 
 
-###Validation Step
+<!-- ###Validation Step -->
 
-####Same-shift: 
-In this step a series of windows are chosen at random (originally by chumbley et al) and deterministically (by hadler et al), but at a common distance (rigid-shift) from the window identified as the region of best agreement in the vaildation step.
-The correlation of these windows would be as intuitively assumed i.e. lower than the maximum correlation window (Optimization step), but the significance is that these same shift windows will still have large enough correlation values for two toolmarks or signatures that are in reality a match.
+<!-- ####Same-shift:  -->
+<!-- In this step a series of windows are chosen at random (originally by \citet{chumbley}) and deterministically (by \citet{hadler}), but at a common distance (rigid-shift) from the window identified as the region of best agreement in the vaildation step. -->
+<!-- The correlation of these windows would be as intuitively assumed i.e. lower than the maximum correlation window (Optimization step), but the significance is that these same shift windows will still have large enough correlation values for two toolmarks or signatures that are in reality a match. -->
 
-This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows.
+<!-- This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows. -->
 
 ```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
 
@@ -448,40 +452,40 @@ multiplot(p1, p2, p3, p4, cols=2)
 ```
 
 
-####Different Shift:
-Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values.
+<!-- ####Different Shift: -->
+<!-- Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values. -->
 
-This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by \citet{chumbley} and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk.
+<!-- This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by \citet{chumbley} and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk. -->
 
-Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier.
+<!-- Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier. -->
 
-Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows,
-and if they are not a match the correlations in the two sets will be very similar.
+<!-- Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows, -->
+<!-- and if they are not a match the correlations in the two sets will be very similar. -->
 
-###U Statistic:
+<!-- ###U Statistic: -->
 
-This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler}
+<!-- This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler} -->
 
-Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
+<!-- Null Hypothesis: If the toolmarks were not match i.e not made by the same tool. -->
 
-Let ns and nd be the number of same shift and different shift windows
-$$N = n_{s} + n_{d}$$
+<!-- Let ns and nd be the number of same shift and different shift windows -->
+<!-- $$N = n_{s} + n_{d}$$ -->
 
-The mann whitney U statistic is given by
-$$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$$
+<!-- The mann whitney U statistic is given by -->
+<!-- $$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$$ -->
 
-with the standardized version which includes provision for rank ties
+<!-- with the standardized version which includes provision for rank ties -->
 
-$$\overline{U}= \dfrac{U-M}{\sqrt{V}}$$
+<!-- $$\overline{U}= \dfrac{U-M}{\sqrt{V}}$$ -->
 
-where prior to normalization the U-statistic has the mean as
+<!-- where prior to normalization the U-statistic has the mean as -->
 
-$$M = n_{s}\left(\dfrac{N+1}{2}\right)$$
+<!-- $$M = n_{s}\left(\dfrac{N+1}{2}\right)$$ -->
 
-and variance 
+<!-- and variance  -->
 
-$$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$
- 
+<!-- $$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$ -->
+
 
 ## Testing setup
 
