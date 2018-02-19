@@ -211,6 +211,37 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 # Introduction and Background
 
 ## Motivation
+\hh{XXX first sentence: Same source analyses are a major part of an Forensic Toolmark examiners job. XXX second sentence: describe standard practice: In current practice firearm examiners  make these comparisons visually under a comparison microscope and report XXX what is being reported: AFTE. XXX find: AFTE theory of identification as it relates to toolmarks  }
+\hh{One of the main criticisms in this toolmark examination first raised by the National Research Council in 2009 [@NAS:2009] and later emphasized further by the President's Council of Advisors on Science and Technology [@pcast2016] are the amount of subjectivity in the assessment and the lack of error rates. }
+\hh{XXX we have digitized images, e.g. profilometers or Confocal microscopy allow us to measure the surface [@vorburger2016]}
+
+\hh{Using a statistical approach removes both subjectivity from the assessment and allows us to provide error rates for both false positive and false negative identifications. }
+\hh{Multiple toolmarks have been studied in the literature:  \citep{manytoolmarks1, manytoolmarks2, chumbley} have studied screwdriver marks digitized using a profilometer,  \citep{manytoolmarks2} investigate groove pliers XXX data? XXX  to slip-joint pliers \citep{afte-chumbley} XXX. In all of these cases, the statistical test used, is a variation of the Chumbley scoring method, first introduced by XXX and later improved by XXX. }
+
+\hh{XXX In this paper, we are investigating the applicability of the Chumbley scoring method by @hadler to assessing striation marks on bullets for same-source identification. }
+
+
+
+\hh{Striation marks on bullets are made by impurities in the barrel. As the bullet travels through the barrel, these imperfections leave "scratches" on the bullet surface. Typically, only striation marks in the land engraved areas (LEAs) are considered (XXX citation) [@afte-article1992]. XXX explain lands and grooves XXX. Compared to toolmarks made by screwdrivers striation marks on bullets are typically much smaller, both in length and in width. Bullets also have a curved cross-sectional topography. 
+}
+
+\hh{XXX How are bullets matched now? \citet{chu2013}: CMS, automatically - error rate?, using ccf XXX Vorburger paper XXX  and \citet{aoas}: multiple features, error rates }
+
+\hh{The Chumbley score  provides us with another approach in the same-source assessment of bullet striation marks. }
+
+\hh{end of intro: remaining paper is structured as follows: introduce to the data we get from confocal microscopy, introduce to profiles and signatures.
+Introduce to chumbley score method, apply chumbley and discuss results ....
+}
+
+## Scans for land engraved areas
+
+- scans available: NIST database (citation), Hamby 44 and Hamby 252 (Hamby citation)
+- move figure up
+- discuss cross section, profiles and signatures
+
+
+
+
 Compairing pairs of toolmarks with the intention of matching it to a tool has been studied many times in the past. Extensive examples can be found in literature for tools and toolmark research ranging from screwdrivers \citep{manytoolmarks1, manytoolmarks2, chumbley} to groove pliers \citep{manytoolmarks2} to slip-joint pliers \citep{afte-chumbley} and many more. In comparison to this, same source matching of bullets to firearms has not been examined as prominently as that of toolmarks. Even less information is available on validity of methods and error rates associated with firearms examination. The National Academy of Sciences in its report in 2009 \citep{NAS:2009} discussed the need for determining error rates in methods proposed for firearms examination. As seen in the case of most forensic applications, the first step for same source matching and error rate determination involves identification of unique features that are characteristic of the object at hand. For the case of bullets and firearms, striation marks on the surface of the bullet are considered to be such markings that can be used in methods for same source matching. These marks are often a product of rifling and impurities and defects due to manufacturing in the barrel of the gun, which leads to engravings on the bullet surface \citep{afte-article1992}. In current practice, firearm examiners invariably make visual comparisons of bullet striae and use visual assesment tools to dignify bullets as being matches and non-matches. One way of accomplishing anykind of comparison between bullets is to do a comparison between surface marking of two or more bullet lands. Bullet Lands are considered to be areas between grooves made by the rifling action of the barrel and the markings on them are considered to be unique. The land engraved markings or sometimes termed as Bullet profiles \citep{aoas} are striation marks made on Bullet lands and often used for these land to land comparisons. Bullet Signatures is another word used in literature as seen in the work of \citet{chu2013} and \citet{aoas}. In our context bullet signatures refer to a processed version of the raw land engraved markings or profiles. The generation of bullet signatures involves first extraction of a bullet profile by taking the cross-sectional of the surface at a given height and then using loess fits to model the structure. The residuals of this fit are called signatures, which are considered to be noise free and a good reflection of the class charecteristics and unique features of a bullet. A more detailed version of the extraction technique of signatures is discussed by \citet{aoas}, where comprehensive details about the height at which profile is to be selected, removing curvature, smoothing, identifying groove locations are explained. Figure \ref{fig:rgl} shows us how the extracted signature from a bullet land lines up with the image of the land from which it was extracted. We can see also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature.
 
 As mentioned earlier, subject bias and error rate determination have been a long standing issue in firearm examination \citep{NAS:2009}. This issue of removing subjectivity and making firearm analysis objective  was also raised in the \citet{pcast2016} report. For an objective analysis, scientific principle testability and error rate determination are considered to be defining aspects.  Identification of the uncertainities associated with a method of comparison and coming up with a systemized method of quantification, is therefore important. Associating mathematical probabilites in a systematic manner to these methods are one such way of quantification. 
