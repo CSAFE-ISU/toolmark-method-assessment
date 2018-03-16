@@ -146,3 +146,34 @@ for(i in 97:120){
 }
 
 # Chop? No data for y values with the grooves in proc_smooth
+
+# xtabs(~signif+sameland, data =aa) 
+# 
+# 19/(19+21)
+# 
+# # Read in 200 and 50 and 0.25
+# 
+# aa200_50<- read.csv2("./data/csafe-scans/signatures/csafe_sig_chumbley_wo-200_wv-50_coarse-pt25.csv",header = TRUE, sep = ",")
+# xtabs(~signif+sameland, data =aa200_50) 
+#  
+# 408/(408+6562) = 0.05853659
+# 18/(18+23)= 0.4390244
+# 
+# aa1750_50<- read.csv2("./data/csafe-scans/signatures/csafe_sig_chumbley_wo-175_wv-50_coarse-pt25.csv",header = TRUE, sep = ",")
+# xtabs(~signif+sameland, data =aa1750_50) 
+# 
+# 422/(422+6553) = 0.06050179
+# 18/(18+23)= 0.4390244
+# 
+# aa250_50<- read.csv2("./data/csafe-scans/signatures/csafe_sig_chumbley_wo-250_wv-50_coarse-pt25.csv",header = TRUE, sep = ",")
+# xtabs(~signif+sameland, data =aa250_50) 
+# 
+# 412/(412+6555) = 0.05913593
+# 16/(16+ 24) = 0.4
+# 
+# 
+# nist_aa120_30<- read.csv2("./data/signatures/chumbley-out-wo-120-wv-30.csv",header = TRUE, sep = ",")
+# xtabs(~signif+match, data =nist_aa120_30)
+# 4523/(79249 + 4523) = 0.05399179
+# 386/(386 + 854) = 0.3112903
+#   
