@@ -210,7 +210,7 @@ Comparisons of striae from bullets are usually based on comparisons of
 striae in land engraved areas, which are extracted in form of cross
 sections, called \emph{profiles} \citep{aoas,ma2004}. From profiles
 bullet \emph{signatures} \citep{chu2013,aoas} are extracted as residuals
-of a loess fit (or Gaussian filter). They are considered to be noise
+of a loess fit or Gaussian filter. Signatures are considered to be noise
 free and a good reflection of the key attributes of the raw marking, and
 the unique features of a bullet.
 \hh{Do you have a reference for the previous sentenced?} A detailed
@@ -218,90 +218,33 @@ discussion of the extraction technique for signatures is given in
 \citet{aoas}.
 
 \hh{don't split the discussion on the size. between the next paragraph and }
-The scans for the Hamby study come from two sources namely, NIST scans
-\citep{nist} and scans produced at Iowa State University
-\hh{Iowa State is too general. it's the High-resolution microscopy lab and we are CSAFE}.
-Both scans were generated using confocal light microscopes at a 20x
-magnification but the microscopes collected data at different
-resolutions. The NIST database contains scans of the bullet sets Hamby
-44 and 252 at a resolution of 1.5625 \(\mu m\) per pixel. The Iowa State
-scans are available for only the Hamby 44 bullet set and at a resoultion
-of 0.645 \(\mu m\) per pixel. The data used by \citet{chumbley, hadler}
-on the other hand, was produced by a profilometer at a resolution of
-about 0.73 \(\mu m\) per pixel. The different resolutions indicate that
-the length of the digitized markings would be significantly different
-for each setting.
+There are two sources of scans for sets from the Hamby study available
+to us: scans of Hamby 44 and Hamby 252 are available from the NIST
+database \citep{nist}. Hamby 44 has also been made available to us and
+has been scanned locally for CSAFE at the Roy J.~Carver High Resolution
+Microscopy Facility using a Sensofar confocal light microscope. Scans in
+the NIST database are made with a NanoFocus at 20x magnification. The
+resolutions of the two instruments are different: the NIST scans are
+taken at a resolution of 1.5625 \(\mu m\) per pixel, while the CSAFE
+scans are available at a resolution of 0.645 \(\mu m\) per pixel. The
+length of an average bullet land from Hamby (9 mm Ruger P85) is about 2
+millimeter, resulting in signatures of about 1200 pixels for NIST scans,
+and about 3000 pixels for CSAFE scans.
+
+In comparison, scans from the profilometer used by
+\citet{chumbley, hadler} were taken at a resolution of about 0.73
+\(\mu m\) per pixel. The screw driver toolmarks are about 7 mm in length
+\citep{manytoolmarks1}, for a total of over 9000 pixels for the width of
+these scans.
+
+This severe limitation in the amount of available data poses the main
+challenge in adapting the Chumbley score to matching bullet lands,
+because of the resulting loss in power.
 
 \subsection{Potential Challenges in Chumbley Score
 Adaptation}\label{potential-challenges-in-chumbley-score-adaptation}
 
-Markings made by screw driver tips \citep{chumbley} are longer and
-pronounced and about 7 mm in length \citep{manytoolmarks1}, while the
-groove to groove length of the bullet lands from the Hamby study
-\citep{hamby} are about 2mm in length. The Ruger pistol barrels used in
-the Hamby study have a 9mm caliber. This means that bullets used in
-these pistols have land markings of only about a quarter of the size of
-screwdriver toolmarks used by \citet{chumbley, hadler}, therefore
-raising a problem of distinctiveness. One way to investigate this is to
-evaluate bullet striations at different resolutions. This gives us an
-incentive to use both the NIST and Iowa State scans and investigate the
-effect of length of the digitized mark on the working of the algorithm.
-Apart from this, the algorithm developed by \citet{hadler} has only been
-tested for flatter and wider surfaces which have negligible curvature,
-whereas striations on bullets are made on their curved surfaces.
-Therefore, using methods proposed for toolmarks need adaptation in order
-to give tangible results for bullets. Another challenge that arises from
-these topographical differences, is the understanding of that effect of
-different levels of smoothing. Especially investigating its effect on
-the algorithm performance when signatures are being compared and when
-raw markings or profiles are being compared.
-
-Some other challenges associated with the adaptation process call for a
-brief understanding of the methodology involved. The Chumbley method and
-algorithm works on the premise of comparison windows that are supposed
-to represent small segments of pixels of equal sizes in the two
-markings. These windows are to be compared in a predetermined fashion
-and are termed as windows of optimization and validation. The
-optimization window is selected in the first step called the
-optimization step where areas/windows of best agreement between the the
-two markings are found.
-
-The window of optimization for bullet striations are shorter as bullet
-signatures in terms of absolute length (in mm), are smaller compared to
-toolmarks. Even in terms of digitized pixels, there is no
-straightforward way of establishing what window size is to be chosen.
-One important way to address this is to keep the number of windows of
-optimization sufficiently large or not too small. This means, if the
-number of windows are too small we inadvertently use bigger window sizes
-as we want to compare all segements of one mark with the segments of the
-other mark. This leads to not giving enough emphasis to smaller
-segements of the two marking that might be in high agreement. In terms
-of absolute length we end up comparing smaller segments between the two
-markings while dealing with bullet lands, than those being compared for
-toolmarks.
-
-For too large window sizes, the weight of small features that would
-otherwise uniquely classify a signature and hence identify the region of
-agreement is vastly reduced. On the other hand, this introduces another
-problem as, if we go too small in the window of optimization, the unique
-features of the trace segments are lost and all seem similar. The
-problem of distinctiveness in the structure of bullet striations may
-also lead to potential failure of the algorithm to identify correct
-windows of agreements or not be able to identify these windows at all.
-This may lead to incorrect classification of bullets as coming from the
-same-source (or matches) or from different source (or non-matches).
-
-Thus, the comaparison windows have a direct influence on the false
-positives and false negatives, making identification of the optimum
-sizes of these windows very important. This raises important questions
-about how and what parameter settings need to be chosen for bullet land
-comparison. Something similar is done in \citet{afte-chumbley} for
-toolmark comparisons of slip-joint pliers where optimum window sizes are
-determined. There is a need to figure out the best parameter settings
-which minimizes the errors for unsmoothed markings or profiles and
-pre-processed signatures. An analysis of these error rates and
-comparison with other methods will help us understand the adaptibility
-of the chumbley score to bullets.
+\hh{The Chumbley score allows a separation of a toolmark into raw and normalized digitized versions. Originally, this mechanism is intended to separate between class characteristics and individual markings, however, in the setting of matching bullet striae, we could also use it to separate bullet curvature in profiles from signatures before matching signatures. }
 
 \subsection{The Chumbley Score Test}\label{the-chumbley-score-test}
 
