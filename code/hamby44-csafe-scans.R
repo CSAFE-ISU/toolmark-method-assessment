@@ -222,16 +222,16 @@ nist_sub<- nist_sub[which(!is.na(nist_sub$bbl1)),]
 #anti_join(data.frame(a = nist_sub$bbl1),data.frame(a = dframe$barrel_bullet_land1), by = "a")
 #anti_join(data.frame(a = dframe$barrel_bullet_land1), data.frame(a = nist_sub$bbl1), by = "a")
 
-# Checking for what specific lands are different between NIST and CSAFE
-# For a more accurate comparison of error rates
-tmp1_setdiff<- setdiff(dframe$barrel_bullet_land1, nist_sub$bbl1)
-tmp1_rev_setdiff<- setdiff(nist_sub$bbl1, dframe$barrel_bullet_land1)
-
-#setdiff(dframe$barrel_bullet_land2, nist_sub$bbl2)
-#setdiff(nist_sub$bbl2, dframe$barrel_bullet_land2)
-
-# Filtering out lands that are not in the iowa state scan
-nist_sub<- nist_sub %>% filter(bbl1 != tmp1_setdiff)
+# # Checking for what specific lands are different between NIST and CSAFE
+# # For a more accurate comparison of error rates
+# tmp1_setdiff<- setdiff(dframe$barrel_bullet_land1, nist_sub$bbl1)
+# tmp1_rev_setdiff<- setdiff(nist_sub$bbl1, dframe$barrel_bullet_land1)
+# 
+# #setdiff(dframe$barrel_bullet_land2, nist_sub$bbl2)
+# #setdiff(nist_sub$bbl2, dframe$barrel_bullet_land2)
+# 
+# # Filtering out lands that are not in the iowa state scan
+# nist_sub<- nist_sub %>% filter(bbl1 != tmp1_setdiff)
 #dframe<- dframe %>% filter(barrel_bullet_land1 == tmp1_rev_setdiff)
 
 xtabs(~signif+match, data =nist_sub)
