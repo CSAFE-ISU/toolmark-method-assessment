@@ -289,8 +289,9 @@ Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitize
 <!--The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths.--> 
 The toolmarks under consideration are potentially from two different sources or the same source. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. 
 
-The algorithm works in two phases, namely, an optimization step and a validation step.
+In a pre-processing step  the two markings are smoothed using a lowess \citep{lowess} with coarseness parameter $c$. The purpose of this smoothing is to remove drift and (sub)class characteristics.
 
+The Chumbley scores is calculated in two phases, namely, an optimization step and a validation step.
 In the optimization step, the two markings are aligned horizontally such that within a pre-defined window of length $w_o$ the correlation between $x(t_1)$ and $y(t_2)$ is maximized:
 \[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
@@ -299,7 +300,125 @@ This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for alig
 
 In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
-```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
+```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets."}
+sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
+
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+# Matching signature
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==276,arr.ind = TRUE),]
+data1<-d1 %>%select(l30)
+#data1<- data1$y
+data2<- d2 %>%select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+
+sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>% select(y) %>% min()
+sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% select(y) %>% min()
+window_val <- 2*window_val*0.645
+
+same.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min 
+xs <- seq(450, 2000, length=10)
+rects1 <- data.frame(ymin=-2.5, ymax= Inf, xmin = xs, xmax = xs+window_val)
+rects2 <- data.frame(ymin=-Inf, ymax=-3.5, xmin = xs+same.shift, xmax = same.shift+xs+window_val)
+rectsSS <- data.frame(rbind(rects1, rects2), type=rep(1:2, each=length(xs)))
+
+
+p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rectsSS) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rectsSS) +
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin+same.shift, yend=ymin-1), 
+               colour="grey50", linetype=3, data = rectsSS %>% filter(type==1)) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax+same.shift, yend=ymin-1), 
+               colour="grey50", linetype=3, data = rectsSS %>% filter(type==1)) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, group=type), 
+            data=rectsSS, fill= "grey90") +
+  geom_line(aes(x = y, y=l30-7*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab("Relative Location (in microns)") +
+  ggtitle("In-phase sample")
+
+diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 50 
+rects2 <- data.frame(ymin=-Inf, ymax=-3.5, xmin = xs+diff.shift, xmax = diff.shift+xs+window_val)
+rectsDS <- data.frame(rbind(rects1, rects2), type=rep(1:2, each=length(xs)))
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rectsDS) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rectsDS) +
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin+diff.shift, yend=ymin-1), 
+               colour="grey50", linetype=3, data = rectsDS %>% filter(type==1)) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax+diff.shift, yend=ymin-1), 
+               colour="grey50", linetype=3, data = rectsDS %>% filter(type==1)) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, group=type), 
+            data=rectsDS, fill= "grey90") +
+  geom_line(aes(x = y, y=l30-7*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab("Relative Location (in microns)") +
+  ggtitle("Out-of-phase sample")
+
+library(gridExtra)
+grid.arrange(p1,p2, ncol=2)
+```
+
+```{r win-comparison-2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair.", eval=FALSE}
 
 asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
 
@@ -416,7 +535,6 @@ The intuition here is that for two markings from the same source the correlation
 In the original method proposed in \citet{chumbley} both in-phase and out-of-phase sample are extracted randomly, whereas \citet{hadler} proposed deterministic rules for both samples to make the resulting score deterministic while simultaneously avoiding overlaps within selected marks to ensure independence.
 
 
-A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
 
 <!--
 The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done. This in the end, effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not. -->

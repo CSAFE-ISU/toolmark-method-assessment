@@ -264,12 +264,15 @@ from two different sources or the same source. \(T_1\) and \(T_2\), as
 represented above, are the final pixel indexes of each marking and
 therefore give the respective lengths of the markings.
 
-The algorithm works in two phases, namely, an optimization step and a
-validation step.
+In a pre-processing step the two markings are smoothed using a lowess
+\citep{lowess} with coarseness parameter \(c\). The purpose of this
+smoothing is to remove drift and (sub)class characteristics.
 
-In the optimization step, the two markings are aligned horizontally such
-that within a pre-defined window of length \(w_o\) the correlation
-between \(x(t_1)\) and \(y(t_2)\) is maximized: \[
+The Chumbley scores is calculated in two phases, namely, an optimization
+step and a validation step. In the optimization step, the two markings
+are aligned horizontally such that within a pre-defined window of length
+\(w_o\) the correlation between \(x(t_1)\) and \(y(t_2)\) is maximized:
+\[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
 \] This results in an optimal vertical (in-phase) shift of
 \(t_1^o - t_2^o\) for aligning the two markings.
@@ -287,7 +290,7 @@ shift.
 
 }
 
-\caption{ The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair.}\label{fig:win-comparison}
+\caption{In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets.}\label{fig:win-comparison}
 \end{figure}
 
 For both samples the correlations between the pairs of markings is then
@@ -302,14 +305,6 @@ sample are extracted randomly, whereas \citet{hadler} proposed
 deterministic rules for both samples to make the resulting score
 deterministic while simultaneously avoiding overlaps within selected
 marks to ensure independence.
-
-A pre-processing step to the algorithm is to choose a coarseness value
-which is used as a parameter to the lowess smoothing function. The
-coarseness essentially gives the proportion of points which influence
-the smooth at each value, which means larger values lead to more
-smoothness. The lowess smoothing is applied to each of two sets of
-vectorized striae or marks \(x(t_1)\) and \(y(t_2)\), before proceeding
-to the algorithm.
 
 \paragraph{endedit}\label{endedit}
 
