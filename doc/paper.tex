@@ -143,12 +143,14 @@ many small segments in the markings of two toolmarks and compare
 similiarity using a maximum pearson correlation coefficient. The
 Chumbley scoring method, first introduced by \citet{chumbley}, uses a
 similar but more extensive framework based on a Mann-Whitney U test of
-the resulting correlation coefficients. This approach was later improved
-by Hadler and Morris \citep{hadler} where the authors introduce a
-deterministic approach and address the issue of lack of independence
-between segements of striae. In this paper, we are investigating the
-applicability of the Chumbley scoring method by \citet{hadler} to assess
-striation marks on bullet lands for same-source identification.
+the resulting correlation coefficients. This approach is
+non-deterministic, because segments are chosen randomly. \citep{hadler}
+make the score deterministic for each pair of toolmarks by choosing
+segments for comparison systematically. This approach also ensures
+independence between segements of striae. In this paper, we are
+investigating the applicability of the Chumbley scoring method by
+\citet{hadler} to assess striation marks on bullet lands for same-source
+identification.
 
 Striation marks on bullets are made by impurities in the barrel. As the
 bullet travels through the barrel, these imperfections leave
@@ -158,11 +160,11 @@ Bullet lands are depressed areas between the grooves made by the rifling
 action of the barrel. Compared to toolmarks made by screwdrivers
 striation marks on bullets are typically much smaller, both in length
 and in width. Bullets also have a curved cross-sectional topography.
-Figure\textasciitilde{}\ref{fig:rgl} shows us how the signature from a
-bullet land (bottom) lines up with the image of the land (top) from
-which it was extracted. We can also see in the figure how the depth and
-relative position of the striation markings seen in the image are
-interpreted as the signature.
+Figure \ref{fig:rgl} shows us how the signature from a bullet land
+(bottom) lines up with the image of the land (top) from which it was
+extracted. We can also see in the figure how the depth and relative
+position of the striation markings seen in the image are interpreted as
+the signature.
 
 Bullet matching methods are usually based on these associated
 signatures. \citet{chu2013} use an automatic method for counting
@@ -248,95 +250,66 @@ Adaptation}\label{potential-challenges-in-chumbley-score-adaptation}
 
 \subsection{The Chumbley Score Test}\label{the-chumbley-score-test}
 
-The Chumbley score algorithm takes input as two vectorized processes.
-Here the processes are of the form \(z(t)\) which is a spatial process
-for some location indexed with \(t\). This means that while \(z(t)\)
-represents any striae, \(z(t_1)\) is a realization of the spatial
-process. \(t\) here denotes a vector of equally spaced pixel locations
-for the striation marks under consideration. The vectorized processes
-representing two sets of striaes are therefore shown as \(x(t_1)\),
-\(t_1 = 1,2,...T_1\) and \(y(t_2)\), \(t_2 = 1,2...T_2\). Here \(x\) and
-\(y\) denote two instances of the process \(z(*)\) which means two
-striation marks, while the indexing \(t\) or pixel range is shown as
-\(t_1\) and \(t_2\) for \(x\) and \(y\) respectively. This
-representation of \(t\) as \(t_1\) and \(t_2\) lets us identify them as
-either of same or different lengths. The striation marks under
-consideration are potentially from two different bullets whose source
-needs to be identified as being same or different. \(T_1\) and \(T_2\),
-as represented above, are the final pixel indexes of each marking and
-therefore give the respective lengths of the markings. The similarity in
-the two markings is then judged by the algorithm on the basis of
-cross-correlation of a fixed and constant number consecutive pixels (say
-\(k\)) taken from the two markings. This can for example be \(k\) taken
-from the two indexed marking \(x(t_1)\) and \(y(t_2)\) such that in
-theory \(k\) remains smaller than length of the two striae or marks.
-Depending on what stage of the algorithm we are in, matching of
-different pixel lengths and locations is done. This in the end,
-effectively compares all possible windows that would guarantee in
-quantifying the two marks or striae as coming from the same source or
-not.
+The Chumbley score algorithm takes input in form of two digitized
+toolmarks. The toolmark is in form of \(z(t)\) which is a spatial
+process for location indexed by \(t\). \(t\) here denotes equally spaced
+pixel locations for the striation marks under consideration,
+\(t = 1, ..., T\). Let further \(z(s,t)\) denote the vector of markings
+between locations \(s\) and \(t\).
+
+Let \(x(t_1)\), \(t_1 = 1,2,...T_1\) and \(y(t_2)\), \(t_2 = 1,2...T_2\)
+be two digitized toolmarks (where \(T_1\) and \(T_2\) are not
+necessarily equal). The toolmarks under consideration are potentially
+from two different sources or the same source. \(T_1\) and \(T_2\), as
+represented above, are the final pixel indexes of each marking and
+therefore give the respective lengths of the markings.
 
 The algorithm works in two phases, namely, an optimization step and a
-validation step, at the end of which a Mann Whitney U statistic is
-calculated as a measure to differentiate between matches and
-non-matches. A pre-processing step to the algorithm is to choose a
-coarseness value which is used as a parameter to the lowess smoothing
-function. The coarseness essentially gives the proportion of points
-which influence the smooth at each value, which means larger values lead
-to more smoothness. The lowess smoothing is applied to each of two sets
-of vectorized striae or marks \(x(t_1)\) and \(y(t_2)\), before
-proceeding to the algorithm. The algorithm starts with the optimization
-step where the area of best agreement in the two markings being compared
-is identified. Comparison window size is predefined. Each window of the
-first marking is compared with all windows of the second marking. A
-maximum correlation statistic is used to identify the region of best
-agreement, with the maximum usually seen being near 1 for both cases
-which is what is intuitively expected for matches, and not expected
-intuitively for non matches. \citet{hadler} in their paper proposed an
-improvement to this algorithm by trying to remove mutual dependence of
-parameters. The mututal dependence was due to the serial correlation in
-surface depth values of a marking. Also a random sampling sub step in
-the validation phase makes a group of pixels to be chosen more than once
-and hence introduces lack of independence in certain steps. The reason
-for removing the mutual dependence was the Mann-Whitney U statistic
-works under the assumption of independence of parameters. The validation
-step builds on this with two sub-steps namely, same shift and different
-shift. As the aim is to come up with a non-parameteric U statistic,
-\citet{hadler} proposed a normalization procedure in the validation step
-which goes to some extent to address the issue of mutual dependence. A
-series of windows are chosen in both the same and different shift
-sub-steps for the purpose of comparison. Both substeps were modified by
-\citet{hadler} who introduced a deterministic rule for sampling of
-windows in the same-shift and different shift as opposed to the
-originally proposed random sampling by \citet{chumbley}. In th same
-shift substep the chosen series of windows are at a common distance
-(rigid-shifts) from the window earlier identified as the region of best
-agreement in the optimization step. The correlation of these windows
-generally turn out to be lower than the maximum correlation window. The
-significance is that these same shift windows still have large enough
-correlation values for the two markings being compared that are in
-reality a match. Any choice of maximum correlation windows (where
-correlation values are often near 1) for non-matches in the optimization
-step are also validated by this sub-step. This is because the same-shift
-correlations would not be anywhere as large for same-shift windows when
-all windows in the sub-step are compared. The different shift substep on
-the other hand gives perspective to the correlation values of the same
-shift window correlation values. There are no rigid-shifts but different
-shifts where distance from the maximum correlation window are chosen
-randomly by \citet{chumbley} and deterministically as per
-\citet{hadler}. This means that there is an equal possibilty of
-comparing a trace segment from one marking to any trace segment or
-window in the second marking.
+validation step.
 
-Neither of above sets of correlation in the two sub-steps are allowed to
-include the maximum correlation window as identified earlier. Therefore
-the assumption is that if two markings match each other, the same-shift
-correlations would be larger than the different-shift windows. And if
-they are not a match the correlations in the two sets will be very
-similar. The U-statistic tests for the null hypothesis that the two
-markings are not a match and are therefore not made by the same source.
-As given by \citet{hadler}, it is computed from the joint rank of all
-correlations of both the same and different shift samples.
+In the optimization step, the two markings are aligned horizontally such
+that within a pre-defined window of length \(w_o\) the correlation
+between \(x(t_1)\) and \(y(t_2)\) is maximized: \[
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
+\] This results in an optimal vertical (in-phase) shift of
+\(t_1^o - t_2^o\) for aligning the two markings.
+
+In the validation step, two sets of windows of size \(w_v\) are chosen
+from both markings (see Figure \ref{fig:win-comparison}). In the first
+set, pairs of windows are extracted from the two markings using the
+optimal vertical shift as determined in the first step, whereas for the
+second set the windows are extracted using a different (out-of-phase)
+shift.
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/win-comparison-1} 
+
+}
+
+\caption{ The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair.}\label{fig:win-comparison}
+\end{figure}
+
+For both samples the correlations between the pairs of markings is then
+calculated. The intuition here is that for two markings from the same
+source the correlation for the in-phase sample should be high, while the
+correlations of the out-of-phase sample provide a measure for the
+base-level correlation for non-matching marks of a given length \(w_v\).
+The Chumbley score is then computed as a Mann Whitney U statistic to
+compare between in-phase sample and out-of-phase sample. In the original
+method proposed in \citet{chumbley} both in-phase and out-of-phase
+sample are extracted randomly, whereas \citet{hadler} proposed
+deterministic rules for both samples to make the resulting score
+deterministic while simultaneously avoiding overlaps within selected
+marks to ensure independence.
+
+A pre-processing step to the algorithm is to choose a coarseness value
+which is used as a parameter to the lowess smoothing function. The
+coarseness essentially gives the proportion of points which influence
+the smooth at each value, which means larger values lead to more
+smoothness. The lowess smoothing is applied to each of two sets of
+vectorized striae or marks \(x(t_1)\) and \(y(t_2)\), before proceeding
+to the algorithm.
 
 \paragraph{endedit}\label{endedit}
 
@@ -357,15 +330,6 @@ areas}\label{scans-for-land-engraved-areas-1}
 \item
   discuss cross section, profiles and signatures
 \end{itemize}
-
-\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/win-comparison-1} 
-
-}
-
-\caption{ The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair.}\label{fig:win-comparison}
-\end{figure}
 
 \section{Simulation setup}\label{simulation-setup}
 
@@ -457,15 +421,15 @@ table \ref{tab:param}.
 \centering
 \resizebox{\linewidth}{!}{\resizebox{\linewidth}{!}{\begin{tabular}[t]{lrrrrrrrrrrrrrrrrrr}
 \toprule
-wo & 50 & 50 & 60 & 60 & 80 & 80 & 90 & 90 & 100 & 100 & 110 & 110 & 120 & 120 & 120 & 120 & 120 & 130\\
-wv & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 10 & 20 & 30 & 50 & 60 & 30\\
+wo & 50 & 50 & 60 & 60 & 80 & 80 & 90 & 90 & 100 & 100 & 110 & 110 & 120 & 120 & 120 & 120 & 120 & 120\\
+wv & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 10 & 20 & 30 & 40 & 50 & 60\\
 \bottomrule
 \end{tabular}}}
 \centering
 \begin{tabular}[t]{lrrrrrrrrrrrrrrr}
 \toprule
-wo & 130 & 140 & 140 & 150 & 150 & 160 & 160 & 200 & 200 & 200 & 240 & 240 & 280 & 280 & 320\\
-wv & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 20 & 30 & 50 & 30 & 50 & 30 & 50 & 30\\
+wo & 130 & 130 & 140 & 140 & 150 & 150 & 160 & 160 & 200 & 200 & 200 & 240 & 240 & 280 & 280\\
+wv & 30 & 50 & 30 & 50 & 30 & 50 & 30 & 50 & 20 & 30 & 50 & 30 & 50 & 30 & 50\\
 \bottomrule
 \end{tabular}
 \end{table}

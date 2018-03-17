@@ -60,13 +60,13 @@ errorrate <- function(data, alpha) {
   summ$error <- with(summ, match != signif)
   summ$alpha <- alpha
   
-  rates <- summ %>% group_by(wv, wo, coarse, match, alpha) %>% summarize(
+  rates <- summ %>% dplyr::group_by(wv, wo, coarse, match, alpha) %>% dplyr::summarize(
     rate = n[error==TRUE]/sum(n)
   )
-  totals <- summ %>% group_by(wv, wo, coarse, alpha) %>% summarize(
+  totals <- summ %>% dplyr::group_by(wv, wo, coarse, alpha) %>% dplyr::summarize(
     total= sum(n[error==TRUE])/sum(n)
   )
-  rates <- rates %>% spread(match,rate) %>% rename(
+  rates <- rates %>% spread(match,rate) %>% dplyr::rename(
     actual = `FALSE`,
     beta = `TRUE`
   )
@@ -223,9 +223,9 @@ Various toolmarks have been studied in the literature:  \citet{manytoolmarks1} a
 
 \hh{We need an additional sentence here to get from the data to the statistical methods ... }
 \citet{manytoolmarks2} define a relative distance metric and use it as similarity measure between two toolmarks. \citet{manytoolmarks1} extract many small segments in the markings of two toolmarks and compare similiarity using a maximum pearson correlation coefficient. 
-The Chumbley scoring method, first introduced by \citet{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach was later improved by Hadler and Morris \citep{hadler} where the authors introduce a deterministic approach and address the issue of lack of independence between segements of striae.  In this paper, we are investigating the applicability of the Chumbley scoring method by \citet{hadler} to assess striation marks on bullet lands for same-source identification.
+The Chumbley scoring method, first introduced by \citet{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach is non-deterministic, because segments are chosen randomly.  \citep{hadler} make the score deterministic for each pair of toolmarks by choosing segments for comparison systematically. This approach also ensures independence between segements of striae.  In this paper, we are investigating the applicability of the Chumbley scoring method by \citet{hadler} to assess striation marks on bullet lands for same-source identification.
 
-Striation marks on bullets are made by impurities in the barrel. As the bullet travels through the barrel, these imperfections leave "scratches" on the bullet surface. Typically, only striation marks in the land engraved areas (LEAs) are considered \citet{afte-article1992}. Bullet lands are depressed areas between the  grooves made by the rifling action of the barrel. Compared to toolmarks made by screwdrivers striation marks on bullets are typically much smaller, both in length and in width. Bullets also have a curved cross-sectional topography. Figure~\ref{fig:rgl} shows us how the signature from a bullet land (bottom) lines up with the image of the land (top) from which it was extracted. We can also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature.
+Striation marks on bullets are made by impurities in the barrel. As the bullet travels through the barrel, these imperfections leave "scratches" on the bullet surface. Typically, only striation marks in the land engraved areas (LEAs) are considered \citet{afte-article1992}. Bullet lands are depressed areas between the  grooves made by the rifling action of the barrel. Compared to toolmarks made by screwdrivers striation marks on bullets are typically much smaller, both in length and in width. Bullets also have a curved cross-sectional topography. Figure \ref{fig:rgl} shows us how the signature from a bullet land (bottom) lines up with the image of the land (top) from which it was extracted. We can also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature.
 
 Bullet matching methods are usually based on these associated signatures. \citet{chu2013} use an automatic method for counting consecutive matching striae (CMS). The authors report an error rate of 52% of the known same source lands comparisons as misidentified (false negative) and zero false positives for known different source lands. \citet{ma2004} and \citet{vorburger2011} discuss CCF (cross-correlation function) and its discriminating power and applicability for same-source analyses of bullets, but do not provide any error rates in their discussion. \citet{aoas} use multiple features like CCF, CMS, D (distance measure) etc in a random forest based method and compare every land against every other land of  digitised versions of Hamby 252 and Hamby 44 \citep{hamby} published on the NIST Ballistics Database \citep{nist}. The authors report an out-of-bag overall error rate of 0.46%, comprised of a false positive error rate of 30.05% and a false negative rate of 0.026%.
 
@@ -283,20 +283,158 @@ Thus, the comaparison windows have a direct influence on the false positives and
 ## The Chumbley Score Test
 
 
-The Chumbley score algorithm takes input as two vectorized processes.  Here the processes are of the form $z(t)$ which is a spatial process for some location indexed with $t$. This means that while $z(t)$ represents any striae, $z(t_1)$ is a realization of the spatial process. $t$ here denotes a vector of equally spaced pixel locations for the striation marks under consideration. The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths. The striation marks under consideration are potentially from two different bullets whose source needs to be identified as being same or different. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done. This in the end, effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not.
+The Chumbley score algorithm takes input in form of two digitized toolmarks. The toolmark is in form of $z(t)$ which is a spatial process for location indexed by $t$. $t$ here denotes equally spaced pixel locations for the striation marks under consideration, $t = 1, ..., T$. Let further $z(s,t)$ denote the vector of markings between locations $s$ and $t$. 
+
+Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized toolmarks (where $T_1$ and $T_2$ are not necessarily equal). 
+<!--The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths.--> 
+The toolmarks under consideration are potentially from two different sources or the same source. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. 
+
+The algorithm works in two phases, namely, an optimization step and a validation step.
+
+In the optimization step, the two markings are aligned horizontally such that within a pre-defined window of length $w_o$ the correlation between $x(t_1)$ and $y(t_2)$ is maximized:
+\[
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
+\]
+This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings.
+
+In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
+
+```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
+
+asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
+
+sigs_graphics<- readRDS("../data/sigs_generate_window.rds")
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+# Matching signature
+#gi<-
+#sigs_graphics.match<- sigs_graphics.match %>% filter(land_id == c(1,9))  
+#sigs_graphics.match<- sigs_graphics.match %>% select(y, l30, land_id)
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==19,arr.ind = TRUE),]
+data1<-d1 %>%select(l30)
+#data1<- data1$y
+data2<- d2 %>%select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+  
+
+  s1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    s1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-window_val, xmax= max_corr_opt_loc[1,2]- 2*window_val, ymin=-Inf, ymax=Inf)
+       s1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  s2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    s2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       s2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ window_val, xmax= max_corr_opt_loc[1,1]+ 2*window_val, ymin=-Inf, ymax=Inf)
+       
+p1<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=s1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p2<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=s2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+ ##########
+ 
+ d1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    d1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-2*window_opt, xmax= max_corr_opt_loc[1,2]-2*window_opt-window_val, ymin=-Inf, ymax=Inf)
+       d1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  d2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    d2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       d2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ 4*window_val, xmax= max_corr_opt_loc[1,1]+ 5*window_val, ymin=-Inf, ymax=Inf)
+       
+p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=d1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p4<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=d2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+  
+
+multiplot(p1, p2, p3, p4, cols=2)
+```
+
+
+For both samples the correlations between the pairs of markings is then calculated. 
+The intuition here is that for two markings from the same source the correlation for the in-phase sample should be high, while the correlations of the out-of-phase sample  provide a measure for the base-level correlation for non-matching marks of a given length $w_v$. The Chumbley score is then computed as a Mann Whitney U statistic to compare between in-phase sample and out-of-phase sample. 
+In the original method proposed in \citet{chumbley} both in-phase and out-of-phase sample are extracted randomly, whereas \citet{hadler} proposed deterministic rules for both samples to make the resulting score deterministic while simultaneously avoiding overlaps within selected marks to ensure independence.
+
+
+A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
+
+<!--
+The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done. This in the end, effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not. -->
 
 <!-- The word 'pixel' refers to the resolution of the confocal light microscope. In the case for bullet signatures extracted from NIST ballistics database \citep{nist} of the Hamby study, a pixel corresponds to approximately 1.56 microns. -->
 
-The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated as a measure to differentiate between matches and non-matches. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.
-The algorithm starts with the optimization step where the area of best agreement in the two markings being compared is identified. Comparison window size is predefined. Each window of the first marking is compared with all windows of the second marking. A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what is intuitively expected for matches, and not expected intuitively for non matches. 
-\citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters. The mututal dependence was due to the serial correlation in surface depth values of a marking. Also a random sampling sub step in the validation phase makes a group of pixels to be chosen more than once and hence introduces lack of independence in certain steps. The reason for removing the mutual dependence was the Mann-Whitney U statistic works under the assumption of independence of parameters.
+<!--
+The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated as a measure to differentiate between matches and non-matches. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.-->
+<!-- The algorithm starts with the optimization step where the area of best agreement in the two markings being compared is identified. Comparison window size is predefined. Each window of the first marking is compared with all windows of the second marking. A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what is intuitively expected for matches, and not expected intuitively for non matches. 
+\citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters. The mututal dependence was due to the serial correlation in surface depth values of a marking. Also a random sampling sub step in the validation phase makes a group of pixels to be chosen more than once and hence introduces lack of independence in certain steps. The reason for removing the mutual dependence was the Mann-Whitney U statistic works under the assumption of independence of parameters.-->
+<!--
 The validation step builds on this with two sub-steps namely, same shift and different shift. As the aim is to come up with a non-parameteric U statistic, \citet{hadler} proposed a normalization procedure in the validation step which goes to some extent to address the issue of mutual dependence. A series of windows are chosen in both the same and different shift sub-steps for the purpose of comparison. Both substeps were modified by \citet{hadler} who introduced a deterministic rule for sampling of windows in the same-shift and different shift as opposed to the originally proposed random sampling by \citet{chumbley}.
 In th same shift substep the chosen series of windows are at a common distance (rigid-shifts) from the window earlier identified as the region of best agreement in the optimization step. The correlation of these windows generally turn out to be lower than the maximum correlation window. The significance is that these same shift windows still have large enough correlation values for the two markings being compared that are in reality a match. Any choice of maximum correlation windows (where correlation values are often near 1) for non-matches in the optimization step are also validated by this sub-step. This is because the same-shift correlations would not be anywhere as large for same-shift windows when all windows in the sub-step are compared.
 The different shift substep on the other hand gives perspective to the correlation values of the same shift window correlation values. There are no rigid-shifts but different shifts where distance from the maximum correlation window are chosen randomly by \citet{chumbley} and deterministically as per \citet{hadler}. This means that there is an equal possibilty of comparing a trace segment from one marking to any trace segment or window in the second marking.
 
 Neither of above sets of correlation in the two sub-steps are allowed to include the maximum correlation window as identified earlier. Therefore the assumption is that if two markings match each other, the same-shift correlations would be larger than the different-shift windows.
 And if they are not a match the correlations in the two sets will be very similar. The U-statistic tests for the null hypothesis that the two markings are not a match and are therefore not made by the same source.  As given by \citet{hadler}, it is computed from the joint rank of all correlations of both the same and different shift samples. 
-
+-->
 
 ##################
 
@@ -429,116 +567,7 @@ Introduce to chumbley score method, apply chumbley and discuss results ....
 
 <!-- This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows. -->
 
-```{r win-comparison, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair."}
 
-asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
-
-sigs_graphics<- readRDS("../data/sigs_generate_window.rds")
-
-sigs_graphics.match<- as.data.frame(sigs_graphics[1])
-sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
-colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
-colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
-
-# Matching signature
-#gi<-
-#sigs_graphics.match<- sigs_graphics.match %>% filter(land_id == c(1,9))  
-#sigs_graphics.match<- sigs_graphics.match %>% select(y, l30, land_id)
-d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
-d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==19,arr.ind = TRUE),]
-data1<-d1 %>%select(l30)
-#data1<- data1$y
-data2<- d2 %>%select(l30)
-#data2<- data2$y
-window_opt = 120 
-window_val = 50
-coarse = 1
-data1<- matrix(unlist(data1))
-data2<- matrix(unlist(data2))
-
-  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
-  
-  ####################################################
-  ##Clean the marks and compute the smooth residuals##
-  ####################################################
-  
-  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
-  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
-  
-  ##Normalize the tool marks
-  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
-  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
-  
-  
-  ############################################
-  ##Compute the observed maximum correlation##
-  ############################################
-  
-  #####################
-  ##Optimization step##
-  #####################
-  ##Each column in these matrices corresponds to a window in the respective tool mark
-  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
-  for(l in 1:(length(y1) - (window_opt - 1))){
-    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
-  }
-  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
-  for(l in 1:(length(y2) - (window_opt - 1))){
-    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
-  }
-  
-  ##Compute the correlation between all pairs of windows for the two marks
-  ##Rows in the following matrix are mark 2, columns are mark 1
-  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
-  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
-  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
-  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
-  
-
-  s1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
-    s1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-window_val, xmax= max_corr_opt_loc[1,2]- 2*window_val, ymin=-Inf, ymax=Inf)
-       s1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
-       
-  s2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
-    s2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
-       s2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ window_val, xmax= max_corr_opt_loc[1,1]+ 2*window_val, ymin=-Inf, ymax=Inf)
-       
-p1<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
-  geom_rect(data=s1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
-    geom_rect(data=s1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
-    geom_rect(data=s1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
-  theme_bw() + labs(y = "Signature Land Id = 1")
-  
- p2<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
-   geom_rect(data=s2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
-    geom_rect(data=s2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
-    geom_rect(data=s2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
-  theme_bw() + labs(y = "Signature Land Id = 9")
- ##########
- 
- d1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
-    d1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-2*window_opt, xmax= max_corr_opt_loc[1,2]-2*window_opt-window_val, ymin=-Inf, ymax=Inf)
-       d1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
-       
-  d2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
-    d2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
-       d2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ 4*window_val, xmax= max_corr_opt_loc[1,1]+ 5*window_val, ymin=-Inf, ymax=Inf)
-       
-p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
-  geom_rect(data=d1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
-    geom_rect(data=d1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
-    geom_rect(data=d1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
-  theme_bw() + labs(y = "Signature Land Id = 1")
-  
- p4<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
-   geom_rect(data=d2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
-    geom_rect(data=d2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
-    geom_rect(data=d2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
-  theme_bw() + labs(y = "Signature Land Id = 9")
-  
-
-multiplot(p1, p2, p3, p4, cols=2)
-```
 
 
 <!-- ####Different Shift: -->
