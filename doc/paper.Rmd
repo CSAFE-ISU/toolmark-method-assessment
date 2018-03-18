@@ -300,9 +300,9 @@ This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for alig
 
 In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
-```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets."}
+```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. Note that for convenience, the markings are moved into phase on the left and out-of phase on the right. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets."}
 sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
-
+sigs_graphics$sigs_land_id_1_match <- sigs_graphics$sigs_land_id_1_match %>% group_by(land_id) %>% mutate(y = y-min(y, na.rm=T))
 
 sigs_graphics.match<- as.data.frame(sigs_graphics[1])
 sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
@@ -361,28 +361,23 @@ data2<- matrix(unlist(data2))
 
 sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>% select(y) %>% min()
 sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% select(y) %>% min()
-window_val <- 2*window_val*0.645
+window_val <- 3*window_val*0.645
 
 same.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min 
-xs <- seq(450, 2000, length=10)
-rects1 <- data.frame(ymin=-2.5, ymax= Inf, xmin = xs, xmax = xs+window_val)
-rects2 <- data.frame(ymin=-Inf, ymax=-3.5, xmin = xs+same.shift, xmax = same.shift+xs+window_val)
-rectsSS <- data.frame(rbind(rects1, rects2), type=rep(1:2, each=length(xs)))
+xs <- seq(100, 1800, length=10)
+rects <- data.frame(ymin=-Inf, ymax= Inf, xmin = xs, xmax = xs+window_val)
 
 
 p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
   ggplot() + 
   geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
-               colour="grey50", linetype=3, data = rectsSS) +
+               colour="grey50", linetype=3, data = rects) +
   geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
-               colour="grey50", linetype=3, data = rectsSS) +
-  geom_segment(aes(x = xmin, y=ymin, xend = xmin+same.shift, yend=ymin-1), 
-               colour="grey50", linetype=3, data = rectsSS %>% filter(type==1)) +
-  geom_segment(aes(x = xmax, y=ymin, xend = xmax+same.shift, yend=ymin-1), 
-               colour="grey50", linetype=3, data = rectsSS %>% filter(type==1)) +
-  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, group=type), 
-            data=rectsSS, fill= "grey90") +
-  geom_line(aes(x = y, y=l30-7*I(land_id==276), group=land_id)) + 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-same.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
   theme_bw() +
   theme(axis.title.y = element_blank(), 
         axis.text.y = element_blank(),
@@ -390,23 +385,18 @@ p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>%
   xlab("Relative Location (in microns)") +
   ggtitle("In-phase sample")
 
-diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 50 
-rects2 <- data.frame(ymin=-Inf, ymax=-3.5, xmin = xs+diff.shift, xmax = diff.shift+xs+window_val)
-rectsDS <- data.frame(rbind(rects1, rects2), type=rep(1:2, each=length(xs)))
+diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 70 
 
 p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
   ggplot() + 
   geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
-               colour="grey50", linetype=3, data = rectsDS) +
+               colour="grey50", linetype=3, data = rects) +
   geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
-               colour="grey50", linetype=3, data = rectsDS) +
-  geom_segment(aes(x = xmin, y=ymin, xend = xmin+diff.shift, yend=ymin-1), 
-               colour="grey50", linetype=3, data = rectsDS %>% filter(type==1)) +
-  geom_segment(aes(x = xmax, y=ymin, xend = xmax+diff.shift, yend=ymin-1), 
-               colour="grey50", linetype=3, data = rectsDS %>% filter(type==1)) +
-  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, group=type), 
-            data=rectsDS, fill= "grey90") +
-  geom_line(aes(x = y, y=l30-7*I(land_id==276), group=land_id)) + 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-diff.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
   theme_bw() +
   theme(axis.title.y = element_blank(), 
         axis.text.y = element_blank(),
