@@ -300,7 +300,7 @@ This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for alig
 
 In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
-```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. Note that for convenience, the markings are moved into phase on the left and out-of phase on the right. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets."}
+```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples."}
 sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
 sigs_graphics$sigs_land_id_1_match <- sigs_graphics$sigs_land_id_1_match %>% group_by(land_id) %>% mutate(y = y-min(y, na.rm=T))
 
@@ -382,7 +382,7 @@ p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>%
   theme(axis.title.y = element_blank(), 
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
-  xlab("Relative Location (in microns)") +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
   ggtitle("In-phase sample")
 
 diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 70 
@@ -401,7 +401,7 @@ p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>%
   theme(axis.title.y = element_blank(), 
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
-  xlab("Relative Location (in microns)") +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
   ggtitle("Out-of-phase sample")
 
 library(gridExtra)
@@ -543,7 +543,7 @@ The different shift substep on the other hand gives perspective to the correlati
 Neither of above sets of correlation in the two sub-steps are allowed to include the maximum correlation window as identified earlier. Therefore the assumption is that if two markings match each other, the same-shift correlations would be larger than the different-shift windows.
 And if they are not a match the correlations in the two sets will be very similar. The U-statistic tests for the null hypothesis that the two markings are not a match and are therefore not made by the same source.  As given by \citet{hadler}, it is computed from the joint rank of all correlations of both the same and different shift samples. 
 -->
-
+<!--
 ##################
 
 #### endedit
@@ -557,6 +557,7 @@ Introduce to chumbley score method, apply chumbley and discuss results ....
 - scans available: NIST database (citation), Hamby 44 and Hamby 252 (Hamby citation)
 - move figure up
 - discuss cross section, profiles and signatures
+-->
 
 <!-- Compairing pairs of toolmarks with the intention of matching it to a tool has been studied many times in the past. Extensive examples can be found in literature for tools and toolmark research ranging from screwdrivers \citep{manytoolmarks1, manytoolmarks2, chumbley} to groove pliers \citep{manytoolmarks2} to slip-joint pliers \citep{afte-chumbley} and many more. In comparison to this, same source matching of bullets to firearms has not been examined as prominently as that of toolmarks. Even less information is available on validity of methods and error rates associated with firearms examination. The National Academy of Sciences in its report in 2009 \citep{NAS:2009} discussed the need for determining error rates in methods proposed for firearms examination. As seen in the case of most forensic applications, the first step for same source matching and error rate determination involves identification of unique features that are characteristic of the object at hand. For the case of bullets and firearms, striation marks on the surface of the bullet are considered to be such markings that can be used in methods for same source matching. These marks are often a product of rifling and impurities and defects due to manufacturing in the barrel of the gun, which leads to engravings on the bullet surface \citep{afte-article1992}. In current practice, firearm examiners invariably make visual comparisons of bullet striae and use visual assesment tools to dignify bullets as being matches and non-matches. One way of accomplishing anykind of comparison between bullets is to do a comparison between surface marking of two or more bullet lands. Bullet Lands are considered to be areas between grooves made by the rifling action of the barrel and the markings on them are considered to be unique. The land engraved markings or sometimes termed as Bullet profiles \citep{aoas,ma2004} are striation marks made on Bullet lands and often used for these land to land comparisons. Bullet Signatures is another word used in literature as seen in the work of \citet{chu2013} and \citet{aoas}. In our context bullet signatures refer to a processed version of the raw land engraved markings or profiles. The generation of bullet signatures involves first extraction of a bullet profile by taking the cross-sectional of the surface at a given height and then using loess fits to model the structure. The residuals of this fit are called signatures, which are considered to be noise free and a good reflection of the class charecteristics and unique features of a bullet. A more detailed version of the extraction technique of signatures is discussed by \citet{aoas}, where comprehensive details about the height at which profile is to be selected, removing curvature, smoothing, identifying groove locations are explained. Figure \ref{fig:rgl} shows us how the extracted signature from a bullet land lines up with the image of the land from which it was extracted. We can see also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature. -->
 
@@ -713,7 +714,40 @@ Introduce to chumbley score method, apply chumbley and discuss results ....
 <!-- $$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$ -->
 
 
-# Simulation setup
+# Testing setup
+
+## The Data
+
+\hh{More on NIST database, some on CSAFE}
+
+\hh{Introduce profiles and signatures, as shown in figure \ref{fig:sigs-profiles}.}
+
+```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right)."}
+p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = value)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Profile")
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = l30)) + 
+  geom_line(aes(y=resid), size=.25) +
+  geom_line(aes(y=l30)) +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Signature")
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+## Setup
+
+\hh{using (a) signatures and (b) profiles, run chumbley score across scans from NIST and CSAFE for various settings of $w_o$ and $w_v$ (and coarseness $c$ for profiles).}
+
+
+## Results
 
 Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
 

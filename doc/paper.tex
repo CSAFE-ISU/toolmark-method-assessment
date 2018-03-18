@@ -290,7 +290,7 @@ shift.
 
 }
 
-\caption{In- and out-of-phase samples from two markings created by the same source. On the left, sample windows are in-phase, on the right the pairs of sampled windows are out-of-phase. Note that for convenience, the markings are moved into phase on the left and out-of phase on the right. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets.}\label{fig:win-comparison}
+\caption{Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples.}\label{fig:win-comparison}
 \end{figure}
 
 For both samples the correlations between the pairs of markings is then
@@ -306,27 +306,28 @@ deterministic rules for both samples to make the resulting score
 deterministic while simultaneously avoiding overlaps within selected
 marks to ensure independence.
 
-\paragraph{endedit}\label{endedit}
+\section{Testing setup}\label{testing-setup}
 
-\hh{end of intro: remaining paper is structured as follows: introduce to the data we get from confocal microscopy, introduce to profiles and signatures.
-Introduce to chumbley score method, apply chumbley and discuss results ....
+\subsection{The Data}\label{the-data}
+
+\hh{More on NIST database, some on CSAFE}
+
+\hh{Introduce profiles and signatures, as shown in figure \ref{fig:sigs-profiles}.}
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/sigs-profiles-1} 
+
 }
 
-\subsection{Scans for land engraved
-areas}\label{scans-for-land-engraved-areas-1}
+\caption{Bullet land profile (left) and the corresponding signature (right).}\label{fig:sigs-profiles}
+\end{figure}
 
-\begin{itemize}
-\tightlist
-\item
-  scans available: NIST database (citation), Hamby 44 and Hamby 252
-  (Hamby citation)
-\item
-  move figure up
-\item
-  discuss cross section, profiles and signatures
-\end{itemize}
+\subsection{Setup}\label{setup}
 
-\section{Simulation setup}\label{simulation-setup}
+\hh{using (a) signatures and (b) profiles, run chumbley score across scans from NIST and CSAFE for various settings of $w_o$ and $w_v$ (and coarseness $c$ for profiles).}
+
+\subsection{Results}\label{results}
 
 Following on similar lines to the setup of toolmarks, the first step
 here is to first identify what difference does different window sizes of
@@ -402,7 +403,7 @@ function lowess used in the chumbley algorithm).
 
 \pagebreak
 
-\section{Results}\label{results}
+\section{Results}\label{results-1}
 
 We used the adjusted Chumbley method as proposed in \citet{hadler} and
 implemented in the R package \texttt{toolmaRk} \citep{toolmark} on all
