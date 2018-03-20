@@ -152,6 +152,15 @@ errors <- rbind(errorrate(all, 0.001),
                 errorrate(all, 0.005), 
                 errorrate(all, 0.01), 
                 errorrate(all, 0.05))
+
+ns <- all %>% group_by(wv, wo, match) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/n()*100
+)
 ```
 
 ```{r data-profiles}
@@ -758,9 +767,9 @@ We used the adjusted Chumbley method as proposed in \citet{hadler} and implement
 
 \hh{For signatures from NIST scans we see three problems: 
 \begin{enumerate}
-\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers,
-\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases,
-\item the Chumbley-score fails to provide a result for up to 3\% of the cases. This drop-out rate is considerably higher when the two lands are from different sources than when the lands are from the same source. 
+\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers, see figure \ref{fig:type2};
+\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases, see figure \ref{fig:type1};
+\item the Chumbley-score fails to provide a result for up to 3\% of the cases. This drop-out rate is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
 \end{enumerate}
 }
 
@@ -771,15 +780,15 @@ The marking made on bullets are smaller than toolmarks and is also less wider. T
 ### Signatures
 
 
-```{r type2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+```{r type2, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 errors %>% filter(wv %in% c(30,50)) %>%
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
-  geom_point(aes(shape=factor(wv))) +
+  geom_point(aes(shape=factor(wv)), size=3.5) +
 #  facet_grid(.~wo, labeller="label_both") + 
-  geom_smooth(aes(group=alpha), se=FALSE, method="loess") +
+  geom_smooth(aes(group=alpha), se=FALSE, method="loess", size=.7) +
   theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
-  scale_shape_discrete(expression("Size of\nvalidation\nwindow "~w[v])) +
+  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
   xlab(expression("Window size for optimization "~w[o])) +
   ylab("Type II error rate")
 
@@ -787,7 +796,77 @@ errors %>% filter(wv %in% c(30,50)) %>%
 labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
 
+```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
+errors %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
+  geom_hline(aes(yintercept=alpha), colour="grey30", size=.5) +
+  geom_point(aes(shape=factor(wv)), size=2.5) +
+  #  facet_grid(.~wo, labeller="label_both") + 
+  geom_smooth(aes(group=alpha), size=.8, se=FALSE, method="lm", alpha=.9) +
+  theme_bw() +
+#  scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
+  scale_shape_discrete(expression("Size of validation window "~w[v])) +
+  ylab("Observed type I error rate") +
+  xlab(expression("Window size for optimization, "~w[o])) +
+  scale_colour_brewer(expression("Nominal type I error "~alpha), palette="Set2") +
+  facet_wrap(~alpha, labeller="label_both", scales="free") +
+  theme(legend.position="bottom")
+  
+```
 
+
+```{r missings, out.width='\\textwidth', fig.width=8, fig.height=4, fig.cap="The number of failed tests increases with an increase in the size of the optimization window (left). Unfortunately there is also a dependency between failed tests and ground truth. The plot on the right shows the ratio of the number of land pairs from same sources and different sources for failed tests. For small optimization windows and large windows the number of failed tests for same-source land-to-land comparisons is increasing. Even in the minimum, same-source land-to-land comparisons fail at twice the rate that they are expected to based on the ratio of the number of known matches and known non-matches (horizontal line).",fig.align = "center"}
+#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
+
+fails <- all %>% group_by(wv, wo) %>% summarize(
+  miss = sum(is.na(p_value)),
+  missperc = miss/n()*100
+)
+
+failsbymatch <- all %>% group_by(wv, wo, match) %>% summarize(
+  fails = sum(is.na(p_value))
+) %>% mutate(
+    ratio = fails[match==TRUE]/fails[match==FALSE],
+    match = c("Different Source", "Same Source")[as.numeric(as.logical(match)) + 1]
+    ) 
+
+missings <- fails %>% filter(wv %in% c(30, 50)) %>%
+  ggplot(aes(x = wo, y = missperc, 
+             colour = factor(wv),
+             shape=factor(wv)), size=.3) + 
+  geom_smooth(method="lm", size=.5, se=FALSE) +
+  geom_point(size=2.5) + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab(expression("Size of optimization window "~w[o])) +
+  scale_colour_brewer(expression("Size of validation window "~w[v]), palette="Set1") +
+  scale_shape(expression("Size of validation window "~w[v])) +
+    theme(legend.position="bottom")
+
+
+missingsbymatch <- failsbymatch %>% 
+  filter(wv %in% c(30, 50),
+         match=="Same Source") %>%
+  ggplot(aes(x = wo, y = ratio, 
+             colour = factor(wv),
+             shape=factor(wv)), size=.3) + 
+  geom_hline(yintercept = 43960/2948225, size=0.5, colour="grey30") +
+  geom_smooth(method="loess", span=0.8, size=.5, se=FALSE) +
+  geom_point(size=2.5) + 
+  theme_bw() +
+  ylab("Ratio of same/different source\namong failed tests") +
+  xlab(expression("Size of optimization window "~w[o])) +
+  scale_colour_brewer(expression("Size of validation window "~w[v]), palette="Set1") +
+  scale_shape(expression("Size of validation window "~w[v])) +
+    theme(legend.position="bottom") +
+  scale_y_continuous(breaks=c(0.015, 0.03, 0.06, 0.09))
+
+
+
+gridExtra::grid.arrange(missings, missingsbymatch, ncol=2)
+
+
+```
 Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
 Bullet signatures being compared at this time are therefore from the Hamby 44 and Hamby 252 data. The database setup and pre-processing system used for choosing the Bullet signatures are as described by \citet{aoas}. In order to choose the bullet signatures we first filter out Land_id for Profiles from the Hamby 44 and Hamby 252 data and remove all NA values. Then run_id = 3 is chosen as the signatures generated from this run_id give the closest match. Different run_id's have some different settings for generating the signatures.(The level of smoothing does not seem to be one of them)
@@ -852,23 +931,7 @@ Table \ref{tab:confusion} shows the confusion tables with the classification of 
 
 Figure \ref{fig:type1} compares nominal (fixed) type I error and actually observed type I errors for the parameter settings in table \ref{tab:param}. With an increasing size of the window used in the optimization step the observed type I error rate decreases (slighty). This means as the optimization window increase the observed type I error rate gets smaller. A smaller validation window on the other hand, tends to be associated with a higher type I error rate. This can be better imagined for a given window of optimization, where the actual Type I error is comparable to the nominal level for only a select few validation window sizes. For these comparable validation window sizes of 30 and 50 as done here, the actual type I error increases very slightly and can be seen in Figure \ref{fig:type1}. This increase is not as much when compared to the variation seen with the optimization window sizes. This effect might be related to the increasing number of tests that fail for larger optimization window sizes, in particular for non-matching striae (see fig \ref{fig:missings}).
 
-```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
-errors %>% filter(wv %in% c(30,50)) %>%
-  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
-  geom_hline(aes(yintercept=alpha), colour="grey30") +
-  geom_point(aes(shape=factor(wv))) +
-  #  facet_grid(.~wo, labeller="label_both") + 
-  geom_smooth(aes(group=alpha), se=FALSE, method="lm") +
-  theme_bw() +
-#  scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
-  scale_shape_discrete("Size of validation window, wv") +
-  ylab("Observed type I error rate") +
-  xlab(expression("Window size for optimization, "~wo)) +
-  scale_colour_brewer(expression("Nominal type I error "~alpha), palette="Set2") +
-  facet_wrap(~alpha, labeller="label_both", scales="free") +
-  theme(legend.position="bottom")
-  
-```
+
 
 
 ```{r wo120, fig.width = 4, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120"}
@@ -882,14 +945,7 @@ wo120 %>% gather(type, error, beta) %>%#actual:beta) %>%
 
 The actual type I error and type II error for signatures were also compared for different validation window sizes. Figure \ref{fig:wo120} shows the actual rates for different nominal $\alpha$ levels. We can see that the type II error rises with higher validation windows for the smaller nominal $\alpha$ levels while for the nominal $\alpha$ = 0.05 its almost constant.
 ```{r }
-ns <- all %>% group_by(wv, wo, match) %>% summarize(
-  n_ss = mean(same_shift_n),
-  n_ds = mean(diff_shift_n),
-  zero_ss = sum(same_shift_n==0),
-  zero_ds = sum(diff_shift_n==0),
-  miss = sum(is.na(p_value)),
-  missperc = miss/85491*100
-)
+
 
 nsp <- allp %>% group_by(wv, wo, match, coarse) %>% summarize(
   n_ss = mean(same_shift_n),
@@ -911,20 +967,7 @@ ns_sig_c <- all_sig_c %>% group_by(wv, wo, match, coarse) %>% summarize(
 
 ```
 
-```{r missings, fig.width=6, fig.height=4, fig.cap="Number of failed tests by the window optimization size, wo, and ground truth.",fig.align = "center"}
-#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
-missings<- ns %>% filter(wv %in% c(30, 50)) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = wo, y = missperc, shape=factor(wv), colour = factor(match)), size=.3) + 
-  geom_smooth(method="lm", size=.2, se=FALSE) +
-  geom_point() + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("Size of optimization window, wo") +
-  scale_colour_brewer("Match", palette="Set1") +
-  scale_shape_discrete("Size of \nvalidation\nwindow, wv")
-missings
-```
+
 
 ```{r lms, results='asis'}
 nsnest <- ns %>% filter(wv %in% c(30,50)) %>% group_by(match, wv) %>% nest()

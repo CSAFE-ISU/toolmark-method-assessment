@@ -350,9 +350,9 @@ window sizes, \(w_o\) and \(w_v\), ranged from \(w_o \in [50, 280]\) and
 
 \hh{For signatures from NIST scans we see three problems: 
 \begin{enumerate}
-\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers,
-\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases,
-\item the Chumbley-score fails to provide a result for up to 3\% of the cases. This drop-out rate is considerably higher when the two lands are from different sources than when the lands are from the same source. 
+\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers, see figure \ref{fig:type2};
+\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases, see figure \ref{fig:type1};
+\item the Chumbley-score fails to provide a result for up to 3\% of the cases. This drop-out rate is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
 \end{enumerate}
 }
 
@@ -371,11 +371,29 @@ setup to identify appropriate parameter settings for (a) signatures and
 
 \begin{figure}
 
-{\centering \includegraphics[width=\textwidth]{figures/type2-1} 
+{\centering \includegraphics[width=.8\textwidth]{figures/type2-1} 
 
 }
 
 \caption{Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error.}\label{fig:type2}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/type1-1} 
+
+}
+
+\caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/missings-1} 
+
+}
+
+\caption{The number of failed tests increases with an increase in the size of the optimization window (left). Unfortunately there is also a dependency between failed tests and ground truth. The plot on the right shows the ratio of the number of land pairs from same sources and different sources for failed tests. For small optimization windows and large windows the number of failed tests for same-source land-to-land comparisons is increasing. Even in the minimum, same-source land-to-land comparisons fail at twice the rate that they are expected to based on the ratio of the number of known matches and known non-matches (horizontal line).}\label{fig:missings}
 \end{figure}
 
 Signatures of lands for all Hamby-44 and Hamby-252 scans made available
@@ -550,15 +568,6 @@ striae (see fig \ref{fig:missings}).
 
 \begin{figure}
 
-{\centering \includegraphics[width=\textwidth]{figures/type1-1} 
-
-}
-
-\caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
-\end{figure}
-
-\begin{figure}
-
 {\centering \includegraphics[width=\textwidth]{figures/wo120-1} 
 
 }
@@ -573,15 +582,6 @@ see that the type II error rises with higher validation windows for the
 smaller nominal \(\alpha\) levels while for the nominal \(\alpha\) =
 0.05 its almost constant.
 
-\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/missings-1} 
-
-}
-
-\caption{Number of failed tests by the window optimization size, wo, and ground truth.}\label{fig:missings}
-\end{figure}
-
 \begin{table}
 
 \caption{\label{tab:lms}Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.}
@@ -590,10 +590,10 @@ smaller nominal \(\alpha\) levels while for the nominal \(\alpha\) =
 \toprule
 match & wv & estimate & std.error\\
 \midrule
-FALSE & 30 & 0.503 & 0.028\\
-FALSE & 50 & 0.922 & 0.035\\
-TRUE & 30 & 0.043 & 0.004\\
-TRUE & 50 & 0.056 & 0.005\\
+FALSE & 30 & 0.510 & 0.029\\
+FALSE & 50 & 0.936 & 0.036\\
+TRUE & 30 & 2.933 & 0.247\\
+TRUE & 50 & 3.843 & 0.321\\
 \bottomrule
 \end{tabular}
 \end{table}
