@@ -727,8 +727,6 @@ Introduce to chumbley score method, apply chumbley and discuss results ....
 
 ## The Data
 
-\hh{More on NIST database, some on CSAFE}
-
 \hh{Introduce profiles and signatures, as shown in figure \ref{fig:sigs-profiles}.}
 
 ```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right) for one of the lands of Hamby-44."}
@@ -751,9 +749,11 @@ p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
 grid.arrange(p1,p2, ncol=2)
 ```
 
-Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and were considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
+Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and are considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby}. Each set consists of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
-Profiles and signatures were extracted from the Hamby 44 and Hamby 252 data as described in \citet{aoas}.
+\hh{Discuss CSAFE scans}
+
+Profiles and signatures were extracted from all scans as described in \citet{aoas}.
 
 
 ## Setup
@@ -769,16 +769,23 @@ We used the adjusted Chumbley method as proposed in \citet{hadler} and implement
 \begin{enumerate}
 \item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers, see figure \ref{fig:type2};
 \item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases, see figure \ref{fig:type1};
-\item the Chumbley-score fails to provide a result for up to 3\% of the cases. This drop-out rate is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
+\item the Chumbley-score fails to provide a result for up to 3\% of the cases. The number of failed tests increases linearly in the size used for the window in the optimization step. The rate of failed tests is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
 \end{enumerate}
 }
 
+
+Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens e.g.\ when the shift to align two markings is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings}(left) also shows that the number of failed tests is approximately linear in the size of the optimization window.
+Tests also fail at a higher rate than expected when the markings are from the same source (right). This difference is the least pronounced around an optimized window size $w_o$ of around 120. However, even in this scenario, the number of failed tests for markings from the same source is about twice as high as expected given the number of same source and different source pairings in the data set.
+
+
+
+<!--
 Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
 
 The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks, using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
 
 ### Signatures
-
+-->
 
 ```{r type2, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -867,6 +874,8 @@ gridExtra::grid.arrange(missings, missingsbymatch, ncol=2)
 
 
 ```
+
+<!--
 Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
 Bullet signatures being compared at this time are therefore from the Hamby 44 and Hamby 252 data. The database setup and pre-processing system used for choosing the Bullet signatures are as described by \citet{aoas}. In order to choose the bullet signatures we first filter out Land_id for Profiles from the Hamby 44 and Hamby 252 data and remove all NA values. Then run_id = 3 is chosen as the signatures generated from this run_id give the closest match. Different run_id's have some different settings for generating the signatures.(The level of smoothing does not seem to be one of them)
@@ -882,10 +891,10 @@ Similar to signatures the run_id = 3 was used when applying the chumbley algorit
 Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
 
 The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function lowess used in the chumbley algorithm).
-
-\pagebreak
+-->
 
 # Results
+<!--
 We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans (a total of 85,491 comparisons) with the pairwise sets for the comparisons given in the table \ref{tab:param}.
 ```{r param}
 param_setting<- all %>% select(wo, wv) %>% group_by(wo, wv) %>% tally() %>% select(wo,wv)
@@ -920,8 +929,8 @@ knitr::kable(list(a27,a28,a29), digits=0, caption = "Confusion Table for differe
 
 
 ## Signatures
-
-
+-->
+<!--
 Figure \ref{fig:type2} gives an overview of type II error rates observed when varying the window size in the optimization step. Two levels of validation window size 30 and 50 were chosen as to compare the error rates for different nominal type I errors. We notice that the trends for these nominal type I errors are similar and in most cases a validation window of 50 has higher type II error than for 30. A change in this trend is seen for a 0.05 $\alpha$ level, although the difference between the two windows is very small for this case. We can also notice an obvious trend of increase in the Type II error as the window of optimization increases and see a minimum around the optimization window size of 120 pixels. Hence we are inclined to choose a smaller validation window size and optimization window as 120.
 
 
@@ -979,7 +988,10 @@ tab <- nsnest %>% unnest(coefs) %>% filter(term=="wo") %>% arrange(match) %>%
   select(-term, -statistic, -p.value)
 knitr::kable(tab, digits=3, caption = "Estimates of the increase in percent of failed tests corresponding to a 100 point increase in the optimization window.", booktabs=TRUE)
 ```
+-->
+<!--
 Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings} also shows that the number of failed tests is approximately linear in the size of the optimization window. Test results from different sources have a much higher chance to fail, raising the question, whether failed tests should be treated as rejections of the null hypothesis of same source. For known non-matches there is a higher possibility that in the optimization pair of windows where cross-correlations are maximum are too far apart, and same shifts of this order hit the end of the signature. 
+-->
 
 ## Profiles
 
