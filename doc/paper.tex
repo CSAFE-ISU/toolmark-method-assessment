@@ -401,74 +401,40 @@ of same source and different source pairings in the data set.
 
 \subsection{Profiles}\label{profiles}
 
-Figure \ref{fig:prof_missings} (a) shows the type II error rates for
-profiles for the optimization window 120 and validation window 30 with
-varying level of coarseness. We can see that the type II error for all
-the nominal \(\alpha\) levels is lowest in the range of 0.20 to 0.35.
-Therefore, a value of 0.25 can be used keeping in mind it keeps the type
-II error lowest while runnning simulations. Thus for comparisons of
-different window sizes etc as seen in the differnt parts of Figure
-\ref{fig:prof_missings} this coarseness value is used.
+\hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
 
-On the other hand Figure \ref{fig:prof_missings} (b) shows if the
-coarseness level set in the chumbley agorithm has any effect on the
-signatures, which are pre-processed and already smoothed to a certain
-extent. From Figure \ref{fig:prof_missings} (b) we can notice that for
-different nominal \(\alpha\) levels, the type II error fluctuates
-slightly but does not change much, thereby helping us conclude that the
-coarseness levels set in the LOWESS smoothing in the chumbley alggorithm
-does effect the type II error much for signatures.
+\hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
 
-\subsubsection{Comparison of profiles and
-signatures}\label{comparison-of-profiles-and-signatures}
+\begin{center}\includegraphics[width=\textwidth]{figures/profile-sketch-1} \end{center}
 
-Another reason for failed tests can be incorrect identification of
-maximum correlation windows in the optimization step as seen in figure
-\ref{fig:prof_missings}(d) because of the level of smoothing, as too
-much smoothing would subdue intricate features that might otherwise help
-in the correlation calculations and correct identification of maximum
-correlation windows irrespective of the size. This would again cause a
-simiar effect as explained for figure \ref{fig:missings} with validation
-windows, irrespective of size, during the shifts end up at the ends of
-the markings resulting in an invalid calculation and failed comparison
-attempt.
-
-In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and
-signatures on the basis of number of failed tests. The profiles chosen
-for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25
-and window of optimization as 120. The signatures in this case are not
-smoothed using the chumbley algorithm step of LOWESS smoothing. Instead
-signatures are used as calculated by \citet{aoas}. The smoothing in
-these signatures were determined and fixed on the basis of their
-performance in the random forest based algorithm proposed by
-\citet{aoas}. The comparison of profiles and signatures with variation
-of validation window size therefore is made on even footing. The trends
-are similar to figure \ref{fig:missings} in the sense that for known
-non-matches the number of failed tests are more for both signatures and
-profiles and increasing linearly with the validation window size. The
-problem is however, worse for profiles which has higher number of failed
-tests than signatures for all validation windows.
-
-The total error for different validation window sizes for signatures and
-profiles can be seen in figure \ref{fig:prof_missings} (e).The
-optimization window size is 120 and profiles are calculated at a default
-0.25 coarseness level while signatures as before are not smoothed again
-in the modified chumbley algorithm. We can see that the total error is
-always higher for profiles as compared to signatures for all sizes of
-validation window.
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
 
 \begin{figure}
 
-{\centering \includegraphics[width=\textwidth]{figures/prof_missings-1} 
+{\centering \includegraphics[width=.6\textwidth]{figures/coarse-1} 
 
 }
 
-\caption{Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures}\label{fig:prof_missings}
+\caption{Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \approx 0.30$}\label{fig:coarse}
 \end{figure}
 
-\pagebreak
+\begin{table}[ht]
+\caption{\label{tab:type2} Type II error rates for profiles and signatures of bullet lands. For profiles, a coarseness value of $c = 0.25$ is used to remove bullet curvature.}
+\centering
+\begin{tabular}{rlrrrr}
+  \hline
+optimization && \multicolumn{4}{l}{Nominal type I error rate $\alpha$}\\  
+window $w_o$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\ 
+  \hline
+ 30 & profiles & 54.40 & 43.80 & 39.70 & 30.00 \\ 
+   30 & signatures & 55.00 & 45.40 & 41.40 & 31.10 \\ \hline
+   50 & profiles & 58.50 & 44.40 & 40.70 & 28.70 \\ 
+   50 & signatures & 62.60 & 49.60 & 44.20 & 30.50 \\ 
+   \hline
+\end{tabular}
+\end{table}
 
-\subsection{Conclusion}\label{conclusion}
+\section{Conclusion}\label{conclusion}
 
 The results suggest that the Nominal type I error \(\alpha\) value shows
 dependence on the size of the window of optimization. For a given window
@@ -503,6 +469,36 @@ compared to other machine-learning based methods \citet{aoas}, and some
 level of modification to the deterministic algorithm needs to be
 identified and tested that would reduce the number of incorrect
 classifications.
+
+\section{Appendix}\label{appendix}
+
+\begin{appendix}
+
+On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
+
+\subsection{Comparison of profiles and signatures}
+
+Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
+
+In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
+
+The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
+
+
+
+
+
+
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/prof_missings-1} 
+
+}
+
+\caption{Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures}\label{fig:prof_missings}
+\end{figure}
+\end{appendix}
 
 \bibliographystyle{agsm}
 \bibliography{bibliography}

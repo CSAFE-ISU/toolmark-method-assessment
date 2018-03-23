@@ -50,6 +50,7 @@ knitr::opts_chunk$set(
 options(knitr.table.format = "latex")
 library(tidyverse)
 library(kableExtra)
+library(xtable)
 ```
 
 ```{r functions}
@@ -152,6 +153,7 @@ errors <- rbind(errorrate(all, 0.001),
                 errorrate(all, 0.005), 
                 errorrate(all, 0.01), 
                 errorrate(all, 0.05))
+errors$type <- "signatures"
 
 ns <- all %>% group_by(wv, wo, match) %>% summarize(
   n_ss = mean(same_shift_n),
@@ -186,7 +188,7 @@ errors2 <- rbind(errorrate(allp, 0.001),
                 errorrate(allp, 0.005), 
                 errorrate(allp, 0.01), 
                 errorrate(allp, 0.05))
-
+errors2$type <- "profiles"
 
 ```
 
@@ -995,80 +997,129 @@ Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. 
 
 ## Profiles
 
-Figure \ref{fig:prof_missings} (a) shows the type II error rates for profiles for the optimization window 120 and validation window 30 with varying level of coarseness. We can see that the type II error for all the nominal $\alpha$ levels is lowest in the range of 0.20 to 0.35. Therefore, a value of 0.25 can be used keeping in mind it keeps the type II error lowest while runnning simulations. Thus for comparisons of different window sizes etc as seen in the differnt parts of Figure \ref{fig:prof_missings} this coarseness value is used.
+\hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
 
-On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
+\hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
 
-### Comparison of profiles and signatures
+```{r profile-sketch, fig.height = 3, fig.width='\\textwidth'}
+profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
+profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
+profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
+profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
 
-Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
+profile$l25 <- predict(loess(data = profile, value~y, span=.25))
+profile$l50 <- predict(loess(data = profile, value~y, span=.5))
+profile$l75 <- predict(loess(data = profile, value~y, span=.75))
+profile$l100 <- predict(loess(data = profile, value~y, span=2))
+  
+pw1 <- profile %>%
+  ggplot(aes(x = y, y = value-lw25)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.25")
 
-In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
+pw2 <- profile %>%
+  ggplot(aes(x = y, y = value-lw50)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.5")
 
-The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
+pw3 <- profile %>%
+  ggplot(aes(x = y, y = value-lw75)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.75")
 
-```{r, fig.cap="Type II errors for different levels of coarseness."}
+pw4 <- profile %>%
+  ggplot(aes(x = y, y = value-lw100)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 1")
+
+
+p1 <- profile %>%
+  ggplot(aes(x = y, y = value-l25)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.25")
+
+p2 <- profile %>%
+  ggplot(aes(x = y, y = value-l50)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.5")
+
+p3 <- profile %>%
+  ggplot(aes(x = y, y = value-l75)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 0.75")
+
+p4 <- profile %>%
+  ggplot(aes(x = y, y = value-l100)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Coarseness 1")
+
+prof  <- profile %>% ggplot(aes (x = y, y = value)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Profile")
+grid.arrange(pw1, pw2, pw3, pw4, p1, p2, p3, p4, prof, ncol=4)
+```
+
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
+
+```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
 e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
   geom_point() + geom_line() +
   theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
-  ylab("Type II error") + ggtitle(label = "(a)")
-
-e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error") + ggtitle(label = "(b)")
-
-#multiplot(e1,e2, cols = 1)
-
+  ylab("Type II error") 
+e1
 ```
 
 
+```{r, include =F}
+wo120_sig <- errors %>% filter(wo==120, wv %in% c(30, 50))
+wo120_pr <- errors2 %>% filter(wo==120, wv %in% c(30, 50), coarse == .25)
 
-```{r}
-#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
-
-total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
-
-total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
-
-
+dt <- rbind(wo120_sig, wo120_pr) %>% 
+  ungroup() %>% 
+  mutate(beta = round(100*beta, 1)) %>%
+  select(wv, type, alpha, beta) %>% 
+  spread(alpha, beta)
+print(xtable(dt), include.rownames=FALSE)
 ```
 
-```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures"}
+\begin{table}[ht]
+\caption{\label{tab:type2} Type II error rates for profiles and signatures of bullet lands. For profiles, a coarseness value of $c = 0.25$ is used to remove bullet curvature.}
+\centering
+\begin{tabular}{rlrrrr}
+  \hline
+optimization && \multicolumn{4}{l}{Nominal type I error rate $\alpha$}\\  
+window $w_o$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\ 
+  \hline
+ 30 & profiles & 54.40 & 43.80 & 39.70 & 30.00 \\ 
+   30 & signatures & 55.00 & 45.40 & 41.40 & 31.10 \\ \hline
+   50 & profiles & 58.50 & 44.40 & 40.70 & 28.70 \\ 
+   50 & signatures & 62.60 & 49.60 & 44.20 & 30.50 \\ 
+   \hline
+\end{tabular}
+\end{table}
 
 
-#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
-miss_1<- nsp %>% filter(wv == 30) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = coarse, y = missperc, shape= "profile", colour = factor(match))) + 
-  #geom_smooth(method="auto", size=.5, se=FALSE) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("Coarseness") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")
-# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
-  #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
-
-miss_2<- nsp %>% filter(coarse == 0.25) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = wv, y = missperc, shape= "profile", colour = factor(match))) + 
-  #geom_smooth(method="auto", size=.5, se=FALSE) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("wv") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(f)")#+ scale_colour_brewer("Match", palette="Set2")
-
-#multiplot(plotlist = list(total1, total2, miss_1, miss_2, e1, e2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
-multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
-```
- \pagebreak
-
-## Conclusion
+# Conclusion
 
 The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
 A Test Fail, i.e. tests in which a particular parameter setting did not return a valid result, happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation, depends on whether known-match or known non-matches has predictive value, with test results from different sources having a much higher chance to fail. On conducting an analysis of all known bullet lands using the adjusted chumbley algorithm, Type II error was identified to be least bad for window of validation 30 and window of optimization 120. In case of unsmoothed raw marks (profiles), Type II error increases with the amount of smoothing and least for LOWESS smoothing coarseness value about 0.25 or 0.3. In an effort to identify the level of adaptiveness of the algorithm, comparisons were made between signatures and profiles. Their comparison with respect to validation window size for a fixed optimization window size suggested that, profiles have a total error (i.e all incorrect classification of known-matches and known non-matches) greater than or equal to the total error of signatures for all sizes of validation window. Profiles also fail more number of times than signatures in a test fail (for different coarseness keeping windows fixed and also for different validation windows keeping coarseness fixed) which lets us conclude that the behaviour of the algorithm for the profiles instead of pre-processed signatures is not better. Finally it should be noted that the current version of the adjusted chumbley algorithm seems to fall short when compared to other machine-learning based methods \citet{aoas}, and some level of modification to the deterministic algorithm needs to be identified and tested that would reduce the number of incorrect classifications.
@@ -1148,3 +1199,77 @@ miss_2
 
 <!-- ### other questions -->
 <!-- How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable. -->
+
+# Appendix
+\begin{appendix}
+
+On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
+
+\subsection{Comparison of profiles and signatures}
+
+Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
+
+In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
+
+The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
+
+```{r, fig.cap="Type II errors for different levels of coarseness."}
+e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
+  ylab("Type II error") + ggtitle(label = "(a)")
+
+e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error") + ggtitle(label = "(b)")
+
+#multiplot(e1,e2, cols = 1)
+
+```
+
+
+
+```{r}
+#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
+
+total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
+
+total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
+
+
+```
+
+```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures"}
+
+
+#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
+miss_1<- nsp %>% filter(wv == 30) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = coarse, y = missperc, shape= "profile", colour = factor(match))) + 
+  #geom_smooth(method="auto", size=.5, se=FALSE) +
+  geom_point(size = 2) + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab("Coarseness") +
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")
+# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
+  #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
+
+miss_2<- nsp %>% filter(coarse == 0.25) %>%
+#ns %>% filter(wv == c(30, 50)) %>%
+  ggplot(aes(x = wv, y = missperc, shape= "profile", colour = factor(match))) + 
+  #geom_smooth(method="auto", size=.5, se=FALSE) +
+  geom_point(size = 2) + 
+  theme_bw() +
+  ylab("Percent of failed tests.") +
+  xlab("wv") +
+  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(f)")#+ scale_colour_brewer("Match", palette="Set2")
+
+#multiplot(plotlist = list(total1, total2, miss_1, miss_2, e1, e2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
+```
+\end{appendix} 
