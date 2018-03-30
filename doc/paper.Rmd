@@ -1001,81 +1001,25 @@ Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. 
 
 \hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
 
-```{r profile-sketch, fig.height = 3, fig.width='\\textwidth'}
+```{r profile-sketch, fig.height = 2.5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles}. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
 profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
 profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
 profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
 profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
 
-profile$l25 <- predict(loess(data = profile, value~y, span=.25))
-profile$l50 <- predict(loess(data = profile, value~y, span=.5))
-profile$l75 <- predict(loess(data = profile, value~y, span=.75))
-profile$l100 <- predict(loess(data = profile, value~y, span=2))
-  
-pw1 <- profile %>%
-  ggplot(aes(x = y, y = value-lw25)) + geom_line() +
+profiles <- tidyr::gather(profile, coarseness, values, lw25:lw75)
+profiles <- profiles %>% mutate(
+  c = readr::parse_number(coarseness)/100
+)
+profiles %>% 
+  ggplot(aes(x = y, y = value-values)) + geom_line() +
   theme_bw() +
   ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.25")
-
-pw2 <- profile %>%
-  ggplot(aes(x = y, y = value-lw50)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.5")
-
-pw3 <- profile %>%
-  ggplot(aes(x = y, y = value-lw75)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.75")
-
-pw4 <- profile %>%
-  ggplot(aes(x = y, y = value-lw100)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 1")
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
+  facet_grid(~c, labeller="label_both")
 
 
-p1 <- profile %>%
-  ggplot(aes(x = y, y = value-l25)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.25")
-
-p2 <- profile %>%
-  ggplot(aes(x = y, y = value-l50)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.5")
-
-p3 <- profile %>%
-  ggplot(aes(x = y, y = value-l75)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 0.75")
-
-p4 <- profile %>%
-  ggplot(aes(x = y, y = value-l100)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Coarseness 1")
-
-prof  <- profile %>% ggplot(aes (x = y, y = value)) + geom_line() +
-  theme_bw() +
-  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
-  ggtitle("Profile")
-grid.arrange(pw1, pw2, pw3, pw4, p1, p2, p3, p4, prof, ncol=4)
 ```
 
 \hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
