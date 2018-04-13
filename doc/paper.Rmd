@@ -51,6 +51,7 @@ options(knitr.table.format = "latex")
 library(tidyverse)
 library(kableExtra)
 library(xtable)
+library(gridExtra)
 ```
 
 ```{r functions}
@@ -273,11 +274,13 @@ In comparison, scans from the profilometer used by \citet{chumbley, hadler} were
 
 This severe limitation in the amount of available data poses the main challenge in adapting the Chumbley score to matching bullet lands, because of the resulting loss in power.
 
+
+<!--
 ## Potential Challenges in Chumbley Score Adaptation
 
-<!--Markings made by screw driver tips \citep{chumbley} are longer and pronounced and about 7 mm in length \citep{manytoolmarks1}, while the groove to groove length of the bullet lands from the Hamby study \citep{hamby} are about 2mm in length. The Ruger pistol barrels used in the  Hamby study have a 9mm caliber. This means that bullets used in these pistols have land markings of only about a quarter of the size of screwdriver toolmarks used by \citet{chumbley, hadler}, therefore raising the problem of potential loss in power of the test. -->
+Markings made by screw driver tips \citep{chumbley} are longer and pronounced and about 7 mm in length \citep{manytoolmarks1}, while the groove to groove length of the bullet lands from the Hamby study \citep{hamby} are about 2mm in length. The Ruger pistol barrels used in the  Hamby study have a 9mm caliber. This means that bullets used in these pistols have land markings of only about a quarter of the size of screwdriver toolmarks used by \citet{chumbley, hadler}, therefore raising the problem of potential loss in power of the test. -->
 
-\hh{The Chumbley score allows a separation of a toolmark into raw and normalized digitized versions. Originally, this mechanism is intended to separate between class characteristics and individual markings, however, in the setting of matching bullet striae, we could also use it to separate bullet curvature in profiles from signatures before matching signatures. }
+
 
 <!--One way to investigate this is to evaluate bullet striations at different resolutions. This gives us an incentive to use both the NIST and Iowa State scans and investigate the effect of length of the digitized mark on the working of the algorithm. Apart from this, the algorithm developed by \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature, whereas striations on bullets are made on their curved surfaces. Therefore, using methods proposed for toolmarks need adaptation in order to give tangible results for bullets. Another challenge that arises from these topographical differences, is the understanding of that effect of different levels of smoothing. Especially investigating its effect on the algorithm performance when signatures are being compared and when raw markings or profiles are being compared.  
 
@@ -299,9 +302,12 @@ Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitize
 <!--The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths.--> 
 The toolmarks under consideration are potentially from two different sources or the same source. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. 
 
-In a pre-processing step  the two markings are smoothed using a lowess \citep{lowess} with coarseness parameter $c$. The purpose of this smoothing is to remove drift and (sub)class characteristics.
-
-The Chumbley scores is calculated in two phases, namely, an optimization step and a validation step.
+In a pre-processing step  the two markings are smoothed using a lowess \citep{lowess} with coarseness parameter $c$. 
+ Originally, this smoothing is intended to remove drift and (sub)class characteristics from individual markings, however, in the setting of matching bullet striae, we can also make use of this mechanism can be used to separate bullet curvature in profiles from signatures before matching signatures. 
+ 
+ 
+After removing sub-class structure, 
+the Chumbley scores is calculated in two steps: an optimization step and a validation step.
 In the optimization step, the two markings are aligned horizontally such that within a pre-defined window of length $w_o$ the correlation between $x(t_1)$ and $y(t_2)$ is maximized:
 \[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
@@ -414,7 +420,6 @@ p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>%
   xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
   ggtitle("Out-of-phase sample")
 
-library(gridExtra)
 grid.arrange(p1,p2, ncol=2)
 ```
 
@@ -1000,25 +1005,50 @@ Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. 
 
 \hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
 
-```{r profile-sketch, fig.height = 2.5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles}. "}
+```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles}. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
 profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
-profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
-profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
-profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
+profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
+#profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
+#profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
+#profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
 
-profiles <- tidyr::gather(profile, coarseness, values, lw25:lw75)
+profiles <- tidyr::gather(profile, coarseness, values, lw20:lw30)
 profiles <- profiles %>% mutate(
   c = readr::parse_number(coarseness)/100
 )
-profiles %>% 
+p1 <- profiles %>% 
   ggplot(aes(x = y, y = value-values)) + geom_line() +
   theme_bw() +
   ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
   xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
-  facet_grid(~c, labeller="label_both")
+  facet_grid(~c, labeller="label_both") 
 
+profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:20.rds")
+profc20$coarseness <- 0.2
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:25.rds")
+profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30.rds")
+profc30$coarseness <- .30
+profc <- bind_rows(profc20, profc25, profc30)
+profc <- profc %>% mutate(
+  locations = chumbley %>% purrr::map_int(.f = function(x) {
+    res <- NULL
+    try(res <- x$locations[1], silent = TRUE)
+    res
+  })
+)
+profsumm <- read.csv("../data/profiles-summary.csv")
+profsumm <- profsumm %>% select(-run_id)
+profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
 
+p2 <- profc %>% 
+  ggplot(aes(x = locations/(length-wo))) +
+  geom_histogram(binwidth = 0.025) +
+  facet_grid(.~coarseness, labeller="label_both") + 
+  theme_bw()
+ 
+grid.arrange(p1, p2, ncol=1)
 ```
 
 \hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
