@@ -303,7 +303,7 @@ Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitize
 The toolmarks under consideration are potentially from two different sources or the same source. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. 
 
 In a pre-processing step  the two markings are smoothed using a lowess \citep{lowess} with coarseness parameter $c$. 
- Originally, this smoothing is intended to remove drift and (sub)class characteristics from individual markings, however, in the setting of matching bullet striae, we can also make use of this mechanism can be used to separate bullet curvature in profiles from signatures before matching signatures. 
+ Originally, this smoothing is intended to remove drift and (sub)class characteristics from individual markings, however, in the setting of matching bullet striae, we can also make use of this mechanism to separate bullet curvature in profiles from signatures before matching signatures. 
  
  
 After removing sub-class structure, 
@@ -1003,9 +1003,9 @@ Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. 
 
 \hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
 
-\hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
+\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
 
-```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles}. "}
+```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
 profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
 profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
@@ -1038,20 +1038,23 @@ profc <- profc %>% mutate(
     res
   })
 )
-# profsumm <- read.csv("../data/profiles-summary.csv")
-# profsumm <- profsumm %>% select(-run_id)
-# profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
-# 
-# p2 <- profc %>% 
-#   ggplot(aes(x = locations/(length-wo))) +
-#   geom_histogram(binwidth = 0.025) +
-#   facet_grid(.~coarseness, labeller="label_both") + 
-#   theme_bw()
-#  
-# grid.arrange(p1, p2, ncol=1)
+
+profsumm <- read.csv("../data/profiles-summary.csv")
+profsumm <- profsumm %>% select(-run_id)
+profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
+
+p2 <- profc %>% 
+  ggplot(aes(x = locations/(length-wo))) +
+  geom_histogram(binwidth = 0.025) +
+  facet_grid(.~coarseness, labeller="label_both") + 
+  theme_bw() +
+  xlab(expression("Relative optimal location "~t^o)) +
+  ylab("Number of profiles")
+ 
+grid.arrange(p1, p2, ncol=1)
 ```
 
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
 
 ```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
 e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +

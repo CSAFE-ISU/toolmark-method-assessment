@@ -262,8 +262,8 @@ In a pre-processing step the two markings are smoothed using a lowess
 \citep{lowess} with coarseness parameter \(c\). Originally, this
 smoothing is intended to remove drift and (sub)class characteristics
 from individual markings, however, in the setting of matching bullet
-striae, we can also make use of this mechanism can be used to separate
-bullet curvature in profiles from signatures before matching signatures.
+striae, we can also make use of this mechanism to separate bullet
+curvature in profiles from signatures before matching signatures.
 
 After removing sub-class structure, the Chumbley scores is calculated in
 two steps: an optimization step and a validation step. In the
@@ -400,7 +400,7 @@ of same source and different source pairings in the data set.
 
 \hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
 
-\hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results to compare the results against a }
+\hh{XXX We have been operating under a false assumption: smoothing the signature at f=1 DOES change it - see figure \ref{fig:profile-sketch}. We need to re-run some of the results }
 
 \begin{figure}
 
@@ -408,10 +408,10 @@ of same source and different source pairings in the data set.
 
 }
 
-\caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles}. }\label{fig:profile-sketch}
+\caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. }\label{fig:profile-sketch}
 \end{figure}
 
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.35. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30. For the remainder of the analysis we use a fixed value of coarseness of 0.25. }
 
 \begin{figure}
 
