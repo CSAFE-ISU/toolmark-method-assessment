@@ -260,9 +260,6 @@ land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
 ## Scans for land engraved areas
 
 Comparisons of striae from bullets are usually based on comparisons of striae in land engraved areas, which are extracted in form of cross sections, called *profiles* \citep{aoas,ma2004}. From profiles bullet *signatures* \citep{chu2013,aoas} are extracted as residuals of a loess fit or Gaussian filter. This effectively removes topographic structure from the data in the attempt to increase the signal to noise ratio. The span of the loess fit was found using cross-validation, as described by \citet{aoas}.
- <!-- Signatures are considered to be noise free and a good reflection of the key attributes of the raw marking, and the unique features of a bullet. \hh{Do you have a reference for the previous sentenced?} A  detailed discussion of the extraction technique for signatures is given in \citet{aoas}. -->
- <!--, where comprehensive details about the height at which profile is to be selected, removing curvature, smoothing, identifying groove locations are explained.-->
-
 
 \hh{don't split the discussion on the size. between the next paragraph and }
 <!--The majority of Bullet profiles and signatures of the Hamby study \citep{hamby} used in this paper are extracted by procedures mentioned by  \citet{aoas}.--> 
@@ -275,23 +272,6 @@ In comparison, scans from the profilometer used by \citet{chumbley, hadler} were
 This severe limitation in the amount of available data poses the main challenge in adapting the Chumbley score to matching bullet lands, because of the resulting loss in power.
 
 
-<!--
-## Potential Challenges in Chumbley Score Adaptation
-
-Markings made by screw driver tips \citep{chumbley} are longer and pronounced and about 7 mm in length \citep{manytoolmarks1}, while the groove to groove length of the bullet lands from the Hamby study \citep{hamby} are about 2mm in length. The Ruger pistol barrels used in the  Hamby study have a 9mm caliber. This means that bullets used in these pistols have land markings of only about a quarter of the size of screwdriver toolmarks used by \citet{chumbley, hadler}, therefore raising the problem of potential loss in power of the test. -->
-
-
-
-<!--One way to investigate this is to evaluate bullet striations at different resolutions. This gives us an incentive to use both the NIST and Iowa State scans and investigate the effect of length of the digitized mark on the working of the algorithm. Apart from this, the algorithm developed by \citet{hadler} has only been tested for flatter and wider surfaces which have negligible curvature, whereas striations on bullets are made on their curved surfaces. Therefore, using methods proposed for toolmarks need adaptation in order to give tangible results for bullets. Another challenge that arises from these topographical differences, is the understanding of that effect of different levels of smoothing. Especially investigating its effect on the algorithm performance when signatures are being compared and when raw markings or profiles are being compared.  
-
-Some other challenges associated with the adaptation process call for a brief understanding of the methodology involved. The Chumbley method and algorithm works on the premise of comparison windows that are supposed to represent small segments of pixels of equal sizes in the two markings.  These windows are to be compared in a predetermined fashion and are termed as windows of optimization and validation. The optimization window is selected in the first step called the optimization step where areas/windows of best agreement between the the two markings are found. 
-
-The window of optimization for bullet striations are shorter as bullet signatures in terms of absolute length (in mm), are smaller compared to toolmarks. Even in terms of digitized pixels, there is no straightforward way of establishing what window size is to be chosen. One important way to address this is to keep the number of windows of optimization sufficiently large or not too small. This means, if the number of windows are too small we inadvertently use bigger window sizes as we want to compare all segements of one mark with the segments of the other mark. This leads to not giving enough emphasis to smaller segements of the two marking that might be in high agreement. In terms of absolute length we end up comparing smaller segments between the two markings while dealing with bullet lands, than those being compared for toolmarks. 
-
-For too large window sizes, the weight of small features that would otherwise uniquely classify a signature and hence identify the region of agreement is vastly reduced. On the other hand, this introduces another problem as, if we go too small in the window of optimization, the unique features of the trace segments are lost and all seem similar. The problem of distinctiveness in the structure of bullet striations may also lead to potential failure of the algorithm to identify correct windows of agreements or not be able to identify these windows at all. This may lead to incorrect classification of bullets as coming from the same-source (or matches) or from different source (or non-matches). 
-
-Thus, the comaparison windows have a direct influence on the false positives and false negatives, making identification of the optimum sizes of these windows very important. This raises important questions about how and what parameter settings need to be chosen for bullet land comparison. Something similar is done in \citet{afte-chumbley} for toolmark comparisons of slip-joint pliers where optimum window sizes are determined. There is a need to figure out the best parameter settings which minimizes the errors for unsmoothed markings or profiles and pre-processed signatures. An analysis of these error rates and comparison with other methods will help us understand the adaptibility of the chumbley score to bullets.  
--->
 
 ## The Chumbley Score Test
 
@@ -763,10 +743,84 @@ Profiles and signatures were extracted from all scans as described in \citet{aoa
 
 
 ## Setup
+\hh{XXX the description below needs to be updated.}
 
 \hh{using (a) signatures and (b) profiles, run chumbley score across scans from NIST and CSAFE for various settings of $w_o$ and $w_v$ (and coarseness $c$ for profiles).}
 
+
 We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST (a total of 85,491 comparisons). The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.
+
+
+
+# Results
+
+## Profiles
+
+\hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
+
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minim in type II reached at a coarseness $c = 0.25$. }
+\hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
+```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
+e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
+  ylab("Type II error") 
+e1
+```
+
+\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
+
+```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
+profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
+profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
+profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
+#profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
+#profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
+#profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
+
+profiles <- tidyr::gather(profile, coarseness, values, lw20:lw30)
+profiles <- profiles %>% mutate(
+  c = readr::parse_number(coarseness)/100
+)
+p1 <- profiles %>% 
+  ggplot(aes(x = y, y = value-values)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
+  facet_grid(~c, labeller="label_both") 
+
+profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:20.rds")
+profc20$coarseness <- 0.2
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:25.rds")
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:50-c:25.rds")
+profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30.rds")
+profc30$coarseness <- .30
+profc <- bind_rows(profc20, profc25, profc30)
+profc <- profc %>% mutate(
+  locations = chumbley %>% purrr::map_int(.f = function(x) {
+    res <- NULL
+    try(res <- x$locations[1], silent = TRUE)
+    res
+  })
+)
+profsumm <- read.csv("../data/profiles-summary.csv")
+profsumm <- profsumm %>% select(-run_id)
+profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
+
+p2 <- profc %>% 
+  ggplot(aes(x = locations/(length-wo))) +
+  geom_histogram(binwidth = 0.025) +
+  facet_grid(.~coarseness, labeller="label_both") + 
+  theme_bw() +
+  xlab(expression("Relative optimal location "~t^o)) +
+  ylab("Number of profiles")
+ 
+grid.arrange(p1, p2, ncol=1)
+```
+
+
 
 
 ## Results
@@ -1111,14 +1165,14 @@ wo120_profile <- errors2 %>% filter(wo==120, coarse == 0.25) %>%
 
 #combined120 <- full_join(errors2 %>% filter(wo==120, coarse == 0.25), wo120 %>% 
 
-wo120_1<- wo120 %>% gather(type, error, beta) %>%  
+wo120_1<- wo120_profile %>% gather(type, error, beta) %>%  
   ggplot(aes(x = wv, y = error, colour = factor(alpha)))+
   geom_line(linetype=5)+  geom_point(shape= 24) + facet_wrap(~type, scales="free") +
   theme_bw()+ 
   theme(legend.position="bottom") + ggtitle("Signatures" , subtitle = "Varying validation window sizes, Optimization window = 120")
 
 combined120<- 
-  ggplot(data = wo120 %>% gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha)))+
+  ggplot(data = wo120_profile %>% gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha)))+
   geom_line(aes(linetype="Signatures"))+  geom_point(shape= 24) + 
   geom_line(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
   gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha), linetype = "Profiles")) +       geom_point(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
@@ -1175,7 +1229,7 @@ miss_2
 
 <!-- ### other questions -->
 <!-- How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable. -->
-
+<!--
 # Appendix
 \begin{appendix}
 
@@ -1207,13 +1261,13 @@ e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=fa
 
 
 
-```{r}
+```{r, eval=FALSE}
 #errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
 
 total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
 
-total2<- wo120 %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
+total2<- wo120_profile %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
 
 
@@ -1249,3 +1303,4 @@ miss_2<- nsp %>% filter(coarse == 0.25) %>%
 multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
 ```
 \end{appendix} 
+-->
