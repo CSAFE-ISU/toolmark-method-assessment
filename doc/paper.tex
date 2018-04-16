@@ -179,22 +179,23 @@ discussion. \citet{aoas} use multiple features like CCF, CMS, D
 land against every other land of digitised versions of Hamby 252 and
 Hamby 44 \citep{hamby} published on the NIST Ballistics Database
 \citep{nist}. The authors report an out-of-bag overall error rate of
-0.46\%, comprised of a false positive error rate of 30.05\% and a false
-negative rate of 0.026\%.
+0.46\%, comprised of an error rate of 30.05\% of same-source pairs that
+were not identified and an error rate of 0.026\% of different-source
+pairs that were incorrectly identified as same-source.
 
 The Chumbley score provides us with another approach in the same-source
 assessment of bullet striation marks. \citet{chumbley} compare two
 toolmarks for same-source. The data for this study was obtained from 50
 sequentially manufactured screwdriver tips. \citet{chumbley} report
 error rates for markings made by the tips at different angles. For
-markings made under a 30 degree the authors report an average false
-negative error rate of 0.023 and an average false positive error rate of
-0.09. For other angles the error rates for false negatives stay the same
-while the rate of false positives decreases to 0.01.
-\hh{are the angles steeper?} The paper by \citet{hadler} is based on the
-same data but the authors focus on markings made under the same angle.
-The error rates associated with the deterministic version of the score
-are 0.06 for false negatives and a false poisitive error rate of 0.
+markings made at 30 degree the authors report an average false negative
+error rate of 0.089 and an average false positive error rate of 0.023.
+For other angles of 60 and 85 degrees the false negatives error rate is
+0.09 while the rate of false positives decreases to 0.01. The paper by
+\citet{hadler} is based on the same data but the authors focus on
+markings made under the same angle. The error rates associated with the
+deterministic version of the score are 0.06 for false negatives and a
+false positive error rate of 0.
 
 \begin{figure}
 \centering
@@ -212,12 +213,10 @@ Comparisons of striae from bullets are usually based on comparisons of
 striae in land engraved areas, which are extracted in form of cross
 sections, called \emph{profiles} \citep{aoas,ma2004}. From profiles
 bullet \emph{signatures} \citep{chu2013,aoas} are extracted as residuals
-of a loess fit or Gaussian filter. Signatures are considered to be noise
-free and a good reflection of the key attributes of the raw marking, and
-the unique features of a bullet.
-\hh{Do you have a reference for the previous sentenced?} A detailed
-discussion of the extraction technique for signatures is given in
-\citet{aoas}.
+of a loess fit or Gaussian filter. This effectively removes topographic
+structure from the data in the attempt to increase the signal to noise
+ratio. The span of the loess fit was found using cross-validation, as
+described by \citet{aoas}.
 
 \hh{don't split the discussion on the size. between the next paragraph and }
 There are two sources of scans for sets from the Hamby study available
@@ -243,11 +242,6 @@ This severe limitation in the amount of available data poses the main
 challenge in adapting the Chumbley score to matching bullet lands,
 because of the resulting loss in power.
 
-\subsection{Potential Challenges in Chumbley Score
-Adaptation}\label{potential-challenges-in-chumbley-score-adaptation}
-
-\hh{The Chumbley score allows a separation of a toolmark into raw and normalized digitized versions. Originally, this mechanism is intended to separate between class characteristics and individual markings, however, in the setting of matching bullet striae, we could also use it to separate bullet curvature in profiles from signatures before matching signatures. }
-
 \subsection{The Chumbley Score Test}\label{the-chumbley-score-test}
 
 The Chumbley score algorithm takes input in form of two digitized
@@ -265,14 +259,17 @@ represented above, are the final pixel indexes of each marking and
 therefore give the respective lengths of the markings.
 
 In a pre-processing step the two markings are smoothed using a lowess
-\citep{lowess} with coarseness parameter \(c\). The purpose of this
-smoothing is to remove drift and (sub)class characteristics.
+\citep{lowess} with coarseness parameter \(c\). Originally, this
+smoothing is intended to remove drift and (sub)class characteristics
+from individual markings, however, in the setting of matching bullet
+striae, we can also make use of this mechanism can be used to separate
+bullet curvature in profiles from signatures before matching signatures.
 
-The Chumbley scores is calculated in two phases, namely, an optimization
-step and a validation step. In the optimization step, the two markings
-are aligned horizontally such that within a pre-defined window of length
-\(w_o\) the correlation between \(x(t_1)\) and \(y(t_2)\) is maximized:
-\[
+After removing sub-class structure, the Chumbley scores is calculated in
+two steps: an optimization step and a validation step. In the
+optimization step, the two markings are aligned horizontally such that
+within a pre-defined window of length \(w_o\) the correlation between
+\(x(t_1)\) and \(y(t_2)\) is maximized: \[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
 \] This results in an optimal vertical (in-phase) shift of
 \(t_1^o - t_2^o\) for aligning the two markings.
