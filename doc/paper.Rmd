@@ -292,9 +292,11 @@ In the optimization step, the two markings are aligned horizontally such that wi
 \[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
 \]
-This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. \hh{We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/T_i$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. }
+This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. \hh{We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. }
 
 In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
+
+\hh{XXX summarise in formula}
 
 ```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples."}
 sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
@@ -750,9 +752,22 @@ Profiles and signatures were extracted from all scans as described in \citet{aoa
 
 We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST (a total of 85,491 comparisons). The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.
 
+## Failed Tests
+
+\hh{number of failed tests for default parameter settings -- XXX what are the defaults? wo:10 percent, coarseness 0.25, wv XXX?}
+
+\hh{diagnose problem: use of optimal location in getting the pairs for different-shift correlations}
+\hh{figure: number of diff shift pairs and location}
 
 
-# Results
+# A modified test
+
+\hh{fix the algorithm - all of the other properties in Hadler and morris still hold.}
+
+\hh{number of failed tests down. }
+
+
+# Comparison of Results
 
 ## Profiles
 
@@ -791,11 +806,10 @@ p1 <- profiles %>%
   xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
   facet_grid(~c, labeller="label_both") 
 
-profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:20.rds")
+profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_20.rds")
 profc20$coarseness <- 0.2
-profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30-c:25.rds")
-profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:50-c:25.rds")
-profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo:160-wv:30.rds")
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_25.rds")
+profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30.rds")
 profc30$coarseness <- .30
 profc <- bind_rows(profc20, profc25, profc30)
 profc <- profc %>% mutate(
@@ -814,7 +828,7 @@ p2 <- profc %>%
   geom_histogram(binwidth = 0.025) +
   facet_grid(.~coarseness, labeller="label_both") + 
   theme_bw() +
-  xlab(expression("Relative optimal location "~t^o)) +
+  xlab(expression("Relative optimal location "~t^*)) +
   ylab("Number of profiles")
  
 grid.arrange(p1, p2, ncol=1)
