@@ -92,6 +92,8 @@
 \newcommand{\gk}[1]{{\textcolor{green}{#1}}}
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
 
+\setlength\parindent{0pt}
+
 \tableofcontents
 \newpage
 
@@ -282,21 +284,24 @@ optimal vertical shift as determined in the first step, whereas for the
 second set the windows are extracted using a different (out-of-phase)
 shift.
 
-More precisely, \citet{hadler} define same-shift pairs of length \(w_v\)
-to start in \((q^{(1)}_i, q^{(2)}_i)\), where \(q^{(k)}_i\) has the form
+More precisely, let us define starting points \(s_i^{(k)}\) for each
+signature \(k = 1, 2\) as
 
 \begin{eqnarray*}
-q^{(k)}_i &=& t_k^* + i w_v \text{ for } i = -1, -2, ...\\
-q^{(k)}_i &=& t_k^* + w_ o + i w_v \text{ for } i = 0, 1, 2, ...
+s^{(k)}_i = 
+\begin{cases}
+t_k^* + i w_v & \text{ for } i < 0 \\
+t_k^* + w_ o + i w_v & \text{ for } i \ge 0,
+\end{cases}
 \end{eqnarray*}
 
-for all integer values of \(i\) for which both
-\(0 < q^{(1)}_i \le T_1 - w_v\) and \(0 < q^{(2)}_i \le T_2 - w_v\).
+for integer values of \(i\) with \(0 < s^{(k)}_i \le T_k - w_v\).
 
-Similarly, different-shift pairs are based on signature segments of
-length \(w_v\) starting in \((q^{(1)}_i, q^{(2)}_{-i})\), for all
-integer values of \(i\) for which both \(0 < q^{(1)}_i \le T_1 - w_v\)
-and \(0 < q^{(2)}_{-i} \le T_2 - w_v\).
+Same-shift pairs of length \(w_v\) are defined in \citet{hadler} as all
+pairs \((s_i^{(1)}, s_i^{(2)})\) for all integer values \(i\) for which
+both \(s_i^{(1)}\) and \(s_i^{(2)}\) are defined. Similarly,
+different-shift pairs are defined as \((s_i^{(1)}, s_{-i}^{(2)})\) for
+all \(i\) where both \(s_i^{(1)}\) and \(s_{-i}^{(2)}\) are defined.
 
 \begin{figure}
 
@@ -307,7 +312,7 @@ and \(0 < q^{(2)}_{-i} \le T_2 - w_v\).
 \caption{Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples.}\label{fig:win-comparison}
 \end{figure}
 
-For both samples the correlations between the pairs of markings is then
+For both samples the correlations between the pairs of markings are then
 calculated. The intuition here is that for two markings from the same
 source the correlation for the in-phase sample should be high, while the
 correlations of the out-of-phase sample provide a measure for the
