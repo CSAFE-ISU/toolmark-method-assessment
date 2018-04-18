@@ -9,6 +9,7 @@
 \usepackage{longtable}
 \usepackage{array}
 \usepackage{multirow}
+\usepackage{subfig}
 \usepackage[table]{xcolor}
 \usepackage{wrapfig}
 \usepackage{float}
@@ -111,11 +112,11 @@ of the two toolmarks being in ``sufficient agreement''
 \citep{afte-toolmarks1998}. AFTE describes the term ``sufficient
 agreement'' as the possibility of another tool producing the markings
 under comparison, as practically impossible \citep{afte-toolmarks1998}.
-This subjectivity in the assessment as well as the lack of error rates
-are the main points of criticisms first raised by the National Research
-Council in 2009 \citep{NAS:2009} and later emphasized further by the
-President's Council of Advisors on Science and Technology
-\citep{pcast2016}.
+Potential subject bias in the assessment as well as the lack of
+specified error rates are the main points of criticisms first raised by
+the National Research Council in 2009 \citep{NAS:2009} and later
+emphasized further by the President's Council of Advisors on Science and
+Technology \citep{pcast2016}.
 
 Technological advances, such as profilometers and confocal microscopy
 allow to measure 3D surfaces in a high-resolution digitized form. This
@@ -301,7 +302,16 @@ Same-shift pairs of length \(w_v\) are defined in \citet{hadler} as all
 pairs \((s_i^{(1)}, s_i^{(2)})\) for all integer values \(i\) for which
 both \(s_i^{(1)}\) and \(s_i^{(2)}\) are defined. Similarly,
 different-shift pairs are defined as \((s_i^{(1)}, s_{-i}^{(2)})\) for
-all \(i\) where both \(s_i^{(1)}\) and \(s_{-i}^{(2)}\) are defined.
+all \(i\) where both \(s_i^{(1)}\) and \(s_{-i}^{(2)}\) are defined (see
+\autoref{sketch-same-diff}).
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/sketch-same.png}
+
+\includegraphics[width=.7\textwidth]{images/sketch-diff.png}
+\caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). }
+\end{figure}
 
 \begin{figure}
 
@@ -312,18 +322,18 @@ all \(i\) where both \(s_i^{(1)}\) and \(s_{-i}^{(2)}\) are defined.
 \caption{Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples.}\label{fig:win-comparison}
 \end{figure}
 
-For both samples the correlations between the pairs of markings are then
-calculated. The intuition here is that for two markings from the same
-source the correlation for the in-phase sample should be high, while the
-correlations of the out-of-phase sample provide a measure for the
-base-level correlation for non-matching marks of a given length \(w_v\).
-The Chumbley score is then computed as a Mann Whitney U statistic to
-compare between in-phase sample and out-of-phase sample. In the original
-method proposed in \citet{chumbley} both in-phase and out-of-phase
-sample are extracted randomly, whereas \citet{hadler} proposed
-deterministic rules for both samples to make the resulting score
-deterministic while simultaneously avoiding overlaps within selected
-marks to ensure independence.
+For both same- and different-shift pairs correlations between the
+markings are calculated. The intuition here is that for two markings
+from the same source the correlation for the in-phase sample should be
+high, while the correlations of the out-of-phase sample provide a
+measure for the base-level correlation for non-matching marks of a given
+length \(w_v\). The Chumbley score is then computed as a Mann Whitney U
+statistic to compare between in-phase sample and out-of-phase sample. In
+the original method proposed in \citet{chumbley} both in-phase and
+out-of-phase sample are extracted randomly, whereas \citet{hadler}
+proposed the above specified deterministic rules for both samples to
+make the resulting score deterministic while simultaneously avoiding
+overlaps within selected marks to ensure independence.
 
 \section{Testing setup}\label{testing-setup}
 
@@ -370,7 +380,7 @@ for a total of 85,491 land-to-land comparisons.
 Initially, the default settings suggested in \citet{hadler} were used:
 \(w_o = 120\) pixels or about 190 \(\mu m\) (ten percent of the average
 length of profiles) and coarseness \(c = 0.25\). \autoref{fig:fails}
-shows the percentage of failed tests among the 86k land-to-land
+shows the percentage of failed tests among the 85,491 land-to-land
 comparisons of the NIST data for different values of the validation
 window size \(w_v\). For same-source lands up to 12.5 percent of the
 tests fail.
@@ -384,8 +394,24 @@ tests fail.
 \caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails. The percentage of failures is higher for same-source lands than for different source lands.}\label{fig:fails}
 \end{figure}
 
+Looking closer, we see that the problem lies in the way the
+different-shift pairs are picked: the number of possible different-shift
+pairs depends on the location of the optimal locations \(t_1^o\) and
+\(t_2^o\). Whenever are close to the boundaries, the number of possible
+pairings decreases and reaches zero, if \(t_i^{(o)} < w_v\) or
+\(t_i^{(o)} > T_i-w_o- w_v\). For uniformly distributed locations
+\(t_i^{(o)}\), this results in a probability of failure of
+\(2 w_v / (T_i-w_o)\), or about 5.6\% for an average length of \(T_i\)
+of 1200 pixels, \(w_o = 120\) pixels and \(w_v = 30\) pixels.
+
 \hh{diagnose problem: use of optimal location in getting the pairs for different-shift correlations}
 \hh{figure: number of diff shift pairs and location}
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. }
+\end{figure}
 
 \section{A modified test}\label{a-modified-test}
 
