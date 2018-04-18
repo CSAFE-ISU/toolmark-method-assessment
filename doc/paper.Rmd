@@ -307,14 +307,14 @@ t_k^* + w_ o + i w_v & \text{ for } i \ge 0,
 \end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le T_k - w_v$.
 
 Same-shift pairs of length $w_v$ are defined in \citet{hadler} as all 
-pairs $(s_i^{(1)}, s_i^{(2)})$ for all integer values $i$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. Similarly, different-shift pairs are defined as $(s_i^{(1)}, s_{-i}^{(2)})$ for all $i$ where both $s_i^{(1)}$ and  $s_{-i}^{(2)}$ are defined (see \autoref{sketch-same-diff}).
+pairs $(s_i^{(1)}, s_i^{(2)})$ for all integer values $i$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. Similarly, different-shift pairs are defined as $(s_i^{(1)}, s_{-i-1}^{(2)})$ for all $i$ where both $s_i^{(1)}$ and  $s_{-i-1}^{(2)}$ are defined (see \autoref{sketch-same-diff}).
 
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=.7\textwidth]{images/sketch-same.png}
 
 \includegraphics[width=.7\textwidth]{images/sketch-diff.png}
-\caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). }
+\caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). Filled in rectangles show pairings resulting in correlations, unfilled rectangles are segments without a match.}
 \end{figure}
 
 
@@ -547,17 +547,29 @@ In the original method proposed in \citet{chumbley} both in-phase and out-of-pha
 
 Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result, either because the number of eligible same-shift pairs is zero, or the number of different-shift opairs is zero. 
 
-The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$. For uniformly distributed optimal locations, we expect to see these situation with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For  an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
+The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$. While we can assume that once (sub-)class characteristics are removed, optimal locations $t_i^{o}$ are uniformly distributed across the length of the profile, we cannot assume that $t_1^o$ and $t_2^o$ are independent of each other. In particular, for same-source profiles, we would expect a strong dependency between these locations. However, for different source matches, an argument of independence in the locations could be made. In that case, we expect a test to fail with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
 
-The number of possible different-shift pairs also depends on the location of  the  optimal locations $t_1^o$ and $t_2^o$. Whenever the optimal locations are close to the boundaries, the number of possible pairings decreases and reaches zero, if $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. For uniformly distributed locations $t_i^{(o)}$, this results in an expected rate of failure of $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels.
+The number of possible different-shift pairs also depends on the location of  the  optimal locations $t_1^o$ and $t_2^o$. Whenever the optimal locations are close to the boundaries, the number of possible pairings decreases and reaches zero, if $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. Assuming a correlation between optimal locations $t_1^o$ and $t_2^o$ of close to one for same-source profiles, this results in an expected rate of failure of $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels. Assuming independence in the optimal locations for different source profiles the expected probability for a failed test is, again, $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$.
 
-\hh{diagnose problem: use of optimal location in getting the pairs for different-shift correlations}
-\hh{figure: number of diff shift pairs and location}
+While failures due to missing correlations from same-shift pairs are unavoidable by definition of the Chumbley score, failures due to missing correlations from different-shift pairs can be prevented by using a different strategy in assigning pairs.
+
+Using the same notation as in \autoref{eq.start}, we define same-shift pairs identical to \citet{hadler} as pairs $(s_i^{(1)}, s_i^{(2)})$ for all $i$ where the boundary conditions of both sequences are met simultaneously. Let us assume that this results in $I$ pairs. Define $s_(j)^{(k)}$ to be the $j$th starting location in sequence $k = 1, 2$, i.e.\ $s_(1)^{(k)} < s_(2)^{(k)} < ... < s_(I)^{(k)}$.  
+
+We then define the pairs for different-shifts as
+\begin{equation}\label{eq.diff2}
+\left(s_{(j)}^{(1)}, s_{(I-j+1)}^{(1)} \right) \text{ for } j = 
+\begin{cases}
+1, ..., I & \text{ for even } I \\
+1, ..., (I-1)/2, (I-1)/2 + 2, ..., I & \text{ for odd } I
+\end{cases},
+\end{equation}
+i.e.\ for an odd number of same-shift correlations, we skip the middle pair for the different-shift correlations (see \autoref{sketch-diff-2}).
+This pairing ensures that the number of different-shift pairings is the same or at most one less than the number of same-shift pairings in all tests.
 
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
-\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. }
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair. }
 \end{figure}
 
 <!--
