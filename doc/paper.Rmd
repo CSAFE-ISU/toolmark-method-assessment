@@ -572,128 +572,11 @@ This pairing ensures that the number of different-shift pairings is the same or 
 \caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair. }
 \end{figure}
 
-<!--
-The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done. This in the end, effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not. -->
-
-<!-- The word 'pixel' refers to the resolution of the confocal light microscope. In the case for bullet signatures extracted from NIST ballistics database \citep{nist} of the Hamby study, a pixel corresponds to approximately 1.56 microns. -->
-
-<!--
-The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated as a measure to differentiate between matches and non-matches. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm.-->
-<!-- The algorithm starts with the optimization step where the area of best agreement in the two markings being compared is identified. Comparison window size is predefined. Each window of the first marking is compared with all windows of the second marking. A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what is intuitively expected for matches, and not expected intuitively for non matches. 
-\citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters. The mututal dependence was due to the serial correlation in surface depth values of a marking. Also a random sampling sub step in the validation phase makes a group of pixels to be chosen more than once and hence introduces lack of independence in certain steps. The reason for removing the mutual dependence was the Mann-Whitney U statistic works under the assumption of independence of parameters.-->
-<!--
-The validation step builds on this with two sub-steps namely, same shift and different shift. As the aim is to come up with a non-parameteric U statistic, \citet{hadler} proposed a normalization procedure in the validation step which goes to some extent to address the issue of mutual dependence. A series of windows are chosen in both the same and different shift sub-steps for the purpose of comparison. Both substeps were modified by \citet{hadler} who introduced a deterministic rule for sampling of windows in the same-shift and different shift as opposed to the originally proposed random sampling by \citet{chumbley}.
-In th same shift substep the chosen series of windows are at a common distance (rigid-shifts) from the window earlier identified as the region of best agreement in the optimization step. The correlation of these windows generally turn out to be lower than the maximum correlation window. The significance is that these same shift windows still have large enough correlation values for the two markings being compared that are in reality a match. Any choice of maximum correlation windows (where correlation values are often near 1) for non-matches in the optimization step are also validated by this sub-step. This is because the same-shift correlations would not be anywhere as large for same-shift windows when all windows in the sub-step are compared.
-The different shift substep on the other hand gives perspective to the correlation values of the same shift window correlation values. There are no rigid-shifts but different shifts where distance from the maximum correlation window are chosen randomly by \citet{chumbley} and deterministically as per \citet{hadler}. This means that there is an equal possibilty of comparing a trace segment from one marking to any trace segment or window in the second marking.
-
-Neither of above sets of correlation in the two sub-steps are allowed to include the maximum correlation window as identified earlier. Therefore the assumption is that if two markings match each other, the same-shift correlations would be larger than the different-shift windows.
-And if they are not a match the correlations in the two sets will be very similar. The U-statistic tests for the null hypothesis that the two markings are not a match and are therefore not made by the same source.  As given by \citet{hadler}, it is computed from the joint rank of all correlations of both the same and different shift samples. 
--->
-<!--
-##################
-
-
-<!-- Compairing pairs of toolmarks with the intention of matching it to a tool has been studied many times in the past. Extensive examples can be found in literature for tools and toolmark research ranging from screwdrivers \citep{manytoolmarks1, manytoolmarks2, chumbley} to groove pliers \citep{manytoolmarks2} to slip-joint pliers \citep{afte-chumbley} and many more. In comparison to this, same source matching of bullets to firearms has not been examined as prominently as that of toolmarks. Even less information is available on validity of methods and error rates associated with firearms examination. The National Academy of Sciences in its report in 2009 \citep{NAS:2009} discussed the need for determining error rates in methods proposed for firearms examination. As seen in the case of most forensic applications, the first step for same source matching and error rate determination involves identification of unique features that are characteristic of the object at hand. For the case of bullets and firearms, striation marks on the surface of the bullet are considered to be such markings that can be used in methods for same source matching. These marks are often a product of rifling and impurities and defects due to manufacturing in the barrel of the gun, which leads to engravings on the bullet surface \citep{afte-article1992}. In current practice, firearm examiners invariably make visual comparisons of bullet striae and use visual assesment tools to dignify bullets as being matches and non-matches. One way of accomplishing anykind of comparison between bullets is to do a comparison between surface marking of two or more bullet lands. Bullet Lands are considered to be areas between grooves made by the rifling action of the barrel and the markings on them are considered to be unique. The land engraved markings or sometimes termed as Bullet profiles \citep{aoas,ma2004} are striation marks made on Bullet lands and often used for these land to land comparisons. Bullet Signatures is another word used in literature as seen in the work of \citet{chu2013} and \citet{aoas}. In our context bullet signatures refer to a processed version of the raw land engraved markings or profiles. The generation of bullet signatures involves first extraction of a bullet profile by taking the cross-sectional of the surface at a given height and then using loess fits to model the structure. The residuals of this fit are called signatures, which are considered to be noise free and a good reflection of the class charecteristics and unique features of a bullet. A more detailed version of the extraction technique of signatures is discussed by \citet{aoas}, where comprehensive details about the height at which profile is to be selected, removing curvature, smoothing, identifying groove locations are explained. Figure \ref{fig:rgl} shows us how the extracted signature from a bullet land lines up with the image of the land from which it was extracted. We can see also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature. -->
-
-
-<!-- In a previous study conducted by \citet{aoas} a machine learning based algorithm was developed for same source matching of bullets and error rates were discussed using the database from the Hamby Study \citep{hamby}. The method proposed by \citet{chumbley} (and later improved by \citet{hadler}) also provides a means to determine error rates and claims to reduce subject bias. Therefore, giving us a strong motivation to explore the adaptibility of the Chumbley score methodology to bullets. In this paper, we take this toolmark based methodology and try to apply and adapt it to bullets. After this, we consequently discuss about the efforts in doing so, along with the associated error rates. The data used in this paper also belongs to the Hamby Study \citep{hamby}. This gives us a common platform for comparing the performance of the chumbley method on bullets with the already existing method proposed by \citet{aoas} for bullets. As a brief overview, \citet{chumbley}, in their paper, compare two toolmarks with the intention of determining if it comes from the same tool.  They use an empirical based setup to validate their proposed algorithm and quantitative method which calculates a U-statisic for the purpose of classification of toolmarks as matching or non-matching. The data for their study was obtained from 50 sequentially manufactured screwdriver tips, and preselected comparison window sizes were given as inputs to the algorithm. The algorithm then compares the two toolmarks and comes up with a Mann-Whitney U-statistic and an associated p-value to designate them as matches or non-matches. The performance for every 100 comparisons, of the algorithm proposed by \citet{chumbley} and the improvement proposed by \citet{hadler} are listed in the table below. -->
-
-
-
-<!-- ``` -->
-<!-- Striation marks are used to determine same source for bullets. Current standards ask for a visual inspection of the marks under a comparison microscope by a firearms examiner. One of the problems raised by the NAS report in 2009 is the subjectivity involved in this comparison and the need for determining error rates \citet{NAS:2009}. The issue of subjectivity of a firearms examiner has been reviewed by many authors where things like scientific principle testability and error rates are considered to be defining aspects for an objective analysis such that without identifying the uncertainities associated with a method of comparison, it is inconclusive to regards an analysis complete. This means that with the usual method of visual comparison that is adopted by firearms examiners, lies the problem of lack of any systemized quantification and as such there seems no certain way of associating it with any kind of mathematical probability. Since determining error rates has been duly noted as a fundamental problem in forensic science \citet{NAS:2009}, there is a need of methods that address this problem. Some of the methods that have been used to estimate error rates in firearm examinations include Automatic cartridge case comparison where same source identification of cartridge cases and associated error rates have been provided by \citet{riva}, although as noted by \citet{aoas}, in this case alignments of striae involves roation of planes, which cannot be generalized for bullets. In case of methods that use machine learning algorithms some methods which are bootsrap based methods often tend to give over-estimated error rates \citet{efron}, but there are alternate error estimation techniques as described by \citet{aoas}, \citet{efron} and  \citet{vorburger2016} which give better results. -->
-
-<!-- In case of methods that do not use machine learning algorithm, matching two striation marks with each other in order to identify if it is from the same source, can also be done using a well defined comparative statistical algorithm. The statistical algorithm is therefore expected  to go through a step by step procedure of identifying the class characteristics i.e striation marks for bullets, choosing the striae, and then follow a systematic procedure of comparing two striae with each other on the basis of criteria like cross-correlation (or others). Such a methodology would make it possible to determine error rates too and give definite results regarding what proportion of cases would the analysis be successful in identifying a match correctly and in how many cases would it end up being a false positive. -->
-
-<!-- Identification criteria like consecutively matching striae (CMS) as first seen by Biasotti 1959 \citet{biasotti} and later mentioned in \citet{chu2013} more often than not include subject bias and are error prone and as seen in the work of \citet{miller} the number of CMS may turn out to be high even when the bullet is not fired by the same firearm. Parameters like cross-correlation factor as seen in the extensive comparisons made by \citep{aoas} seem to perform much better for matching purposes. -->
-
-<!-- An important aspect of same source matching in firearms is identification of bullet microtopographies that are unique to be chosen for a match, Bullet profiles and signatures prove to be such features. The choice of a bullet signature to uniquely define a bullet depends on finding first, a stable region on a Bullet land which minimal noise and many pronounced striation marks. \citet{aoas} -->
-
-<!-- The method employed by \citet{aoas} uses the cross correlation factor as a means to identify the stable region. The markings or striae in this region are supposed to have a high CCF with each other. Therefore a Bullet profile is chosen from this region by taking the cross section at a given height. A loess fit on the bullet profile produces  residuals which are termed as signatures and can be used as a unique identifier that can be used while matching two bullets to a firearm. -->
-
-<!-- Compairing pairs of toolmarks on the otherhand, with the intention of matching it to a tool has been studied relatively more in the past as compared to bullets, and \citet{chumbley} have described in their paper an algorithm and analytic method that compares two toolmarks and come to the conclusion if they are from the same tool or not. The method also determines the error rates, reduces subject bias and designate the two toolmarks as matches or non-matches with respect to a source. \citet{chumbley} used an empirical based setup to validate their proposed analytic and quantitative algorithm. -->
-
-
-
-<!-- ## The Chumbley Score Test -->
-
-<!-- The Chumbley score algorithm takes input as two vectorized processes.  Here the processes are of the form $z(t)$ which is a spatial process for some location indexed with $t$. This means that while $z(t)$ represents any striae, $z(t_1)$ is a realization of the spatial process. $t$ here denotes a vector of equally spaced pixel locations for the striation marks under consideration. The word 'pixel' refers to the resolution of the confocal light microscope. In the case for bullet signatures extracted from NIST ballistics database \citep{nist} of the Hamby study, a pixel corresponds to approximately 1.56 microns. The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths. The striation marks under consideration are potentially from two different bullets whose source needs to be identified as being same or different. $T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. The similarity in the two markings is then judged by the algorithm on the basis of cross-correlation of a fixed and constant number consecutive pixels (say $k$) taken from the two markings. This can for example be $k$ taken from the two indexed marking $x(t_1)$ and $y(t_2)$ such that in theory $k$ remains smaller than length of the two striae or marks. Depending on what stage of the algorithm we are in, matching of different pixel lengths and locations is done. This in the end, effectively compares all possible windows that would guarantee in quantifying the two marks or striae as coming from the same source or not. -->
-
-<!-- The algorithm works in two phases, namely, an optimization step and a validation step, at the end of which a Mann Whitney U statistic is calculated as a measure to differentiate between matches and non-matches. A pre-processing step to the algorithm is to choose a coarseness value which  is used as a parameter to the lowess smoothing function. The coarseness essentially gives the proportion of points which influence the smooth at each value, which means larger values lead to more smoothness. The lowess smoothing is applied to each of two sets of vectorized striae or marks $x(t_1)$ and $y(t_2)$, before proceeding to the algorithm. -->
-<!-- The algorithm starts with the optimization step where the area of best agreement in the two markings being compared is identified. Comparison window size is predefined. Each window of the first marking is compared with all windows of the second marking. A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what is intuitively expected for matches, and not expected intuitively for non matches.  -->
-<!-- \citet{hadler} in their paper proposed an improvement to this algorithm by trying to remove mutual dependence of parameters. The mututal dependence was due to the serial correlation in surface depth values of a marking. Also a random sampling sub step in the validation phase makes a group of pixels to be chosen more than once and hence introduces lack of independence in certain steps. The reason for removing the mutual dependence was the Mann-Whitney U statistic works under the assumption of independence of parameters. -->
-<!-- The validation step builds on this with two sub-steps namely, same shift and different shift. As the aim is to come up with a non-parameteric U statistic, \citet{hadler} proposed a normalization procedure in the validation step which goes to some extent to address the issue of mutual dependence. A series of windows are chosen in both the same and different shift sub-steps for the purpose of comparison. Both substeps were modified by \citet{hadler} who introduced a deterministic rule for sampling of windows in the same-shift and different shift as opposed to the originally proposed random sampling by \citet{chumbley}. -->
-<!-- In th same shift substep the chosen series of windows are at a common distance (rigid-shifts) from the window earlier identified as the region of best agreement in the optimization step. The correlation of these windows generally turn out to be lower than the maximum correlation window. The significance is that these same shift windows still have large enough correlation values for the two markings being compared that are in reality a match. Any choice of maximum correlation windows (where correlation values are often near 1) for non-matches in the optimization step are also validated by this sub-step. This is because the same-shift correlations would not be anywhere as large for same-shift windows when all windows in the sub-step are compared. -->
-<!-- The different shift substep on the other hand gives perspective to the correlation values of the same shift window correlation values. There are no rigid-shifts but different shifts where distance from the maximum correlation window are chosen randomly by \citet{chumbley} and deterministically as per \citet{hadler}. This means that there is an equal possibilty of comparing a trace segment from one marking to any trace segment or window in the second marking. -->
-
-<!-- Neither of above sets of correlation in the two sub-steps are allowed to include the maximum correlation window as identified earlier. Therefore the assumption is that if two markings match each other, the same-shift correlations would be larger than the different-shift windows. -->
-<!-- And if they are not a match the correlations in the two sets will be very similar. The U-statistic tests for the null hypothesis that the two markings are not a match and are therefore not made by the same source.  As given by \citet{hadler}, it is computed from the joint rank of all correlations of both the same and different shift samples.  -->
-
-<!-- The data that is used by \citet{chumbley} is generated by a surface profilometer that gives the height in terms of distance along a linear trace. This is taken perpendicular to the striations present in the toolmark. Two such trace are then compared using the algorithm. -->
-
-<!-- ## Detailed algorithm -->
-
-<!-- ###Optimization step -->
-<!-- The idea behind this step is to first identify the area of best agreement in the two toolmark data. Comparison window size is predefined by the user, which in case of screwdriver toolmarks was chosen by Chumbley et al and Hadler et al as around 10 percent of the length of the toolmarks, which was around 500. This window is henceforth referred to as Window of optimization. -->
-
-<!-- A maximum correlation statistic is used to identify the region of best agreement, with the maximum usually seen being near 1 for both cases which is what we intuitively expect for matches, and something which we do not intuitively expect for non matches  -->
-
-<!-- First, there are a very large number of cross-correlations calculated for the two series of striae or marks $x(t_1)$ and $y(t_2)$, for eg if the window of optimization was defined as 200 and toolmark pixel length is around 1000 then we have 1200-(200-1) = 1001.  -->
-
-<!-- This is the number of windows we have for one toolmark and each window is compared with all windows of the second toolmark (the number of windows is again similar), and the window with the maximum correlation is identified to be the region where the toolmarks are in maximum agreement with each other -->
-
-
-<!-- ###Validation Step -->
-
-<!-- ####Same-shift:  -->
-<!-- In this step a series of windows are chosen at random (originally by \citet{chumbley}) and deterministically (by \citet{hadler}), but at a common distance (rigid-shift) from the window identified as the region of best agreement in the vaildation step. -->
-<!-- The correlation of these windows would be as intuitively assumed i.e. lower than the maximum correlation window (Optimization step), but the significance is that these same shift windows will still have large enough correlation values for two toolmarks or signatures that are in reality a match. -->
-
-<!-- This also validates that if in the optimization step the maximum correlation window chosen (with correlation value near 1) was by accident (like in case of signatures that in reality are a non-match), all these same- shift correlations (A fixed number of these trace segments are identified) would not be anywhere large enough for all same-shift windows. -->
-
-
-
-
-<!-- ####Different Shift: -->
-<!-- Primary reason for this substep is to give perspective to the correlation values of the same shift window correlation values. -->
-
-<!-- This time there are no rigid-shifts but different shifts (distance from Window of Opt with max correlation) chosen randomly by \citet{chumbley} and deterministically by Hadler et al. such that there is an equal possibilty of comparing a trace segment from one signature or toolmark to any one in the second signature or toolamrk. -->
-
-<!-- Neither of above sets of correlation are allowed to include the maximum correlation window as identified earlier. -->
-
-<!-- Therefore the assumption is that if two toolmarks or signatures match each other the same-shift correlations would be larger than the different-shift windows, -->
-<!-- and if they are not a match the correlations in the two sets will be very similar. -->
-
-<!-- ###U Statistic: -->
-
-<!-- This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler} -->
-
-<!-- Null Hypothesis: If the toolmarks were not match i.e not made by the same tool. -->
-
-<!-- Let ns and nd be the number of same shift and different shift windows -->
-<!-- $$N = n_{s} + n_{d}$$ -->
-
-<!-- The mann whitney U statistic is given by -->
-<!-- $$U =\sum^{ns}_{i=1}R_{s}\left( i\right)$$ -->
-
-<!-- with the standardized version which includes provision for rank ties -->
-
-<!-- $$\overline{U}= \dfrac{U-M}{\sqrt{V}}$$ -->
-
-<!-- where prior to normalization the U-statistic has the mean as -->
-
-<!-- $$M = n_{s}\left(\dfrac{N+1}{2}\right)$$ -->
-
-<!-- and variance  -->
-
-<!-- $$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$$ -->
 
 
 # Testing setup
 
 ## The Data
-
-\hh{Introduce profiles and signatures, as shown in figure \ref{fig:sigs-profiles}.}
 
 ```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right) for one of the lands of Hamby-44."}
 p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
@@ -717,9 +600,7 @@ grid.arrange(p1,p2, ncol=2)
 
 Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and are considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby}. Each set consists of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
-\hh{Discuss CSAFE scans}
-
-Profiles and signatures were extracted from all scans as described in \citet{aoas}.
+Profiles for each bullet land were extracted from  scans as described in \citet{aoas}.
 
 
 ## Setup
@@ -730,6 +611,7 @@ Profiles and signatures were extracted from all scans as described in \citet{aoa
 
 We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
 
+\hh{XXX also calculate results for the adjusted adjusted score XXX}
 <!--The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.-->
 
 ## Failed Tests
