@@ -276,7 +276,7 @@ This severe limitation in the amount of available data poses the main challenge 
 ## The Chumbley Score Test
 
 
-The Chumbley score algorithm takes input in form of two digitized toolmarks. The toolmark is in form of $z(t)$ which is a spatial process for location indexed by $t$. $t$ here denotes equally spaced pixel locations for the striation marks under consideration, $t = 1, ..., T$. Let further $z(s,t)$ denote the vector of markings between locations $s$ and $t$. 
+The Chumbley score algorithm takes input in form of two digitized toolmarks. The toolmark is in form of $z(t)$ which is a spatial process for location indexed by $t$. $t$ here denotes equally spaced pixel locations for the striation marks under consideration, $t = 1, ..., T$. Let further $z^s(t)$ denote a vector of markings of length $s$ starting in location  $t$. 
 
 Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized toolmarks (where $T_1$ and $T_2$ are not necessarily equal). 
 <!--The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths.--> 
@@ -290,13 +290,22 @@ After removing sub-class structure,
 the Chumbley scores is calculated in two steps: an optimization step and a validation step.
 In the optimization step, the two markings are aligned horizontally such that within a pre-defined window of length $w_o$ the correlation between $x(t_1)$ and $y(t_2)$ is maximized:
 \[
-\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x^{w_o} (t_1), y^{w_o}(t_2) \right)
 \]
 This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. \hh{We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. }
 
 In the validation step,  two sets of windows of size $w_v$ are chosen from both markings (see Figure \ref{fig:win-comparison}). In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
-\hh{XXX summarise in formula}
+More precisely, \citet{hadler} define same-shift pairs of length $w_v$ to start in $(q^{(1)}_i, q^{(2)}_i)$, where $q^{(k)}_i$ has the form
+\begin{eqnarray*}
+q^{(k)}_i &=& t_k^* + i w_v \text{ for } i = -1, -2, ...\\
+q^{(k)}_i &=& t_k^* + w_ o + i w_v \text{ for } i = 0, 1, 2, ...
+\end{eqnarray*}
+for all integer values of $i$ for which both $0 <  q^{(1)}_i \le T_1 - w_v$ and $0 <  q^{(2)}_i \le T_2 - w_v$.
+
+Similarly, different-shift pairs are based on signature segments of length $w_v$ starting in $(q^{(1)}_i, q^{(2)}_{-i})$, for all integer values of $i$ for which both $0 <  q^{(1)}_i \le T_1 - w_v$ and $0 <  q^{(2)}_{-i} \le T_2 - w_v$.
+
+
 
 ```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples."}
 sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
@@ -750,11 +759,36 @@ Profiles and signatures were extracted from all scans as described in \citet{aoa
 \hh{using (a) signatures and (b) profiles, run chumbley score across scans from NIST and CSAFE for various settings of $w_o$ and $w_v$ (and coarseness $c$ for profiles).}
 
 
-We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST (a total of 85,491 comparisons). The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.
+We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
+
+<!--The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.-->
 
 ## Failed Tests
 
-\hh{number of failed tests for default parameter settings -- XXX what are the defaults? wo:10 percent, coarseness 0.25, wv XXX?}
+Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. \autoref{fig:fails} shows the percentage of failed tests among the 86k land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail. 
+
+```{r fails, echo=FALSE, fig.height = 3, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails. The percentage of failures is higher for same-source lands than for different source lands."}
+fails <- allp %>% filter(coarse == 0.25) %>% 
+  group_by(wo, wv) %>% summarize(
+  failed = sum(is.na(p_value)),
+  n=n()
+)
+
+allp %>% filter(coarse == 0.25) %>% 
+  group_by(wo, wv, match) %>% summarize(
+  failed = sum(is.na(p_value)),
+  n=n()
+) %>% 
+  ggplot(aes(x = wv, y = failed/n*100, colour=factor(match), shape=factor(match))) +
+  geom_point(size=3) +
+  xlab("Size of validation window in pixels") +
+  ylab("Percent of failed tests") +
+  theme_bw() +
+  scale_colour_brewer("Same-source", palette="Set1") +
+  scale_shape_discrete("Same-source") +
+  ylim(c(0,13))
+```
+
 
 \hh{diagnose problem: use of optimal location in getting the pairs for different-shift correlations}
 \hh{figure: number of diff shift pairs and location}
@@ -828,7 +862,7 @@ p2 <- profc %>%
   geom_histogram(binwidth = 0.025) +
   facet_grid(.~coarseness, labeller="label_both") + 
   theme_bw() +
-  xlab(expression("Relative optimal location "~t^*)) +
+  xlab(expression("Relative optimal location "~t^"*")) +
   ylab("Number of profiles")
  
 grid.arrange(p1, p2, ncol=1)

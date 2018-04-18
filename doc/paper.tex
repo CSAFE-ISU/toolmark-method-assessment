@@ -248,8 +248,8 @@ The Chumbley score algorithm takes input in form of two digitized
 toolmarks. The toolmark is in form of \(z(t)\) which is a spatial
 process for location indexed by \(t\). \(t\) here denotes equally spaced
 pixel locations for the striation marks under consideration,
-\(t = 1, ..., T\). Let further \(z(s,t)\) denote the vector of markings
-between locations \(s\) and \(t\).
+\(t = 1, ..., T\). Let further \(z^s(t)\) denote a vector of markings of
+length \(s\) starting in location \(t\).
 
 Let \(x(t_1)\), \(t_1 = 1,2,...T_1\) and \(y(t_2)\), \(t_2 = 1,2...T_2\)
 be two digitized toolmarks (where \(T_1\) and \(T_2\) are not
@@ -270,7 +270,7 @@ two steps: an optimization step and a validation step. In the
 optimization step, the two markings are aligned horizontally such that
 within a pre-defined window of length \(w_o\) the correlation between
 \(x(t_1)\) and \(y(t_2)\) is maximized: \[
-\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x (t_1, t_1 + w_o), y(t_2, t_2 + w_o) \right)
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x^{w_o} (t_1), y^{w_o}(t_2) \right)
 \] This results in an optimal vertical (in-phase) shift of
 \(t_1^o - t_2^o\) for aligning the two markings.
 \hh{We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. }
@@ -282,7 +282,21 @@ optimal vertical shift as determined in the first step, whereas for the
 second set the windows are extracted using a different (out-of-phase)
 shift.
 
-\hh{XXX summarise in formula}
+More precisely, \citet{hadler} define same-shift pairs of length \(w_v\)
+to start in \((q^{(1)}_i, q^{(2)}_i)\), where \(q^{(k)}_i\) has the form
+
+\begin{eqnarray*}
+q^{(k)}_i &=& t_k^* + i w_v \text{ for } i = -1, -2, ...\\
+q^{(k)}_i &=& t_k^* + w_ o + i w_v \text{ for } i = 0, 1, 2, ...
+\end{eqnarray*}
+
+for all integer values of \(i\) for which both
+\(0 < q^{(1)}_i \le T_1 - w_v\) and \(0 < q^{(2)}_i \le T_2 - w_v\).
+
+Similarly, different-shift pairs are based on signature segments of
+length \(w_v\) starting in \((q^{(1)}_i, q^{(2)}_{-i})\), for all
+integer values of \(i\) for which both \(0 < q^{(1)}_i \le T_1 - w_v\)
+and \(0 < q^{(2)}_{-i} \le T_2 - w_v\).
 
 \begin{figure}
 
@@ -343,12 +357,38 @@ Profiles and signatures were extracted from all scans as described in
 
 We used the adjusted Chumbley method as proposed in \citet{hadler} and
 implemented in the R package \texttt{toolmaRk} \citep{toolmark} on all
-pairwise land-to-land comparisons of the Hamby scans provided by NIST (a
-total of 85,491 comparisons). The settings for optimizing and validating
-window sizes, \(w_o\) and \(w_v\), ranged from \(w_o \in [50, 280]\) and
-\(w_v \in \{30, 50\}\), see also figure \ref{fig:type2}.
+pairwise land-to-land comparisons of the Hamby scans provided by NIST
+for a total of 85,491 land-to-land comparisons.
 
-\section{Results}\label{results}
+\subsection{Failed Tests}\label{failed-tests}
+
+Initially, the default settings suggested in \citet{hadler} were used:
+\(w_o = 120\) pixels or about 190 \(\mu m\) (ten percent of the average
+length of profiles) and coarseness \(c = 0.25\). \autoref{fig:fails}
+shows the percentage of failed tests among the 86k land-to-land
+comparisons of the NIST data for different values of the validation
+window size \(w_v\). For same-source lands up to 12.5 percent of the
+tests fail.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.7\textwidth]{figures/fails-1} 
+
+}
+
+\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails. The percentage of failures is higher for same-source lands than for different source lands.}\label{fig:fails}
+\end{figure}
+
+\hh{diagnose problem: use of optimal location in getting the pairs for different-shift correlations}
+\hh{figure: number of diff shift pairs and location}
+
+\section{A modified test}\label{a-modified-test}
+
+\hh{fix the algorithm - all of the other properties in Hadler and morris still hold.}
+
+\hh{number of failed tests down. }
+
+\section{Comparison of Results}\label{comparison-of-results}
 
 \subsection{Profiles}\label{profiles}
 
@@ -377,7 +417,7 @@ window sizes, \(w_o\) and \(w_v\), ranged from \(w_o \in [50, 280]\) and
 \caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. }\label{fig:profile-sketch}
 \end{figure}
 
-\subsection{Results}\label{results-1}
+\subsection{Results}\label{results}
 
 \hh{For signatures from NIST scans we see three problems: 
 \begin{enumerate}
