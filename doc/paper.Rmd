@@ -201,7 +201,6 @@ if (!file.exists("../data/invprofiles.rds")) {
     allinv <- rbind(allinv, tmp)
   }
   allinv <- allinv %>% filter(land1_id < land2_id)
-  allinv$coarse <- allinv$coarseness
   allinv <- allinv %>% select(-coarseness)
   saveRDS(allinv, file="../data/invprofiles.rds")
 } else {
@@ -633,7 +632,7 @@ Both algorithms (CS1) and (CS2) are implemented in the R package `toolmaRk` \cit
 ## Failed Tests
 
 Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. 
-\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 0.9% for different source tests using a validation window size $w_v$ of 50 pixels. } 
+\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different source tests using a validation window size $w_v$ of 60 pixels. 
 
 ```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2)."}
 allinv$method <- "CS2"
@@ -659,7 +658,7 @@ fails %>%
   scale_colour_brewer("Same-source", palette="Set1") +
   scale_shape_discrete("Same-source") +
   ylim(c(0,13)) +
-  facet_wrap(~method, labeller="label_method")
+  facet_wrap(~method, labeller="label_both")
 ```
 
 
@@ -670,7 +669,7 @@ fails %>%
 
 \hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
 
-```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
+```{r profile-sketch, fig.height = 4.5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
 profile$lw10 <- lowess(x = profile$y, y = profile$value, f=.10)$y
 profile$lw15 <- lowess(x = profile$y, y = profile$value, f=.15)$y
@@ -711,7 +710,7 @@ profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"=
 
 p2 <- profc %>% 
   ggplot(aes(x = locations/(length-wo))) +
-  geom_histogram(binwidth = 0.025) +
+  geom_histogram(binwidth = 0.01) +
   facet_grid(.~coarseness, labeller="label_both") + 
   theme_bw() +
   xlab(expression("Relative optimal location "~t^"*")) +

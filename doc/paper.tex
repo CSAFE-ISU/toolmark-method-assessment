@@ -451,8 +451,9 @@ length of profiles) and coarseness \(c = 0.25\). \autoref{fig:fails}
 shows the percentage of failed tests among the 85,491 land-to-land
 comparisons of the NIST data for different values of the validation
 window size \(w_v\). For same-source lands up to 12.5 percent of the
-tests fail using CS1.
-\hh{XXX Currently running CS2 for these settings for a comparison.}
+tests fail using CS1. The highest percentage of failed tests under CS2
+is 0.9\% for different source tests using a validation window size
+\(w_v\) of 50 pixels.
 
 \begin{figure}
 
@@ -460,10 +461,8 @@ tests fail using CS1.
 
 }
 
-\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails. The percentage of failures is higher for same-source lands than for different source lands.}\label{fig:fails}
+\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2).}\label{fig:fails}
 \end{figure}
-
-\hh{XXX Conclusion: the number of failed tests goes down - a lot. XXX}
 
 \hh{Coarseness is another parameter that has to be considered in the matching of bullet land profiles.}
 
