@@ -190,7 +190,30 @@ errors2 <- rbind(errorrate(allp, 0.001),
                 errorrate(allp, 0.005), 
                 errorrate(allp, 0.01), 
                 errorrate(allp, 0.05))
-errors2$type <- "profiles"
+errors2$type <- "CS1"
+
+
+if (!file.exists("../data/invprofiles.rds")) {
+  files <- dir("../data/inverse-profiles/", pattern="rds")
+  allinv <- data.frame()
+  for (file in files) {
+    tmp <- readRDS(file=file.path(path="../data/inverse-profiles", file)) 
+    allinv <- rbind(allinv, tmp)
+  }
+  allinv <- allinv %>% filter(land1_id < land2_id)
+  allinv$coarse <- allinv$coarseness
+  allinv <- allinv %>% select(-coarseness)
+  saveRDS(allinv, file="../data/invprofiles.rds")
+} else {
+  allinv <- readRDS("../data/invprofiles.rds")
+}
+
+errors3 <- rbind(errorrate(allinv, 0.001), 
+                errorrate(allinv, 0.005), 
+                errorrate(allinv, 0.01), 
+                errorrate(allinv, 0.05))
+errors3$type <- "CS2"
+
 
 ```
 
@@ -553,7 +576,7 @@ The number of possible different-shift pairs also depends on the location of  th
 
 While failures due to missing correlations from same-shift pairs are unavoidable by definition of the Chumbley score, failures due to missing correlations from different-shift pairs can be prevented by using a different strategy in assigning pairs.
 
-Using the same notation as in \autoref{eq.start}, we define same-shift pairs identical to \citet{hadler} as pairs $(s_i^{(1)}, s_i^{(2)})$ for all $i$ where the boundary conditions of both sequences are met simultaneously. Let us assume that this results in $I$ pairs. Define $s_(j)^{(k)}$ to be the $j$th starting location in sequence $k = 1, 2$, i.e.\ $s_(1)^{(k)} < s_(2)^{(k)} < ... < s_(I)^{(k)}$.  
+Using the same notation as in \autoref{eq.start}, we define same-shift pairs identical to \citet{hadler} as pairs $(s_i^{(1)}, s_i^{(2)})$ for all $i$ where the boundary conditions of both sequences are met simultaneously. Let us assume that this results in $I$ pairs. Define $s_{(j)}^{(k)}$ to be the $j$th starting location in sequence $k = 1, 2$, i.e.\ $s_{(1)}^{(k)} < s_{(2)}^{(k)} < ... < s_{(I)}^{(k)}$.  
 
 We then define the pairs for different-shifts as
 \begin{equation}\label{eq.diff2}
@@ -565,7 +588,7 @@ We then define the pairs for different-shifts as
 \end{equation}
 i.e.\ for an odd number of same-shift correlations, we skip the middle pair for the different-shift correlations (see \autoref{sketch-diff-2}).
 This pairing ensures that the number of different-shift pairings is the same or at most one less than the number of same-shift pairings in all tests.
-
+\hh{In the remainder of the paper, we will refer to the algorithm defined by \citet{hadler} as {\bf (CS1)} and the suggested modified algorithm as {\bf (CS2)} and compare their performance on the available scans of the Hamby study.}
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
@@ -600,36 +623,34 @@ grid.arrange(p1,p2, ncol=2)
 
 Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and are considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby}. Each set consists of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
 
-Profiles for each bullet land were extracted from  scans as described in \citet{aoas}.
+Profiles for each bullet land were extracted from scans close to the heel of the bullet while avoiding break-off as described in \citet{aoas}.
 
 
 ## Setup
-\hh{XXX the description below needs to be updated.}
+Both algorithms (CS1) and (CS2) are implemented in the R package `toolmaRk` \citep{toolmark}. We applied both methods to all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
 
-\hh{using (a) signatures and (b) profiles, run chumbley score across scans from NIST and CSAFE for various settings of $w_o$ and $w_v$ (and coarseness $c$ for profiles).}
-
-
-We used the adjusted Chumbley method as proposed in \citet{hadler} and implemented in the R package `toolmaRk` \citep{toolmark} on all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
-
-\hh{XXX also calculate results for the adjusted adjusted score XXX}
-<!--The settings for optimizing and validating window sizes, $w_o$ and $w_v$, ranged from $w_o \in [50, 280]$ and $w_v \in \{30, 50\}$, see also figure \ref{fig:type2}.-->
-
+# Results
 ## Failed Tests
 
-Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. \autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail. 
+Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. 
+\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 0.9% for different source tests using a validation window size $w_v$ of 50 pixels. } 
 
-```{r fails, echo=FALSE, fig.height = 3, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails. The percentage of failures is higher for same-source lands than for different source lands."}
-fails <- allp %>% filter(coarse == 0.25) %>% 
-  group_by(wo, wv) %>% summarize(
+```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2)."}
+allinv$method <- "CS2"
+allp$method <- "CS1"
+
+prof_fails <- rbind(
+  allinv %>% select(wo, wv, method, p_value, match),
+  allp %>% filter(coarse == 0.25) %>% 
+    select(wo, wv, method, p_value, match)
+)
+fails <- prof_fails %>%
+  group_by(wo, wv, method, match) %>% summarize(
   failed = sum(is.na(p_value)),
   n=n()
 )
 
-allp %>% filter(coarse == 0.25) %>% 
-  group_by(wo, wv, match) %>% summarize(
-  failed = sum(is.na(p_value)),
-  n=n()
-) %>% 
+fails %>% 
   ggplot(aes(x = wv, y = failed/n*100, colour=factor(match), shape=factor(match))) +
   geom_point(size=3) +
   xlab("Size of validation window in pixels") +
@@ -637,39 +658,22 @@ allp %>% filter(coarse == 0.25) %>%
   theme_bw() +
   scale_colour_brewer("Same-source", palette="Set1") +
   scale_shape_discrete("Same-source") +
-  ylim(c(0,13)) 
+  ylim(c(0,13)) +
+  facet_wrap(~method, labeller="label_method")
 ```
 
 
 
-# A modified test
 
-\hh{fix the algorithm - all of the other properties in Hadler and morris still hold.}
+\hh{Coarseness is another parameter that has to be considered in the matching of bullet land profiles.}
 
-\hh{number of failed tests down. }
-
-
-# Comparison of Results
-
-## Profiles
-
-\hh{When dealing with profiles, coarseness is an additional parameter that has to be considered in the matching.}
-
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minim in type II reached at a coarseness $c = 0.25$. }
-\hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
-```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
-e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
-  ylab("Type II error") 
-e1
-```
 
 \hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
 
 ```{r profile-sketch, fig.height = 5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw10 <- lowess(x = profile$y, y = profile$value, f=.10)$y
+profile$lw15 <- lowess(x = profile$y, y = profile$value, f=.15)$y
 profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
 profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
 profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
@@ -677,7 +681,7 @@ profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
 #profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
 #profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
 
-profiles <- tidyr::gather(profile, coarseness, values, lw20:lw30)
+profiles <- tidyr::gather(profile, coarseness, values, lw10:lw30)
 profiles <- profiles %>% mutate(
   c = readr::parse_number(coarseness)/100
 )
@@ -716,10 +720,20 @@ p2 <- profc %>%
 grid.arrange(p1, p2, ncol=1)
 ```
 
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. }
+\hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
+```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
+e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
+  geom_point() + geom_line() +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
+  ylab("Type II error") 
+e1
+```
 
 
 
-## Results
+### Results for Signatures
 
 \hh{For signatures from NIST scans we see three problems: 
 \begin{enumerate}
