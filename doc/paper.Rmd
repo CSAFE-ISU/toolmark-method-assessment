@@ -141,7 +141,7 @@ if (!file.exists("../data/all-sigs.rds")) {
   all <- data.frame()
   for (file in files) {
     tmp <- read.csv(file=file.path(path="../data/signatures", file)) 
-    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
     all <- rbind(all, tmp)
   }
   all <- all %>% filter(land1_id < land2_id)
@@ -176,7 +176,7 @@ if (!file.exists("../data/all-profiles.rds")) {
     #print(names(tmp))
     if (length(grep("coarse",names(tmp))) == 0)
       tmp$coarse <- gsub(".*coar-(.*).csv", "\\1", file)
-    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
     allp <- rbind(allp, tmp)
   }
   allp <- allp %>% filter(land1_id < land2_id)
@@ -201,7 +201,7 @@ if (!file.exists("../data/invprofiles.rds")) {
     allinv <- rbind(allinv, tmp)
   }
   allinv <- allinv %>% filter(land1_id < land2_id)
-  allinv <- allinv %>% select(-coarseness)
+  allinv <- allinv %>% dplyr::select(-coarseness)
   saveRDS(allinv, file="../data/invprofiles.rds")
 } else {
   allinv <- readRDS("../data/invprofiles.rds")
@@ -225,7 +225,7 @@ if (!file.exists("../data/all-sig-c.rds")) {
     #print(names(tmp))
     if (length(grep("coarse",names(tmp))) == 0)
       tmp$coarse <- gsub(".*coarse-(.*).csv", "\\1", file)
-    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
     all_sig_c <- rbind(all_sig_c, tmp)
   }
   all_sig_c <- all_sig_c %>% filter(land1_id < land2_id)
@@ -354,9 +354,9 @@ colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonm
 # Matching signature
 d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
 d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==276,arr.ind = TRUE),]
-data1<-d1 %>%select(l30)
+data1<-d1 %>%dplyr::select(l30)
 #data1<- data1$y
-data2<- d2 %>%select(l30)
+data2<- d2 %>%dplyr::select(l30)
 #data2<- data2$y
 window_opt = 120 
 window_val = 50
@@ -401,8 +401,10 @@ data2<- matrix(unlist(data2))
   corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
   max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
 
-sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>% select(y) %>% min()
-sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% select(y) %>% min()
+sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>%
+  dplyr::select(y) %>% min()
+sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% 
+  dplyr::select(y) %>% min()
 window_val <- 3*window_val*0.645
 
 same.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min 
@@ -466,9 +468,9 @@ colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonm
 #sigs_graphics.match<- sigs_graphics.match %>% select(y, l30, land_id)
 d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
 d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==19,arr.ind = TRUE),]
-data1<-d1 %>%select(l30)
+data1<-d1 %>%dplyr::select(l30)
 #data1<- data1$y
-data2<- d2 %>%select(l30)
+data2<- d2 %>%dplyr::select(l30)
 #data2<- data2$y
 window_opt = 120 
 window_val = 50
@@ -569,7 +571,12 @@ In the original method proposed in \citet{chumbley} both in-phase and out-of-pha
 
 Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result, either because the number of eligible same-shift pairs is zero, or the number of different-shift opairs is zero. 
 
-The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$. While we can assume that once (sub-)class characteristics are removed, optimal locations $t_i^{o}$ are uniformly distributed across the length of the profile, we cannot assume that $t_1^o$ and $t_2^o$ are independent of each other. In particular, for same-source profiles, we would expect a strong dependency between these locations. However, for different source matches, an argument of independence in the locations could be made. In that case, we expect a test to fail with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
+The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$, i.e. we have a failure rate of 
+\[
+P\left( t_1^{o} < w_v \ \cap \ t_2^{o} > T_2-w_o-w_v\right) + P\left( t_1^{o} < T_1- w_o - w_v \ \cap \ t_2^{o} < w_v\right).
+\]
+While we can assume that once (sub-)class characteristics are removed, optimal locations $t_i^{o}$ are uniformly distributed across the length of the profile, we cannot assume that $t_1^o$ and $t_2^o$ are independent of each other. In particular, for same-source profiles, we would expect a strong dependency between these locations, in which case a large difference between locations is unlikely. However, for different source matches, we can assume that  locations are independent.
+In that case, we expect a test to fail with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
 
 The number of possible different-shift pairs also depends on the location of  the  optimal locations $t_1^o$ and $t_2^o$. Whenever the optimal locations are close to the boundaries, the number of possible pairings decreases and reaches zero, if $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. Assuming a correlation between optimal locations $t_1^o$ and $t_2^o$ of close to one for same-source profiles, this results in an expected rate of failure of $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels. Assuming independence in the optimal locations for different source profiles the expected probability for a failed test is, again, $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$.
 
@@ -632,16 +639,64 @@ Both algorithms (CS1) and (CS2) are implemented in the R package `toolmaRk` \cit
 ## Failed Tests
 
 Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. 
-\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different source tests using a validation window size $w_v$ of 60 pixels. 
+\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different source tests using a validation window size $w_v$ of 60 pixels.  \hh{Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. }\hh{ Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.3 resulting in a distribution of optimal locations different from the assumed uniform. }
 
-```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2)."}
+```{r simulation, echo=FALSE}
+library(MASS) 
+Sigsame <- matrix(c(1, 0.85, 0.85, 1), nrow = 2) 
+Sigdiff <- matrix(c(1, 0.12, 0.12, 1), nrow = 2) 
+set.seed(20140501)
+simu <- 1:10 %>% purrr::map_df(.f = function(i) {
+  X1 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigsame) 
+  X2 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigdiff) 
+  Y1 <- pnorm(X1) 
+  Y2 <- pnorm(X2) 
+  wv <- 10*1:6
+  
+  ps <- wv %>% purrr::map_df(.f = function(x) {
+    p <- x/(1200-120)
+    y1 <- Y1[,1]
+    y2 <- Y1[,2]
+    difffail1 <- sum((y1 < p & y2 < p) | (y1 > 1-p & y2 > 1-p))/length(y1)
+    samefail1 <- sum((y1 < p & y2 >1- p) | (y1 > 1-p & y2 < p))/length(y1)
+    y1 <- Y2[,1]
+    y2 <- Y2[,2]
+    difffail2 <- sum((y1 < p & y2 < p) | (y1 > 1-p & y2 > 1-p))/length(y1)
+    samefail2 <- sum((y1 < p & y2 > 1-p) | (y1 > 1-p & y2 < p))/length(y1)
+    data.frame(wv=x, samefail1=samefail1, samefail2=samefail2,
+               difffail1=difffail1, difffail2=difffail2)
+  })
+  ps$i <- i
+  ps
+})
+simu$`TRUE` <- simu$samefail1+simu$difffail1
+simu$`FALSE` <- simu$samefail2+simu$difffail2
+simulong <- simu %>% dplyr::select(wv, i, `TRUE`, `FALSE`) %>% 
+  gather(match, failed, 3:4)
+simusumm <- simulong %>% group_by(wv, match) %>%
+  summarize(
+    sdfailed = sd(failed),
+    failed = mean(failed)
+  )
+simusumm$method = "CS1"
+```
+
+
+```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates are higher than expected rates."}
 allinv$method <- "CS2"
 allp$method <- "CS1"
 
+
+allinv <-  allinv %>% mutate(
+  loc1 = chumbley %>% purrr::map_int(.f = function(x) x$locations[1]),
+  loc2 = chumbley %>% purrr::map_int(.f = function(x) x$locations[2])
+)
+
+
 prof_fails <- rbind(
-  allinv %>% select(wo, wv, method, p_value, match),
+  allinv %>% dplyr::select(wo, wv, method, p_value, match),
   allp %>% filter(coarse == 0.25) %>% 
-    select(wo, wv, method, p_value, match)
+    dplyr::select(wo, wv, method, p_value, match)
 )
 fails <- prof_fails %>%
   group_by(wo, wv, method, match) %>% summarize(
@@ -651,23 +706,24 @@ fails <- prof_fails %>%
 
 fails %>% 
   ggplot(aes(x = wv, y = failed/n*100, colour=factor(match), shape=factor(match))) +
-  geom_point(size=3) +
+  geom_point(aes(size="Observed")) +
   xlab("Size of validation window in pixels") +
   ylab("Percent of failed tests") +
   theme_bw() +
   scale_colour_brewer("Same-source", palette="Set1") +
   scale_shape_discrete("Same-source") +
   ylim(c(0,13)) +
-  facet_wrap(~method, labeller="label_both")
+  facet_wrap(~method, labeller="label_both") +
+  geom_point(aes(y = failed*100, size = "Expected"), data=simusumm) +
+  scale_size_manual("Failures", values=c(1.5,3))
 ```
 
+## Coarseness
+The purpose of the coarseness parameter is to remove (sub-)class characteristics from profiles before comparisons for matching.
+\citet{hadler} suggest a coarseness parameter of 0.25 in the setting of toolmark comparisons. For bullet lands, coarseness might need to be adjusted because of the strong effect  bullet curvature has on profiles.
 
-
-
-\hh{Coarseness is another parameter that has to be considered in the matching of bullet land profiles.}
-
-
-\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
+\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. 
+The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.}
 
 ```{r profile-sketch, fig.height = 4.5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
@@ -691,12 +747,14 @@ p1 <- profiles %>%
   xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
   facet_grid(~c, labeller="label_both") 
 
+profc10 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_10.rds")
+profc15 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_15.rds")
 profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_20.rds")
 profc20$coarseness <- 0.2
 profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_25.rds")
 profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30.rds")
 profc30$coarseness <- .30
-profc <- bind_rows(profc20, profc25, profc30)
+profc <- bind_rows(profc10, profc15, profc20, profc25, profc30)
 profc <- profc %>% mutate(
   locations = chumbley %>% purrr::map_int(.f = function(x) {
     res <- NULL
@@ -705,12 +763,13 @@ profc <- profc %>% mutate(
   })
 )
 profsumm <- read.csv("../data/profiles-summary.csv")
-profsumm <- profsumm %>% select(-run_id)
+profsumm <- profsumm %>% dplyr::select(-run_id)
 profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
+
 
 p2 <- profc %>% 
   ggplot(aes(x = locations/(length-wo))) +
-  geom_histogram(binwidth = 0.01) +
+  geom_histogram(binwidth = 0.025) +
   facet_grid(.~coarseness, labeller="label_both") + 
   theme_bw() +
   xlab(expression("Relative optimal location "~t^"*")) +
@@ -719,7 +778,7 @@ p2 <- profc %>%
 grid.arrange(p1, p2, ncol=1)
 ```
 
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. }
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. The histograms suggest to use a value of coarseness below 0.2.}
 \hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
 ```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
 e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
@@ -873,7 +932,7 @@ wo120_pr <- errors2 %>% filter(wo==120, wv %in% c(30, 50), coarse == .25)
 dt <- rbind(wo120_sig, wo120_pr) %>% 
   ungroup() %>% 
   mutate(beta = round(100*beta, 1)) %>%
-  select(wv, type, alpha, beta) %>% 
+  dplyr::select(wv, type, alpha, beta) %>% 
   spread(alpha, beta)
 print(xtable(dt), include.rownames=FALSE)
 ```

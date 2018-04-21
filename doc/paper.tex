@@ -347,14 +347,17 @@ The number of same-shift pairs will be zero, if the optimal locations
 \(t_1^{o}\) and \(t_2^{o}\) are so far apart, that no segments of size
 \(w_v\) are left on the same sides of the optimal locations, i.e.
 \(t_1^{o} < w_v\) and \(t_2^{o} > T_2-w_o-w_v\) or
-\(t_1^{o} < T_1- w_o - w_v\) and \(t_2^{o} < w_v\). While we can assume
-that once (sub-)class characteristics are removed, optimal locations
-\(t_i^{o}\) are uniformly distributed across the length of the profile,
-we cannot assume that \(t_1^o\) and \(t_2^o\) are independent of each
-other. In particular, for same-source profiles, we would expect a strong
-dependency between these locations. However, for different source
-matches, an argument of independence in the locations could be made. In
-that case, we expect a test to fail with a probability of
+\(t_1^{o} < T_1- w_o - w_v\) and \(t_2^{o} < w_v\), i.e.~we have a
+failure rate of \[
+P\left( t_1^{o} < w_v \ \cap \ t_2^{o} > T_2-w_o-w_v\right) + P\left( t_1^{o} < T_1- w_o - w_v \ \cap \ t_2^{o} < w_v\right).
+\] While we can assume that once (sub-)class characteristics are
+removed, optimal locations \(t_i^{o}\) are uniformly distributed across
+the length of the profile, we cannot assume that \(t_1^o\) and \(t_2^o\)
+are independent of each other. In particular, for same-source profiles,
+we would expect a strong dependency between these locations, in which
+case a large difference between locations is unlikely. However, for
+different source matches, we can assume that locations are independent.
+In that case, we expect a test to fail with a probability of
 \(\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}\). For an average length of \(T_i\)
 of 1200 pixels, \(w_o = 120\) pixels and \(w_v = 30\) pixels this
 probability is about 0.0015.
@@ -452,8 +455,9 @@ shows the percentage of failed tests among the 85,491 land-to-land
 comparisons of the NIST data for different values of the validation
 window size \(w_v\). For same-source lands up to 12.5 percent of the
 tests fail using CS1. The highest percentage of failed tests under CS2
-is 0.9\% for different source tests using a validation window size
-\(w_v\) of 50 pixels.
+is 1.3\% for different source tests using a validation window size
+\(w_v\) of 60 pixels.
+\hh{Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. }\hh{ Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.3 resulting in a distribution of optimal locations different from the assumed uniform. }
 
 \begin{figure}
 
@@ -461,12 +465,19 @@ is 0.9\% for different source tests using a validation window size
 
 }
 
-\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2).}\label{fig:fails}
+\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates are higher than expected rates.}\label{fig:fails}
 \end{figure}
 
-\hh{Coarseness is another parameter that has to be considered in the matching of bullet land profiles.}
+\subsection{Coarseness}\label{coarseness}
 
-\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are 0.2, 0.25, and 0.3, respectively. The top row shows the resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. The histograms in the bottom row show the relative optimal location $t^o$ (optimal location $t^o$ divided by the length of the corresponding profile). Optimal locations should be distributed uniformly. However, for coarseness values of $c = 0.25$ and $c=0.30$ we see very distinct boundary effects: optimal locations $t^o$ are found at the very extreme ends of a profile more often than one would expect based on a uniform location.}
+The purpose of the coarseness parameter is to remove (sub-)class
+characteristics from profiles before comparisons for matching.
+\citet{hadler} suggest a coarseness parameter of 0.25 in the setting of
+toolmark comparisons. For bullet lands, coarseness might need to be
+adjusted because of the strong effect bullet curvature has on profiles.
+
+\hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. 
+The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.}
 
 \begin{figure}
 
@@ -477,7 +488,7 @@ is 0.9\% for different source tests using a validation window size
 \caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. }\label{fig:profile-sketch}
 \end{figure}
 
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. }
+\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. The histograms suggest to use a value of coarseness below 0.2.}
 \hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
 
 \begin{figure}
