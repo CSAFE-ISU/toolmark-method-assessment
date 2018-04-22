@@ -780,9 +780,9 @@ grid.arrange(p1, p2, ncol=1)
 
 ## Type II error rates
 
-\autoref{fig:type2} gives an overview of the type 2 error rates of methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+\autoref{fig:type2} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
 
-```{r type22, fig.height = 5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Side-by-side comparison of type II error rates of methods CS1 and CS2 by size of optimization window $w_o$."}
+```{r type22, fig.height = 3.5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
@@ -790,23 +790,21 @@ for (file in files) {
   cvcs2 <- rbind(cvcs2, tmp)
 }
 cvcs2$coarse <- cvcs2$coarseness
-errorsCV <- 
-  rbind(errorrate(cvcs2, 0.001), 
-        errorrate(cvcs2, 0.005), 
-        errorrate(cvcs2, 0.01), 
-        errorrate(cvcs2, 0.05))
-errorsCV$method <- "CS2"
+library(plotROC)
+cvcs2$method <- "CS2"
 
-errorsCV %>% 
-  ggplot(aes(x = wo, y = beta)) + 
-  geom_point(aes(colour = factor(alpha))) +
-  geom_line(aes(colour = factor(alpha))) +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
-  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
-  xlab(expression("Window size for optimization "~w[o])) +
-  ylab("Type II error rate") +
-  theme_bw() +
-  facet_grid(.~method, labeller="label_both")
+cvcs2 %>% 
+  ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo))) + 
+  geom_abline(linetype=3, slope=-1, intercept = 1, colour="grey30", size=.5) +
+  geom_roc(labels=FALSE, n.cuts=100, pointsize=0) +
+  theme_bw() + 
+  scale_colour_brewer(
+    expression("Nominal\ntype I error"~alpha), palette="Set2") +
+  facet_grid(.~method, labeller="label_both") +
+  xlab("False Positives Rate (1 - Specificity)") +
+  ylab("True Positives Rate (Sensitivity)") 
+  
+
   
 ```
 
