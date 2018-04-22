@@ -782,7 +782,7 @@ grid.arrange(p1, p2, ncol=1)
 
 \autoref{fig:type2} gives an overview of the type 2 error rates of methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
 
-```{r type2, fig.height = 5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Side-by-side comparison of type II error rates of methods CS1 and CS2 by size of optimization window $w_o$."}
+```{r type22, fig.height = 5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Side-by-side comparison of type II error rates of methods CS1 and CS2 by size of optimization window $w_o$."}
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
