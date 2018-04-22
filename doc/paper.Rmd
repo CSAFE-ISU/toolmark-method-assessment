@@ -783,7 +783,7 @@ grid.arrange(p1, p2, ncol=1)
 
 \autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. 
 
-```{r type2, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+```{r type2, fig.height = 3, fig.width = 4.5, out.width='0.6\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
@@ -802,37 +802,33 @@ errorsCV$type <- "CS2"
 
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
-  geom_point(aes(shape=factor(wv)), size=3.5) +
-#  facet_grid(.~wo, labeller="label_both") + 
- geom_line(aes(group=alpha),  size=.7) +
-  #  geom_smooth(aes(group=alpha), se=FALSE, method="loess", size=.7) +
+  geom_point(aes(shape=factor(wv)), size=2.5) +
+  geom_line(aes(group=alpha),  size=.7) +
   theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha),
+                      palette="Set2") +
   scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
   xlab(expression("Window size for optimization "~w[o])) +
   ylab("Type II error rate")
 
-
-labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
 
 \autoref{fig:type22} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
 
-```{r type22, fig.height = 3.5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+```{r type22, fig.height = 3, fig.width = 4.5, out.width='0.6\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 
 cvcs2 %>% 
   ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo))) + 
-  geom_roc(labels=FALSE, n.cuts=100, pointsize=0) +
-  geom_abline(linetype=3, slope=-1, intercept = 1, colour="grey30", size=.5) +
+  geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6) +
+  geom_abline(
+    linetype=3, slope=-1, intercept = 1, colour="grey30", size=.3) +
   theme_bw() + 
   scale_colour_brewer(
     expression("Optimization\nwindow size"~w[o]), palette="Set2") +
   facet_grid(.~method, labeller="label_both") +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") 
-  
 
-  
 ```
 
 
