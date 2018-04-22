@@ -649,7 +649,7 @@ set.seed(20140501)
 simu <- 1:10 %>% purrr::map_df(.f = function(i) {
   X1 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigsame) 
   X2 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigdiff) 
-  Y1 <- pnorm(X1) 
+  Y1 <- pnorm(X1)  # Probability Integral Transform
   Y2 <- pnorm(X2) 
   wv <- 10*1:6
   
@@ -725,7 +725,7 @@ The purpose of the coarseness parameter is to remove (sub-)class characteristics
 \hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. 
 The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.}
 
-```{r profile-sketch, fig.height = 4.5, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
+```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
 profile$lw10 <- lowess(x = profile$y, y = profile$value, f=.10)$y
 profile$lw15 <- lowess(x = profile$y, y = profile$value, f=.15)$y
@@ -778,6 +778,36 @@ p2 <- profc %>%
 grid.arrange(p1, p2, ncol=1)
 ```
 
+## Type II error rates
+
+```{r}
+files <- dir("../data/crossvalidate-cs2/")
+cvcs2 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/crossvalidate-cs2/",file))
+  cvcs2 <- rbind(cvcs2, tmp)
+}
+cvcs2$coarse <- cvcs2$coarseness
+errorsCV <- 
+  rbind(errorrate(cvcs2, 0.001), 
+        errorrate(cvcs2, 0.005), 
+        errorrate(cvcs2, 0.01), 
+        errorrate(cvcs2, 0.05))
+
+errorsCV %>% 
+  ggplot(aes(x = wo, y = beta)) + 
+  geom_point(aes(colour = factor(alpha))) +
+  geom_line(aes(colour = factor(alpha))) +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
+  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
+  xlab(expression("Window size for optimization "~w[o])) +
+  ylab("Type II error rate") +
+  theme_bw()
+  
+```
+
+<!--
+## Type II error rate and coarseness
 \hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. The histograms suggest to use a value of coarseness below 0.2.}
 \hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
 ```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
@@ -789,7 +819,7 @@ e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(a
 e1
 ```
 
-
+-->
 
 ### Results for Signatures
 
