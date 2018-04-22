@@ -773,16 +773,17 @@ p2 <- profc %>%
   facet_grid(.~coarseness, labeller="label_both") + 
   theme_bw() +
   xlab(expression("Relative optimal location "~t^"*")) +
-  ylab("Number of profiles")
+  ylab("Number of profiles") +
+  scale_x_continuous(breaks=seq(0,1, by=0.25), labels=c("0", "0.25", "0.50", "0.75", "1"))
  
 grid.arrange(p1, p2, ncol=1)
 ```
 
 ## Type II error rates
 
-\autoref{fig:type2} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+\autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. 
 
-```{r type22, fig.height = 3.5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+```{r type2, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
@@ -793,13 +794,39 @@ cvcs2$coarse <- cvcs2$coarseness
 library(plotROC)
 cvcs2$method <- "CS2"
 
+errorsCV <- rbind(errorrate(cvcs2, 0.001), 
+                errorrate(cvcs2, 0.005), 
+                errorrate(cvcs2, 0.01), 
+                errorrate(cvcs2, 0.05))
+errorsCV$type <- "CS2"
+
+errorsCV %>% 
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
+  geom_point(aes(shape=factor(wv)), size=3.5) +
+#  facet_grid(.~wo, labeller="label_both") + 
+ geom_line(aes(group=alpha),  size=.7) +
+  #  geom_smooth(aes(group=alpha), se=FALSE, method="loess", size=.7) +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
+  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
+  xlab(expression("Window size for optimization "~w[o])) +
+  ylab("Type II error rate")
+
+
+labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
+```
+
+\autoref{fig:type22} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+
+```{r type22, fig.height = 3.5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+
 cvcs2 %>% 
   ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo))) + 
-  geom_abline(linetype=3, slope=-1, intercept = 1, colour="grey30", size=.5) +
   geom_roc(labels=FALSE, n.cuts=100, pointsize=0) +
+  geom_abline(linetype=3, slope=-1, intercept = 1, colour="grey30", size=.5) +
   theme_bw() + 
   scale_colour_brewer(
-    expression("Nominal\ntype I error"~alpha), palette="Set2") +
+    expression("Optimization\nwindow size"~w[o]), palette="Set2") +
   facet_grid(.~method, labeller="label_both") +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") 
@@ -807,6 +834,8 @@ cvcs2 %>%
 
   
 ```
+
+
 
 <!--
 ## Type II error rate and coarseness
@@ -847,7 +876,8 @@ The marking made on bullets are smaller than toolmarks and is also less wider. T
 ### Signatures
 -->
 
-```{r type2, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+<!--
+```{r type2b, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 errors %>% filter(wv %in% c(30,50)) %>%
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
   geom_point(aes(shape=factor(wv)), size=3.5) +
@@ -862,6 +892,7 @@ errors %>% filter(wv %in% c(30,50)) %>%
 
 labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
+-->
 
 ```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errors %>% filter(wv %in% c(30,50)) %>%
@@ -986,9 +1017,22 @@ window $w_v$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\
 \end{table}
 
 
-# Conclusion
+# Conclusions
 
-The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
+\hh{
+We started out trying to assess the suitability of the Chumbley Score's suitability for matching striae on bullet lands. Besides using recommended defaults, we also proposed ways to optimize parameters: based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile, we found  for bullets the smaller coarseness value of $c = 0.15$ to be suitable. 
+Optimized window sizes were found based on cross-validation to minimize type 2 error rates. 
+Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
+Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
+XXX
+still to cover: introduce method CS2;
+failures are down; 
+type 2 error rates are also down.
+Fix has type 2 error rates on bullet lands that is still higher than the error rates achieved on the -much larger- toolmarks.
+However, bullets usually have multiple lands - in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to deal work in a bullet-to-bullet comparison.
+}
+
+<!-- The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
 A Test Fail, i.e. tests in which a particular parameter setting did not return a valid result, happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation, depends on whether known-match or known non-matches has predictive value, with test results from different sources having a much higher chance to fail. On conducting an analysis of all known bullet lands using the adjusted chumbley algorithm, Type II error was identified to be least bad for window of validation 30 and window of optimization 120. In case of unsmoothed raw marks (profiles), Type II error increases with the amount of smoothing and least for LOWESS smoothing coarseness value about 0.25 or 0.3. In an effort to identify the level of adaptiveness of the algorithm, comparisons were made between signatures and profiles. Their comparison with respect to validation window size for a fixed optimization window size suggested that, profiles have a total error (i.e all incorrect classification of known-matches and known non-matches) greater than or equal to the total error of signatures for all sizes of validation window. Profiles also fail more number of times than signatures in a test fail (for different coarseness keeping windows fixed and also for different validation windows keeping coarseness fixed) which lets us conclude that the behaviour of the algorithm for the profiles instead of pre-processed signatures is not better. Finally it should be noted that the current version of the adjusted chumbley algorithm seems to fall short when compared to other machine-learning based methods \citet{aoas}, and some level of modification to the deterministic algorithm needs to be identified and tested that would reduce the number of incorrect classifications.
 
 ```{r wo120-profile, fig.width = 6, fig.height=4, fig.cap="The figure shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120", eval = FALSE}
@@ -1039,6 +1083,7 @@ miss_2
 
 miss_2
 ```
+-->
 
 <!-- # Algorithm Modification -->
 
