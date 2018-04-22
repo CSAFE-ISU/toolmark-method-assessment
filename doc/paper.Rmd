@@ -780,7 +780,9 @@ grid.arrange(p1, p2, ncol=1)
 
 ## Type II error rates
 
-```{r}
+\autoref{fig:type2} gives an overview of the type 2 error rates of methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+
+```{r type2, fig.height = 5, fig.width = 5, out.width='0.7\\textwidth', fig.cap="Side-by-side comparison of type II error rates of methods CS1 and CS2 by size of optimization window $w_o$."}
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
@@ -793,6 +795,7 @@ errorsCV <-
         errorrate(cvcs2, 0.005), 
         errorrate(cvcs2, 0.01), 
         errorrate(cvcs2, 0.05))
+errorsCV$method <- "CS2"
 
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta)) + 
@@ -802,7 +805,8 @@ errorsCV %>%
   scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
   xlab(expression("Window size for optimization "~w[o])) +
   ylab("Type II error rate") +
-  theme_bw()
+  theme_bw() +
+  facet_grid(.~method, labeller="label_both")
   
 ```
 
