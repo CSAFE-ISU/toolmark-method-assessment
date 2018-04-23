@@ -803,7 +803,7 @@ errorsCV$type <- "CS2"
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
   geom_point(aes(shape=factor(wv)), size=2.5) +
-  geom_line(aes(group=alpha),  size=.7) +
+  geom_smooth(aes(group=alpha), se=FALSE, method="loess", span=1,  size=.7) +
   theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha),
                       palette="Set2") +
@@ -818,14 +818,15 @@ errorsCV %>%
 ```{r roc, fig.height = 3.25, fig.width = 4.75, out.width='0.6\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 
 cvcs2 %>% 
-  ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo))) + 
+  ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo), 
+             shape=factor(wv))) + 
   geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6) +
   geom_abline(
     linetype=3, slope=-1, intercept = 1, colour="grey30", size=.3) +
   theme_bw() + 
   scale_colour_brewer(
     expression("Optimization\nwindow size"~w[o]), palette="Set2") +
-  facet_grid(.~method, labeller="label_both") +
+  facet_grid(wv~method, labeller="label_both") +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") 
 
