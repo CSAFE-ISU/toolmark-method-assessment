@@ -342,6 +342,7 @@ Looking closer at \autoref{eq.start}, we see that by definition, some
 number of tests will fail to produce a result, either because the number
 of eligible same-shift pairs is zero, or the number of different-shift
 opairs is zero.
+\hh{XXX The problem of failed tests is first mentioned in XXX}
 
 The number of same-shift pairs will be zero, if the optimal locations
 \(t_1^{o}\) and \(t_2^{o}\) are so far apart, that no segments of size
@@ -514,29 +515,13 @@ CS2 over a range of different optimization window sizes \(w_o\).
 \caption{ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves.}\label{fig:roc}
 \end{figure}
 
-\subsubsection{Results for Signatures}\label{results-for-signatures}
+\subsection{Observed versus Nominal Type I error
+rates}\label{observed-versus-nominal-type-i-error-rates}
 
-\hh{For signatures from NIST scans we see three problems: 
-\begin{enumerate}
-\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers, see figure \ref{fig:type2};
-\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases, see figure \ref{fig:type1};
-\item the Chumbley-score fails to provide a result for up to 3\% of the cases. The number of failed tests increases linearly in the size used for the window in the optimization step. The rate of failed tests is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
-\end{enumerate}
-}
-
-Figure \ref{fig:missings} gives an overview of the number of failed
-tests, i.e.~tests in which a particular parameter setting did not return
-a valid result. This happens e.g.~when the shift to align two markings
-is so large, that the remaining overlap is too small to accommodate
-windows for validation. The problem is therefore exacerbated by a larger
-validation window. Figure \ref{fig:missings}(left) also shows that the
-number of failed tests is approximately linear in the size of the
-optimization window. Tests also fail at a higher rate than expected when
-the markings are from the same source (right). This difference is the
-least pronounced around an optimized window size \(w_o\) of around 120.
-However, even in this scenario, the number of failed tests for markings
-from the same source is about twice as high as expected given the number
-of same source and different source pairings in the data set.
+\autoref{fig:type1} shows observed type I error rates across a range of
+optimization windows \(w_o\). Generally, observed type I errors are
+higher than expected, but with an increase in the size of the
+optimization window observed type I error rates decrease.
 
 \begin{figure}
 
@@ -545,15 +530,6 @@ of same source and different source pairings in the data set.
 }
 
 \caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
-\end{figure}
-
-\begin{figure}
-
-{\centering \includegraphics[width=\textwidth]{figures/missings-1} 
-
-}
-
-\caption{The number of failed tests increases with an increase in the size of the optimization window (left). Unfortunately there is also a dependency between failed tests and ground truth. The plot on the right shows the ratio of the number of land pairs from same sources and different sources for failed tests. For small optimization windows and large windows the number of failed tests for same-source land-to-land comparisons is increasing. Even in the minimum, same-source land-to-land comparisons fail at twice the rate that they are expected to based on the ratio of the number of known matches and known non-matches (horizontal line).}\label{fig:missings}
 \end{figure}
 
 \begin{table}[ht]
@@ -580,11 +556,12 @@ Optimized window sizes were found based on cross-validation to minimize type 2 e
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
 XXX
-still to cover: introduce method CS2;
-failures are down; 
-type 2 error rates are also down.
-Fix has type 2 error rates on bullet lands that is still higher than the error rates achieved on the -much larger- toolmarks.
+The algorithm CS2 introduced here is constructed in a way that reduces the number of failures by a magnitude of XXX. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates reach a minimum of XXX for an optimized window size of YYY. While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
 However, bullets usually have multiple lands - in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to deal work in a bullet-to-bullet comparison.
+}
+
+\hh{
+Fix in CS2 will also improve power for matching toolmarks. 
 }
 
 \bibliographystyle{agsm}

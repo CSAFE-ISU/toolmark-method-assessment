@@ -569,7 +569,7 @@ In the original method proposed in \citet{chumbley} both in-phase and out-of-pha
 
 ## A problem with failures and modification
 
-Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result, either because the number of eligible same-shift pairs is zero, or the number of different-shift opairs is zero. 
+Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result, either because the number of eligible same-shift pairs is zero, or the number of different-shift opairs is zero. \hh{XXX The problem of failed tests is first mentioned in XXX}
 
 The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$, i.e. we have a failure rate of 
 \[
@@ -784,6 +784,7 @@ grid.arrange(p1, p2, ncol=1)
 \autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. 
 
 ```{r type2, fig.height = 3, fig.width = 4.5, out.width='0.6\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+if (!file.exists("../data/cvcs2.RDS")) {
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
 for (file in files) {
@@ -791,14 +792,16 @@ for (file in files) {
   cvcs2 <- rbind(cvcs2, tmp)
 }
 cvcs2$coarse <- cvcs2$coarseness
-library(plotROC)
 cvcs2$method <- "CS2"
+saveRDS(cvcs2, file = "../data/cvcs2.RDS")
+} else cvcs2 <- readRDS("../data/cvcs2.RDS")
 
+library(plotROC)
 errorsCV <- rbind(errorrate(cvcs2, 0.001), 
                 errorrate(cvcs2, 0.005), 
                 errorrate(cvcs2, 0.01), 
                 errorrate(cvcs2, 0.05))
-errorsCV$type <- "CS2"
+errorsCV$method <- "CS2"
 
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
@@ -850,6 +853,29 @@ e1
 
 -->
 
+## Observed versus Nominal Type I error rates
+
+\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected, but with an increase in the size of the optimization window observed type I error rates decrease. 
+
+```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
+errorsCV %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
+  geom_hline(aes(yintercept=alpha), colour="grey30", size=.5) +
+  geom_point(aes(shape=factor(wv)), size=2.5) +
+  #  facet_grid(.~wo, labeller="label_both") + 
+  geom_smooth(aes(group=alpha), size=.8, se=FALSE, method="lm", alpha=.9) +
+  theme_bw() +
+#  scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
+  scale_shape_discrete(expression("Size of validation window "~w[v])) +
+  ylab("Observed type I error rate") +
+  xlab(expression("Window size for optimization, "~w[o])) +
+  scale_colour_brewer(expression("Nominal type I error "~alpha), palette="Set2") +
+  facet_wrap(~alpha, labeller="label_both", scales="free") +
+  theme(legend.position="bottom")
+  
+```
+
+<!--
 ### Results for Signatures
 
 \hh{For signatures from NIST scans we see three problems: 
@@ -863,7 +889,7 @@ e1
 
 Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens e.g.\ when the shift to align two markings is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings}(left) also shows that the number of failed tests is approximately linear in the size of the optimization window.
 Tests also fail at a higher rate than expected when the markings are from the same source (right). This difference is the least pronounced around an optimized window size $w_o$ of around 120. However, even in this scenario, the number of failed tests for markings from the same source is about twice as high as expected given the number of same source and different source pairings in the data set.
-
+-->
 
 
 <!--
@@ -892,25 +918,9 @@ labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
 ```
 -->
 
-```{r type1, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
-errors %>% filter(wv %in% c(30,50)) %>%
-  ggplot(aes(x = wo, y = actual, colour=factor(alpha))) + 
-  geom_hline(aes(yintercept=alpha), colour="grey30", size=.5) +
-  geom_point(aes(shape=factor(wv)), size=2.5) +
-  #  facet_grid(.~wo, labeller="label_both") + 
-  geom_smooth(aes(group=alpha), size=.8, se=FALSE, method="lm", alpha=.9) +
-  theme_bw() +
-#  scale_y_log10(breaks=c(0.001,.005, 0.01, 0.05)) +
-  scale_shape_discrete(expression("Size of validation window "~w[v])) +
-  ylab("Observed type I error rate") +
-  xlab(expression("Window size for optimization, "~w[o])) +
-  scale_colour_brewer(expression("Nominal type I error "~alpha), palette="Set2") +
-  facet_wrap(~alpha, labeller="label_both", scales="free") +
-  theme(legend.position="bottom")
-  
-```
 
 
+<!--
 ```{r missings, out.width='\\textwidth', fig.width=8, fig.height=4, fig.cap="The number of failed tests increases with an increase in the size of the optimization window (left). Unfortunately there is also a dependency between failed tests and ground truth. The plot on the right shows the ratio of the number of land pairs from same sources and different sources for failed tests. For small optimization windows and large windows the number of failed tests for same-source land-to-land comparisons is increasing. Even in the minimum, same-source land-to-land comparisons fail at twice the rate that they are expected to based on the ratio of the number of known matches and known non-matches (horizontal line).",fig.align = "center"}
 #ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
 
@@ -963,6 +973,7 @@ gridExtra::grid.arrange(missings, missingsbymatch, ncol=2)
 
 
 ```
+-->
 
 <!--
 Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
@@ -1023,11 +1034,12 @@ Optimized window sizes were found based on cross-validation to minimize type 2 e
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
 XXX
-still to cover: introduce method CS2;
-failures are down; 
-type 2 error rates are also down.
-Fix has type 2 error rates on bullet lands that is still higher than the error rates achieved on the -much larger- toolmarks.
+The algorithm CS2 introduced here is constructed in a way that reduces the number of failures by a magnitude of XXX. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates reach a minimum of XXX for an optimized window size of YYY. While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
 However, bullets usually have multiple lands - in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to deal work in a bullet-to-bullet comparison.
+}
+
+\hh{
+Fix in CS2 will also improve power for matching toolmarks. 
 }
 
 <!-- The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
