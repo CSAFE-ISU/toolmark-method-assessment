@@ -1,0 +1,628 @@
+---
+title: "Adapting the Chumbley Score to Bullet Striations"
+author: "Ganesh Krishnan, Heike Hofmann"
+date: "April 21, 2018"
+header-includes:
+   - \usepackage{cleveref}
+   - \usepackage{amsmath}
+   - \usepackage{amsfonts}
+output: 
+  beamer_presentation:
+    citation_package: natbib
+bibliography: bibliography.bib
+---
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  collapse = TRUE,
+  comment = "",
+  fig.height = 6,
+  fig.width = 6,
+  fig.align = "center",
+  out.width= '\\textwidth',
+  cache = FALSE,
+  fig.path='figures/',
+  echo=FALSE,
+  cache=TRUE
+)
+options(knitr.table.format = "latex")
+library(tidyverse)
+library(kableExtra)
+library(xtable)
+library(gridExtra)
+```
+
+```{r functions}
+errorrate <- function(data, alpha) {
+  summ <- data %>% filter(!is.na(p_value)) %>%
+    mutate(signif = p_value < alpha) %>%
+    group_by(wv, wo, match, coarse, signif) %>% tally()
+  summ$error <- with(summ, match != signif)
+  summ$alpha <- alpha
+  
+  rates <- summ %>% dplyr::group_by(wv, wo, coarse, match, alpha) %>% dplyr::summarize(
+    rate = n[error==TRUE]/sum(n)
+  )
+  totals <- summ %>% dplyr::group_by(wv, wo, coarse, alpha) %>% dplyr::summarize(
+    total= sum(n[error==TRUE])/sum(n)
+  )
+  rates <- rates %>% spread(match,rate) %>% dplyr::rename(
+    actual = `FALSE`,
+    beta = `TRUE`
+  )
+  left_join(rates, totals)
+}
+
+
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+#  ref: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+```
+
+```{r data}
+if (!file.exists("../data/all-sigs.rds")) {
+  files <- dir("../data/signatures", pattern="csv")
+  all <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/signatures", file)) 
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    all <- rbind(all, tmp)
+  }
+  all <- all %>% filter(land1_id < land2_id)
+  saveRDS(all, file="../data/all-sigs.rds")
+} else {
+  all <- readRDS("../data/all-sigs.rds")
+}
+
+all$coarse <- 1
+errors <- rbind(errorrate(all, 0.001), 
+                errorrate(all, 0.005), 
+                errorrate(all, 0.01), 
+                errorrate(all, 0.05))
+errors$type <- "signatures"
+
+ns <- all %>% group_by(wv, wo, match) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/n()*100
+)
+```
+
+```{r data-profiles}
+if (!file.exists("../data/all-profiles.rds")) {
+  files <- dir("../data/profiles/", pattern="csv")
+  allp <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/profiles", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coar-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    allp <- rbind(allp, tmp)
+  }
+  allp <- allp %>% filter(land1_id < land2_id)
+  allp <- allp %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(allp, file="../data/all-profiles.rds")
+} else {
+  allp <- readRDS("../data/all-profiles.rds")
+}
+
+errors2 <- rbind(errorrate(allp, 0.001), 
+                errorrate(allp, 0.005), 
+                errorrate(allp, 0.01), 
+                errorrate(allp, 0.05))
+errors2$type <- "CS1"
+
+
+if (!file.exists("../data/invprofiles.rds")) {
+  files <- dir("../data/inverse-profiles/", pattern="rds")
+  allinv <- data.frame()
+  for (file in files) {
+    tmp <- readRDS(file=file.path(path="../data/inverse-profiles", file)) 
+    allinv <- rbind(allinv, tmp)
+  }
+  allinv <- allinv %>% filter(land1_id < land2_id)
+  allinv <- allinv %>% select(-coarseness)
+  saveRDS(allinv, file="../data/invprofiles.rds")
+} else {
+  allinv <- readRDS("../data/invprofiles.rds")
+}
+
+errors3 <- rbind(errorrate(allinv, 0.001), 
+                errorrate(allinv, 0.005), 
+                errorrate(allinv, 0.01), 
+                errorrate(allinv, 0.05))
+errors3$type <- "CS2"
+
+
+```
+
+```{r data-sig-coars}
+if (!file.exists("../data/all-sig-c.rds")) {
+  files <- dir("../data/sig_diff_coarseness/", pattern="csv")
+  all_sig_c <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/sig_diff_coarseness/", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coarse-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% select(-x)
+    all_sig_c <- rbind(all_sig_c, tmp)
+  }
+  all_sig_c <- all_sig_c %>% filter(land1_id < land2_id)
+  all_sig_c <- all_sig_c %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(all_sig_c, file="../data/all-sig-c.rds")
+} else {
+  all_sig_c <- readRDS("../data/all-sig-c.rds")
+}
+
+errors_sig_c <- rbind(errorrate(all_sig_c, 0.001), 
+                errorrate(all_sig_c, 0.005), 
+                errorrate(all_sig_c, 0.01), 
+                errorrate(all_sig_c, 0.05))
+
+
+```
+
+## Objective and Motivation
+
+- Same Source Matching of Bullet lands
+- Evaluate performance of Chumbley Score method when used for Bullet Striations
+- Bullet striations have curvature, not present in toolmarks
+- Identify Error rates and effect of different parameters on them (In short finding the best error rates possible )
+
+
+### Structure
+- Data being used
+- What is the Chumbley Score Method?
+- Identifying Best parameter Settings for Bullets
+- Modifications to the Algorithm
+- Results using \citet{hadler} method and results using Modified method
+
+## Data
+-  Ruger P85s Bullet Lands, or Hamby scans (\cite{hamby}) provided by NIST  (85,491 comparisons)
+-  Bullet striation marks $\approx$ 2mm | Screwdriver marks $\approx$ 7mm (all chumbley score papers)
+
+### Getting from Profiles to Signatures
+\vspace{-0.5em}
+
+- Lowess smoothing or Loess fit residuals $=$ Signatures
+- Removes topographic structure (curvature)
+- Improve the signal to noise Ratio
+
+\vspace{-1.5em}
+
+```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right)."}
+sigs_graphics<- readRDS("../data/sigs_generate_window.rds")
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = value)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Profile")
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = l30)) + 
+  geom_line(aes(y=resid), size=.25) +
+  geom_line(aes(y=l30)) +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Signature")
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+
+## Error Rates for toolmarks
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Research paper & Method & Data Source & False Positives & False Negatives\\
+  \hline
+ \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
+  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
+  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
+ \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
+   \hline
+\end{tabular}}
+\caption{\label{tab:toolmarks-ER} Error Rates for Toolmarks}
+\end{table}
+
+
+## Digitized Striation Marks
+
+- Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized marks (where $T_1$ and $T_2$ are not necessarily equal). 
+
+- $T_1$ and $T_2$ are the final pixel indexes of each marking. 
+Therefore give the respective lengths of the markings. 
+
+- Signatures/ Profiles (NIST- Hamby) $\approx$ 1200 pixels (2 mm)
+  Screwdriver toolmarks (Chumbley Papers) $\approx$ 9000 pixels (7 mm)
+- Markings are smoothed as a preprocessing step
+    - Used to remove drift and (sub)class characteristics from individual markings
+
+## Overview
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=1\textwidth]{imgs/flow-chart-adj-chumbley.png}
+
+\caption{\label{flow-chart} An overview of the chumbley score method}
+\end{figure}
+
+
+## Chumbley Score
+
+- Two steps: Optimization ($1^{st}$) and Validation ($2^{nd}$).
+- Windows $\implies$ short segments of the markings
+    - Have \textit{predefined sizes}. ($T_1$ or $T_2 >>> w_o >> w_v$)
+          1. $w_o$ used in the Optimization step 
+          2. $w_v$ used in the Validation step  
+
+\vspace{-1em}  
+
+#### Optimization step
+\vspace{-0.5em}
+
+- Aligns markings horizontally 
+- Correlation of all possible windows of size $w_o$ between $x(t_1)$ and $y(t_2)$ computed
+- \textit{Possible lag in the 2 markings} \newline Window Pair with maximized correlation $\implies$ \newline Optimal vertical (in-phase) shift of $t_1^o - t_2^o$ 
+      - For aligning the two markings. 
+\vspace{-1em}
+\[
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1, 1 \le t_2 \le T_2} \text{cor} \left(x^{w_o} (t_1), y^{w_o}(t_2) \right)
+\] 
+
+\hspace{-1.5em}
+where $t_1^o,t_2^0$ are the respective starting points of $w_o$ in $x(t_1)$ and $y(t_2)$
+
+
+
+## 2
+- Let $t_1^*$ and $t_2^*$ be relative optimal locations, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. 
+-  Once (sub-)class characteristics are removed, these locations have uniform distribution in $[0,1]$
+
+#### Validations Step
+- Two sets of windows of size $w_v$ chosen from both markings (see Figure \ref{fig:win-comparison})
+
+
+- First set or \textbf{Same Shift}
+      - pairs of windows are extracted from the two markings using the optimal vertical shift.
+$t_1^o - t_2^o$
+
+- Second set or \textbf{Different Shift}
+      - the windows are extracted using a different (out-of-phase) shift. 
+
+## In-phase and Out-of-phase
+
+```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="Two markings made by the same source. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples."}
+sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
+sigs_graphics$sigs_land_id_1_match <- sigs_graphics$sigs_land_id_1_match %>% group_by(land_id) %>% mutate(y = y-min(y, na.rm=T))
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+# Matching signature
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==276,arr.ind = TRUE),]
+data1<-d1 %>%dplyr::select(l30)
+#data1<- data1$y
+data2<- d2 %>%dplyr::select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+
+sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>%
+  dplyr::select(y) %>% min()
+sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% 
+  dplyr::select(y) %>% min()
+window_val <- 3*window_val*0.645
+
+same.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min 
+xs <- seq(100, 1800, length=10)
+rects <- data.frame(ymin=-Inf, ymax= Inf, xmin = xs, xmax = xs+window_val)
+
+
+p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-same.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("In-phase sample")
+
+diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 70 
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-diff.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Out-of-phase sample")
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+## 2
+
+More precisely, let us define starting points of the windows of validation $s_i^{(k)}$ for each signature $k = 1, 2$ as 
+\begin{eqnarray}\label{eq.start}
+s^{(k)}_i = 
+\begin{cases}
+t_k^* + i w_v^* & \text{ for } i < 0 \\
+t_k^* + w_ o^* + i w_v^* & \text{ for } i \ge 0,
+\end{cases}
+\end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le 1 - w_v^*$
+<!-- $0 <  s^{(k)}_i \le T_k - w_v$. -->
+
+## 3
+
+- Same-shift pairs of length $w_v$ are all pairs $$(s_i^{(1)}, s_i^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. 
+- Different-shift pairs are defined as $$(s_i^{(1)}, s_{-i-1}^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ where both $s_i^{(1)}$ and  $s_{-i-1}^{(2)}$ are defined (see \cref{sketch-same-diff}).
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{../doc/images/sketch-same.png}
+
+\includegraphics[width=.7\textwidth]{../doc/images/sketch-diff.png}
+\caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). Filled in rectangles show pairings resulting in correlations, unfilled rectangles are segments without a match.}
+\end{figure}
+
+## 4
+- No overlaps of pairs within selected marks $\implies$ independence.
+- Both same- and different-shift pairs correlations between the  markings are calculated. 
+- For Same-Source markings correlations
+    - for the in-phase shift should be high
+    - for out-of-phase shift should be low.
+          - Provide a measure for the base-level correlation to which in-phase shift correlations can be compared.
+- The Chumbley score is the Mann Whitney U statistic computed by comparing between in-phase sample and out-of-phase sample.
+
+## Failed Tests
+
+- By definition (equation \autoref{eq.start}), some number of tests fail to produce a result
+- Either because the number of eligible same-shift pairs is 0, or the number of different-shift pairs is 0. 
+
+\vspace{-0.5em}
+
+###### No Same-shift pairs if
+- the optimal locations $t_1^{o}$ and $t_2^{o}$ are in the extremes
+    - no segments of size $w_v$ are left on the same sides of the optimal locations, 
+    - For all $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or \newline $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$
+
+\vspace{-0.5em}
+
+###### No Different Shift Pairs if
+- the optimal locations are close to the boundaries
+    - \# of different-shift pairs also depends on the placement of the  optimal locations $t_i^o$.
+    -  For all $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$.
+
+\vspace{-0.5em}
+
+## 
+
+#### Failure Rate
+\vspace{-1.5em}
+
+\[
+\begin{split}
+P\left( t_1^{o} < w_v \ \bigcap \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{o} < T_1- w_o - w_v \ \bigcap \ t_2^{o} < w_v\right).
+\end{split}
+\]
+
+\vspace{-1.5em}
+
+#### Same-shift failure
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{imgs/same-shift-failure.png}
+
+\caption{\label{same-shift-failure}Sketch of same-shift pairings  (top) when the lag is too large to accomodate a a vaildation window in either of the two signatures}
+\end{figure}
+
+## 6
+
+- For different-source matches
+    - we can assume $t_1^o$ and $t_2^o$ are independent.
+    - Failure rate = $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$ 
+    - For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
+- For same-source matches, 
+    - we expect a strong dependency between optimal locations $t_i^o$
+    - $t_1^o$ and $t_2^o$ are not independent of each other
+    - A large difference between locations is unlikely
+    - Failure Rate = $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels.
+
+##  Failure rate for same-source matches
+The failure rate for same-source matches can also be written as follows
+$$
+\begin{split}
+P\left( t_1^{o} < w_v \ \bigcup \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{o} < T_1- w_o - w_v \ \bigcup \ t_2^{o} < w_v\right)
+\end{split}
+$$
+
+
+Taking first part of the above equation, let $A = t_1^{o} < w_v$ and $B = t_2^{o} > T_2-w_o-w_v$
+
+- Again we assume high correlation between optimal locations
+- In order to have at least one same-shift pair or different shift pair
+    - \textbf{Either}, if $x \in A$, then $B$ is empty and $P(A \cup B) = P (A)$
+    - \textbf{or}, if $x \in B$, then $A$ is empty and $P(A \cup B) = P(B)$
+
+This would hold for the second part too, and would therefore give an expected rate of failure as $2 w_v / (T_i-w_o)$
+
+
+## Proposed Modification
+
+- Failures due to missing Same-shift pairs unavoidable
+- Failures due to missing different-shift pairs preventable
+
+Define same-shift pairs identical to \citet{hadler} as pairs 
+$$(s_i^{(1)}, s_i^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ where the boundary conditions of both sequences are met simultaneously. \newline
+
+- Let us assume that this results in $I$ pairs. \newline
+- Let $s_{(j)}^{(k)}$ to be the $j$th starting location in sequence $k = 1, 2$, i.e.\ $s_{(1)}^{(k)} < s_{(2)}^{(k)} < ... < s_{(I)}^{(k)}$.  
+
+## 
+
+We then define the pairs for different-shifts as
+\begin{equation}\label{eq.diff2}
+\left(s_{(j)}^{(1)}, s_{(I-j+1)}^{(1)} \right) \text{ for } j = 
+\begin{cases}
+1, ..., I & \text{ for even } I \\
+1, ..., (I-1)/2, (I-1)/2 + 2, ..., I & \text{ for odd } I
+\end{cases},
+\end{equation}
+
+- For an odd number of same-shift correlations
+    - We skip the middle pair for the different-shift correlations (see \cref{sketch-diff-2}).
+- This pairing ensures that the number of different-shift pairings is the same or at most one less than the number of same-shift pairings in all tests.
+
+## 10
+
+<!-- Algorithm defined by \citet{hadler} \textbf{(CS1)} and the suggested modified algorithm as \textbf{(CS2)} -->
+
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{../doc/images/sketch-diff-2.png}
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair. }
+\end{figure}
+
+## Case where CS1 fails but CS2 does not fail
+
+\small{\textbf{CS1} \citet{hadler}} algorithm \newline  \small{\textbf{CS2} the suggested modified algorithm}
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{imgs/CS1-failure-CS2-success.png}
+\caption{\label{CS1-failure-CS2-success}Sketch of a case where CS1 fails but CS2 does not fail}
+\end{figure}
