@@ -813,9 +813,9 @@ errorsCV %>%
 
 ```
 
-\autoref{fig:type22} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+\autoref{fig:roc} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
 
-```{r type22, fig.height = 3, fig.width = 4.5, out.width='0.6\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+```{r roc, fig.height = 3.25, fig.width = 4.75, out.width='0.6\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 
 cvcs2 %>% 
   ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo))) + 
