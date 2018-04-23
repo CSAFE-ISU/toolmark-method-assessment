@@ -809,7 +809,8 @@ errorsCV %>%
                       palette="Set2") +
   scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
   xlab(expression("Window size for optimization "~w[o])) +
-  ylab("Type II error rate")
+  ylab("Type II error rate") +
+  facet_wrap(~method, labeller="label_both")
 
 ```
 
