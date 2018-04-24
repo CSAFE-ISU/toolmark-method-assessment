@@ -796,12 +796,34 @@ cvcs2$method <- "CS2"
 saveRDS(cvcs2, file = "../data/cvcs2.RDS")
 } else cvcs2 <- readRDS("../data/cvcs2.RDS")
 
+if (!file.exists("../data/cvcs1.RDS")) {
+files <- dir("../data/crossvalidate-cs1/")
+cvcs1 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/crossvalidate-cs1/",file))
+  cvcs1 <- rbind(cvcs1, tmp)
+}
+cvcs1$coarse <- cvcs1$coarseness
+cvcs1$method <- "CS1"
+saveRDS(cvcs1, file = "../data/cvcs1.RDS")
+} else cvcs1 <- readRDS("../data/cvcs1.RDS")
+
+cvcs <- rbind(cvcs1, cvcs2)
+
 library(plotROC)
-errorsCV <- rbind(errorrate(cvcs2, 0.001), 
+errorsCV2 <- rbind(errorrate(cvcs2, 0.001), 
                 errorrate(cvcs2, 0.005), 
                 errorrate(cvcs2, 0.01), 
                 errorrate(cvcs2, 0.05))
-errorsCV$method <- "CS2"
+errorsCV2$method <- "CS2"
+
+errorsCV1 <- rbind(errorrate(cvcs1, 0.001), 
+                errorrate(cvcs1, 0.005), 
+                errorrate(cvcs1, 0.01), 
+                errorrate(cvcs1, 0.05))
+errorsCV1$method <- "CS1"
+
+errorsCV <- rbind(errorsCV1, errorsCV2)
 
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
@@ -821,16 +843,16 @@ errorsCV %>%
 
 ```{r roc, fig.height = 3.25, fig.width = 4.75, out.width='0.6\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 
-cvcs2 %>% 
+cvcs %>% 
   ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo), 
-             shape=factor(wv))) + 
+             shape=factor(wv), linetype=method)) + 
   geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6) +
   geom_abline(
     linetype=3, slope=-1, intercept = 1, colour="grey30", size=.3) +
   theme_bw() + 
   scale_colour_brewer(
     expression("Optimization\nwindow size"~w[o]), palette="Set2") +
-  facet_grid(wv~method, labeller="label_both") +
+  facet_grid(.~wv, labeller="label_both") +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") 
 
