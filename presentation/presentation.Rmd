@@ -239,14 +239,52 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 - Modifications to the Algorithm
 - Results using \citet{hadler} method and results using Modified method
 
-## Data
--  Ruger P85s Bullet Lands, or Hamby scans (\cite{hamby}) provided by NIST  (85,491 comparisons)
--  Bullet striation marks $\approx$ 2mm | Screwdriver marks $\approx$ 7mm (all chumbley score papers)
 
-### Getting from Profiles to Signatures
-\vspace{-0.5em}
 
-- Lowess smoothing or Loess fit residuals $=$ Signatures
+
+
+## Variations of Chumbley score method and Error Rates for toolmarks
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Research paper & Method & Data Source & False Positives & False Negatives\\
+  \hline
+ \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
+  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
+  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ 
+   \hline
+\end{tabular}}
+\caption{\label{tab:toolmarks-ER} Error Rates for Toolmarks using  variations of the chumbley score method}
+\end{table}
+
+ <!-- \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\ -->
+
+
+## Digitized Striation Marks
+- Data
+    -  Ruger P85s Bullet Lands, or Hamby scans (\cite{hamby}) provided by NIST  (85,491 comparisons)
+    -  Bullet striation marks $\approx$ 2mm 
+    -  Screwdriver marks $\approx$ 7mm (all chumbley score papers)
+
+- Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized marks (where $T_1$ and $T_2$ are not necessarily equal). 
+
+- $T_1$ and $T_2$ are the final pixel indexes of each marking. 
+Therefore give the respective lengths of the markings. 
+
+- Signatures/ Profiles (NIST- Hamby) $\approx$ 1200 pixels (2 mm)
+  Screwdriver toolmarks (Chumbley Papers) $\approx$ 9000 pixels (7 mm)
+
+
+## Chumbley Score
+
+#### Step 0 : Defining a coarseness parameter
+- Used to remove drift and (sub)class characteristics from individual markings
+<!-- ### Getting from Profiles to Signatures -->
+<!-- \vspace{-0.5em} -->
+- Lowess or Loess fit residuals $=$ Signatures
 - Removes topographic structure (curvature)
 - Improve the signal to noise Ratio
 
@@ -278,53 +316,11 @@ p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
 grid.arrange(p1,p2, ncol=2)
 ```
 
-
-## Error Rates for toolmarks
-
-\begin{table}[ht]
-\centering
-\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
-  \hline
-Research paper & Method & Data Source & False Positives & False Negatives\\
-  \hline
- \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
- \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
-  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
-  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
- \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
-   \hline
-\end{tabular}}
-\caption{\label{tab:toolmarks-ER} Error Rates for Toolmarks}
-\end{table}
-
-
-## Digitized Striation Marks
-
-- Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized marks (where $T_1$ and $T_2$ are not necessarily equal). 
-
-- $T_1$ and $T_2$ are the final pixel indexes of each marking. 
-Therefore give the respective lengths of the markings. 
-
-- Signatures/ Profiles (NIST- Hamby) $\approx$ 1200 pixels (2 mm)
-  Screwdriver toolmarks (Chumbley Papers) $\approx$ 9000 pixels (7 mm)
-- Markings are smoothed as a preprocessing step
-    - Used to remove drift and (sub)class characteristics from individual markings
-
-## Overview
-
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=1\textwidth]{imgs/flow-chart-adj-chumbley.png}
-
-\caption{\label{flow-chart} An overview of the chumbley score method}
-\end{figure}
-
-
-## Chumbley Score
+## Algorithm
 
 - Two steps: Optimization ($1^{st}$) and Validation ($2^{nd}$).
 - Windows $\implies$ short segments of the markings
-    - Have \textit{predefined sizes}. ($T_1$ or $T_2 >>> w_o >> w_v$)
+    - Have \textit{predefined sizes}. ($T_1$ or $T_2$ >>> $w_o$ & w_v$)
           1. $w_o$ used in the Optimization step 
           2. $w_v$ used in the Validation step  
 
@@ -333,9 +329,9 @@ Therefore give the respective lengths of the markings.
 #### Optimization step
 \vspace{-0.5em}
 
-- Aligns markings horizontally 
-- Correlation of all possible windows of size $w_o$ between $x(t_1)$ and $y(t_2)$ computed
-- \textit{Possible lag in the 2 markings} \newline Window Pair with maximized correlation $\implies$ \newline Optimal vertical (in-phase) shift of $t_1^o - t_2^o$ 
+- \textbf{Goal :}Align markings horizontally as best as possible
+- Correlation Matrix of all possible windows of size $w_o$ between $x(t_1)$ and $y(t_2)$ computed
+- \textit{Identify lag for horizontal alignment} \newline Window Pair with maximized correlation $\implies$ \newline Optimal vertical (in-phase) shift of $t_1^o - t_2^o$ 
       - For aligning the two markings. 
 \vspace{-1em}
 \[
@@ -351,7 +347,7 @@ where $t_1^o,t_2^0$ are the respective starting points of $w_o$ in $x(t_1)$ and 
 - Let $t_1^*$ and $t_2^*$ be relative optimal locations, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. 
 -  Once (sub-)class characteristics are removed, these locations have uniform distribution in $[0,1]$
 
-#### Validations Step
+#### Validation Step
 - Two sets of windows of size $w_v$ chosen from both markings (see Figure \ref{fig:win-comparison})
 
 
@@ -473,9 +469,28 @@ p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>%
 grid.arrange(p1,p2, ncol=2)
 ```
 
-## 2
+## 4
+<!-- - No overlaps of pairs within selected marks $\implies$ independence. -->
+- Both same- and different-shift pairs correlations between the  markings are calculated. 
+- For Same-Source markings, correlations
+    - for the in-phase shift should be high
+    - for out-of-phase shift should be low.
+          - Provide a measure for the base-level correlation to which in-phase shift correlations can be compared.
+- The Chumbley score is the Mann Whitney U statistic computed by comparing between in-phase sample and out-of-phase sample.
 
-More precisely, let us define starting points of the windows of validation $s_i^{(k)}$ for each signature $k = 1, 2$ as 
+
+## Block Diagram
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=1\textwidth]{imgs/flow-chart-adj-chumbley.png}
+
+\caption{\label{flow-chart} An overview of the adjusted chumbley score method as given by \citet{hadler}}
+\end{figure}
+
+## Starting Points
+
+More precisely, let us define starting points of the windows of validation $s_i^{(k)}$ for each marking $k = 1, 2$ as 
 \begin{eqnarray}\label{eq.start}
 s^{(k)}_i = 
 \begin{cases}
@@ -485,9 +500,9 @@ t_k^* + w_ o^* + i w_v^* & \text{ for } i \ge 0,
 \end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le 1 - w_v^*$
 <!-- $0 <  s^{(k)}_i \le T_k - w_v$. -->
 
-## 3
+## The \citet{hadler} method (CS1)
 
-- Same-shift pairs of length $w_v$ are all pairs $$(s_i^{(1)}, s_i^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. 
+- Same-shift pairs of length $w_v$ are all pairs that start in: $$(s_i^{(1)}, s_i^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. 
 - Different-shift pairs are defined as $$(s_i^{(1)}, s_{-i-1}^{(2)}) \quad \forall \, i \, \in \, \mathbb{Z}$$ where both $s_i^{(1)}$ and  $s_{-i-1}^{(2)}$ are defined (see \cref{sketch-same-diff}).
 
 \begin{figure}[hbtp]
@@ -498,37 +513,32 @@ t_k^* + w_ o^* + i w_v^* & \text{ for } i \ge 0,
 \caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). Filled in rectangles show pairings resulting in correlations, unfilled rectangles are segments without a match.}
 \end{figure}
 
-## 4
-- No overlaps of pairs within selected marks $\implies$ independence.
-- Both same- and different-shift pairs correlations between the  markings are calculated. 
-- For Same-Source markings correlations
-    - for the in-phase shift should be high
-    - for out-of-phase shift should be low.
-          - Provide a measure for the base-level correlation to which in-phase shift correlations can be compared.
-- The Chumbley score is the Mann Whitney U statistic computed by comparing between in-phase sample and out-of-phase sample.
+
 
 ## Failed Tests
 
 - By definition (equation \autoref{eq.start}), some number of tests fail to produce a result
 - Either because the number of eligible same-shift pairs is 0, or the number of different-shift pairs is 0. 
+- $t_1^o, t_2^o$ not necessarily independent
+    - \textbf{same-source:} Assume high dependence, corr($t_1^o,t_2^o$) $\approx$ 1
+        - Example: $w_o$ = 120, coarseness (c) = 0.3, corr($t_1^o,t_2^o$) = 0.85
+    - \textbf{diff-source:} Assume independence of $t_1^o,t_2^o$
+        - Example: $w_o$ = 120, coarseness (c) = 0.3, corr($t_1^o,t_2^o$) = 0.12
+<!-- \vspace{-0.5em} -->
 
-\vspace{-0.5em}
+<!-- ###### No Same-shift pairs if -->
+<!-- - the optimal locations $t_1^{o}$ and $t_2^{o}$ are in the extremes -->
+<!--     - no segments of size $w_v$ are left on the same sides of the optimal locations,  -->
+<!--     - For all $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or \newline $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$ -->
 
-###### No Same-shift pairs if
-- the optimal locations $t_1^{o}$ and $t_2^{o}$ are in the extremes
-    - no segments of size $w_v$ are left on the same sides of the optimal locations, 
-    - For all $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or \newline $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$
+<!-- \vspace{-0.5em} -->
 
-\vspace{-0.5em}
+<!-- ###### No Different Shift Pairs if -->
+<!-- - the optimal locations are close to the boundaries -->
+<!--     - \# of different-shift pairs also depends on the placement of the  optimal locations $t_i^o$. -->
+<!--     -  For all $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. -->
 
-###### No Different Shift Pairs if
-- the optimal locations are close to the boundaries
-    - \# of different-shift pairs also depends on the placement of the  optimal locations $t_i^o$.
-    -  For all $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$.
-
-\vspace{-0.5em}
-
-## 
+<!-- \vspace{-0.5em} -->
 
 #### Failure Rate
 \vspace{-1.5em}
@@ -541,7 +551,9 @@ P\left( t_1^{o} < w_v \ \bigcap \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{
 
 \vspace{-1.5em}
 
-#### Same-shift failure
+## Same-shift failure
+- Same-source $\approx$ 0
+- Different-source $\approx$ 2 $P(t_i < w_o)^2$ = $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$ 
 
 \begin{figure}[hbtp]
 \centering
@@ -550,35 +562,54 @@ P\left( t_1^{o} < w_v \ \bigcap \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{
 \caption{\label{same-shift-failure}Sketch of same-shift pairings  (top) when the lag is too large to accomodate a a vaildation window in either of the two signatures}
 \end{figure}
 
-## 6
+## Different-Shift Failure
 
-- For different-source matches
-    - we can assume $t_1^o$ and $t_2^o$ are independent.
-    - Failure rate = $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$ 
-    - For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
-- For same-source matches, 
-    - we expect a strong dependency between optimal locations $t_i^o$
-    - $t_1^o$ and $t_2^o$ are not independent of each other
-    - A large difference between locations is unlikely
-    - Failure Rate = $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels.
+- Same-source (Assuming $t_1^{o} \approx t_2^{o}$) $\approx$ $2w_v / (T_i-w_o)$\newline
 
-##  Failure rate for same-source matches
-The failure rate for same-source matches can also be written as follows
-$$
-\begin{split}
-P\left( t_1^{o} < w_v \ \bigcup \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{o} < T_1- w_o - w_v \ \bigcup \ t_2^{o} < w_v\right)
-\end{split}
-$$
+\vspace{-2em}
+
+$P( t_1^{o} < w_v \ \cap \ t_2^{o} < w_v) + P( t_1^{o} <  w_v \ \cap \ t_2^{o} < w_v)  = \ 2P(t_o^1 \ < \ w_v)$
+
+\vspace{-1em}
+
+- Different-source $\approx$  $2P(t_i < w_o)^2$ = $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$ 
+
+\vspace{-1em}
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.8\textwidth]{imgs/diff-shift-failure.png}
+
+\caption{\label{diff-shift-failure}Sketch of diff-shift pairings  (top) when the number of diff-shift computations is likely to 0}
+\end{figure}
+
+<!-- - For different-source matches -->
+<!--     - we can assume $t_1^o$ and $t_2^o$ are independent. -->
+<!--     - Failure rate = $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$  -->
+<!--     - For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015. -->
+<!-- - For same-source matches,  -->
+<!--     - we expect a strong dependency between optimal locations $t_i^o$ -->
+<!--     - $t_1^o$ and $t_2^o$ are not independent of each other -->
+<!--     - A large difference between locations is unlikely -->
+<!--     - Failure Rate = $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels. -->
+
+<!-- ##  Failure rate for same-source matches -->
+<!-- The failure rate for same-source matches can also be written as follows -->
+<!-- $$ -->
+<!-- \begin{split} -->
+<!-- P\left( t_1^{o} < w_v \ \bigcup \ t_2^{o} > T_2-w_o-w_v\right) + \\P\left( t_1^{o} < T_1- w_o - w_v \ \bigcup \ t_2^{o} < w_v\right) -->
+<!-- \end{split} -->
+<!-- $$ -->
 
 
-Taking first part of the above equation, let $A = t_1^{o} < w_v$ and $B = t_2^{o} > T_2-w_o-w_v$
+<!-- Taking first part of the above equation, let $A = t_1^{o} < w_v$ and $B = t_2^{o} > T_2-w_o-w_v$ -->
 
-- Again we assume high correlation between optimal locations
-- In order to have at least one same-shift pair or different shift pair
-    - \textbf{Either}, if $x \in A$, then $B$ is empty and $P(A \cup B) = P (A)$
-    - \textbf{or}, if $x \in B$, then $A$ is empty and $P(A \cup B) = P(B)$
+<!-- - Again we assume high correlation between optimal locations -->
+<!-- - In order to have at least one same-shift pair or different shift pair -->
+<!--     - \textbf{Either}, if $x \in A$, then $B$ is empty and $P(A \cup B) = P (A)$ -->
+<!--     - \textbf{or}, if $x \in B$, then $A$ is empty and $P(A \cup B) = P(B)$ -->
 
-This would hold for the second part too, and would therefore give an expected rate of failure as $2 w_v / (T_i-w_o)$
+<!-- This would hold for the second part too, and would therefore give an expected rate of failure as $2 w_v / (T_i-w_o)$ -->
 
 
 ## Proposed Modification
