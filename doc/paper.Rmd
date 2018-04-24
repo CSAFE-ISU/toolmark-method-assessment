@@ -824,7 +824,6 @@ errorsCV1 <- rbind(errorrate(cvcs1, 0.001),
 errorsCV1$method <- "CS1"
 
 errorsCV <- rbind(errorsCV1, errorsCV2)
-
 errorsCV %>% 
   ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
   geom_point(aes(shape=factor(wv)), size=2.5) +
