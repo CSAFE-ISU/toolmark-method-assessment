@@ -850,6 +850,7 @@ cvcs %>%
     linetype=3, slope=-1, intercept = 1, colour="grey30", size=.3) +
   theme_bw() + 
   scale_shape_discrete("Method", expression("Validation\nwindow size"~w[v])) +
+  scale_linetype_discrete("Method") + 
   scale_colour_brewer(
     expression("Optimization\nwindow size"~w[o]), palette="Set2") +
   facet_grid(.~wv, labeller="label_both") +
@@ -882,7 +883,7 @@ e1
 
 ## Observed versus Nominal Type I error rates
 
-\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected, but with an increase in the size of the optimization window observed type I error rates decrease. 
+\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates.   
 
 ```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
@@ -1041,7 +1042,7 @@ dt <- rbind(wo120_sig, wo120_pr) %>%
   spread(alpha, beta)
 print(xtable(dt), include.rownames=FALSE)
 ```
-
+<!--
 \begin{table}[ht]
 \caption{\label{tab:type2} Type II error rates for profiles and signatures of bullet lands. For profiles, a coarseness value of $c = 0.25$ is used to remove bullet curvature.}
 \centering
@@ -1057,7 +1058,7 @@ window $w_v$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\
    \hline
 \end{tabular}
 \end{table}
-
+-->
 
 # Conclusions
 

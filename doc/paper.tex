@@ -520,8 +520,10 @@ rates}\label{observed-versus-nominal-type-i-error-rates}
 
 \autoref{fig:type1} shows observed type I error rates across a range of
 optimization windows \(w_o\). Generally, observed type I errors are
-higher than expected, but with an increase in the size of the
-optimization window observed type I error rates decrease.
+higher than expected. Method CS1 shows in this instance slightly better
+performance than method CS2, but for both an increase in the size of the
+optimization window leads to a decrease in the observed type I error
+rates.
 
 \begin{figure}
 
@@ -531,22 +533,6 @@ optimization window observed type I error rates decrease.
 
 \caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
 \end{figure}
-
-\begin{table}[ht]
-\caption{\label{tab:type2} Type II error rates for profiles and signatures of bullet lands. For profiles, a coarseness value of $c = 0.25$ is used to remove bullet curvature.}
-\centering
-\begin{tabular}{rlrrrr}
-  \hline
-validation && \multicolumn{4}{l}{Nominal type I error rate $\alpha$}\\  
-window $w_v$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\ 
-  \hline
- 30 & profiles & 54.40 & 43.80 & 39.70 & 30.00 \\ 
-   30 & signatures & 55.00 & 45.40 & 41.40 & 31.10 \\ \hline
-   50 & profiles & 58.50 & 44.40 & 40.70 & 28.70 \\ 
-   50 & signatures & 62.60 & 49.60 & 44.20 & 30.50 \\ 
-   \hline
-\end{tabular}
-\end{table}
 
 \section{Conclusions}\label{conclusions}
 
