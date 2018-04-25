@@ -810,7 +810,6 @@ saveRDS(cvcs1, file = "../data/cvcs1.RDS")
 
 cvcs <- rbind(cvcs1, cvcs2)
 
-library(plotROC)
 errorsCV2 <- rbind(errorrate(cvcs2, 0.001), 
                 errorrate(cvcs2, 0.005), 
                 errorrate(cvcs2, 0.01), 
@@ -841,26 +840,31 @@ errorsCV %>%
 \autoref{fig:roc} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
 
 ```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+library(plotROC)
+library(RColorBrewer)
+cols <- c(brewer.pal(6, "Reds")[-1], brewer.pal(6, "Blues")[-1])
 
-cvcs %>% 
-  ggplot(aes(d = as.numeric(!match), m = p_value, colour=factor(wo), 
-             shape=factor(wv), linetype=method)) + 
-  geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6) +
-  geom_abline(
-    linetype=3, slope=-1, intercept = 1, colour="grey30", size=.3) +
-  theme_bw() + 
-  scale_shape_discrete("Method", expression("Validation\nwindow size"~w[v])) +
-  scale_linetype_discrete("Method") + 
-  scale_colour_brewer(
-    expression("Optimization\nwindow size"~w[o]), palette="Set2") +
-  facet_grid(.~wv, labeller="label_both") +
+cvcs <- cvcs %>% mutate(
+  method.wo = paste(method, wo, sep= " / "),
+  method.wo = factor(method.wo, 
+                     levels = c("CS1 / 90", "CS1 / 120", "CS1 / 150", "CS1 / 180", "CS1 / 210", "CS2 / 90", "CS2 / 120", "CS2 / 150", "CS2 / 180", "CS2 / 210"))
+)
+cvcs %>% filter(!wo %in% c(130, 140) ) %>%
+  ggplot(aes(d = as.numeric(match), m = 1-p_value)) + 
+  geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6, 
+           aes(colour = method.wo)) +
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) +
+  scale_alpha_discrete(range=c(0.1, 0.6)) +
+  scale_colour_manual(expression("Method /\nOptimization\nwindow size"~w[o]), values=cols) +
+  theme_bw() +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") +
   guides(
-   colour = guide_legend(order = 3, ncol=2),
-   linetype = guide_legend(order = 1, ncol=2),
-   shape = guide_legend(order = 2, ncol=2)
- )
+   colour = guide_legend(ncol=2)
+  ) +
+  geom_abline(slope=-1, intercept = 1, linetype = 3, 
+              colour="grey30", size = 0.25)
+
 
 ```
 
