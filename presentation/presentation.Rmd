@@ -662,15 +662,17 @@ We then define the pairs for different-shifts as
 ## Results Failed Tests
 
 ## Conclusions Failed Tests
+\fontsize{10pt}{11}\selectfont
 
-- The number of failed tests is highly dependent on the size of the comparison windows and is correlated to the ground truth, 
-- Higher for known same-sourced lands than for known different sourced lands. 
-- The \textbf{CS1} algorithm fails to conduct a test about 8 to 13 % of the time for known same-source lands, and 2 to 6% of the time for known different source lands.
-- number of failed tests for CS1 is always higher than the corresponding theoretical number of failed tests.
+- Number is highly dependent on the comparison window sizes
+- Correlated to the ground truth, 
+- \textbf{Higher for known same-sourced lands (CS1)} than for known different sourced lands. 
+- \textbf{CS1} fails to conduct a test about 8 to 13 % of the time for \textbf{known same-source lands}, and 2 to 6% of the time for \textbf{known different source lands}.
+- Number for CS1 always higher than the corresponding theoretical number of failed tests.
 - Using CS2, the case with \textbf{largest} # of failed tests is still \textbf{lower} than the case where CS1 gives the \textbf{lowest} # of failed tests
-- Even when the coarseness is high, CS2 will have lower number of failed tests than CS1, Making it more robust.
-- CS2 performs better for both same and different-sources
-- Solves a critical issue of CS1 known same-source matching, by having a negligible number of Known same-source failed tests
+- Even for high coarseness, CS2 will have lower number of failed tests than CS1, Making it more robust.
+- CS2 performs better for \textbf{both} same and different-sources
+- Solves a \textbf{critical issue} of CS1 known same-source matching, by having a \textbf{negligible number of Known same-source failed tests}
  
 ## Coarseness
 
@@ -759,22 +761,34 @@ grid.arrange(type2)
 \fontsize{10pt}{11}\selectfont
 
 #### CS1
-- Best works for $w_o$ of $\approx$ 130 to 160 and $w_v$ 50 when the smoothing is $c$ $\approx$ 0.3.
+- Best works best for $w_o$ of $\approx$ 130 to 160 and $w_v$ 50 when the smoothing is $c$ $\approx$ 0.3.
 - The Type II rate is lowest for a nominal $\alpha$ of 5%, with type I error rate of  6.2% and the Type II error rate of 24%. 
 - For lower nominal alpha levels of 1%, 0.5% and 0.1% the lowest type II error rate increases to about 36.4%, 41% and 52.5% respectively.
 - Gets worse for coarseness 0.15
 
 #### CS2
-- For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. 
-- Smaller validation sizes $w_v$ are typically associated with a smaller type II error.
+- Significantly reduced over CS1
+- For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. - Smaller validation sizes $w_v$ are typically associated with a smaller type II error.
 - CS2 shows an increase in the power of the test.
-- Fix in CS2 will also improve power for matching toolmarks.
-- While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
-- Might be able to get more power out of the test by adapting C2 in a bullet-to-bullet comparison.
+- Type II CS2, still much higher for bullet lands than for toolmarks.
+- Fix in CS2 will also improve power for matching toolmarks thans CS1
+- Bullet-to-bullet comparison using CS2 $\approx$ more power out of the test.
 
+## ROC Curves
+\fontsize{10pt}{11}\selectfont
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.9\textwidth]{imgs/roc-curves.png}
+\caption{\label{roc-curves}  ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$.}
+\end{figure}
 
+\vspace{-0.5em}
 
+- Superior performance of CS2 over CS1
+- Best performances wrt  ROC curves are reached for $w_0$ 150 and higher. 
+- Points of equal error rates (EERs): intersection of the dotted line and the ROC curves.
 
+##
 
-
+### \textbf{THANK YOU. Questions?}
 
