@@ -810,9 +810,13 @@ This is computed from the joint rank of all correlations of both the same and di
 
 Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
 
-Let $n_s$ and $n_d$ be the number of same shift and different shift windows $N = n_{s} + n_{d}$
+Let $n_s$ and $n_d$ be the number of same shift and different shift windows $$N = n_{s} + n_{d}$$
 
-The mann whitney U statistic is given by $U =\sum^{ns}{i=1}R{s}\left( i\right)$
+Additionally, let $R_s(i)$ and $R_d(j)$ be the ranks associated with the combined vector of correlations for the same-shift and different-shift correlations, for i = 1,2,...,$n_s$ and j = 1,2,...,$n_d$. Then the Mann–Whitney U-statistic is given by
+
+The mann whitney U statistic is given by $$U =\sum^{n_s}_{i=1}R_{s}\left( i\right)$$
+
+##
 
 with the standardized version which includes provision for rank ties
 
