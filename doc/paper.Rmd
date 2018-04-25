@@ -609,10 +609,10 @@ This pairing ensures that the number of different-shift pairings is the same or 
 
 ```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right) for one of the lands of Hamby-44."}
 p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
-  ggplot(aes(x = y, y = value)) + geom_line() +
+  ggplot(aes(x = y/1000, y = value)) + geom_line() +
   theme_bw() +
   ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative location (in mm)", sep=""))) + 
   ggtitle("Profile")
 
 p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
@@ -837,9 +837,9 @@ errorsCV %>%
 
 ```
 
-\autoref{fig:roc} gives an overview of ROC curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. 
+\autoref{fig:roc} gives an overview of  ROC (Receiver operating characteristic) curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. The different color hues represent the two methods CS1 (red) and CS2 (blue). The ROC curves show the superior performance of CS2 over CS1. Generally, an optimization window $w_o$ of 150 pixels or more leads to the best performance with respect to ROC curves.
 
-```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Optimal ROC curves are reached at optimization windows of size 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Best performances with respect to  ROC curves are reached for optimization windows of sizes 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 library(plotROC)
 library(RColorBrewer)
 cols <- c(brewer.pal(6, "Reds")[-1], brewer.pal(6, "Blues")[-1])
@@ -905,164 +905,14 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
     expression("Nominal type I error "~alpha), palette="Set2") +
   facet_wrap(~alpha, labeller="label_both", scales="free") +
   theme(legend.position="bottom") +
-  scale_shape_manual(expression("Method / Size of validation window "~w[v]), values=c(1,16,17)) +
+  scale_shape_manual(expression("Method / Validation window "~w[v]), values=c(1,2,16,17)) +
   scale_linetype_manual("Method", values=c(3,1), guide=FALSE) +
   guides(shape = guide_legend(ncol=2),
-       #  linetype = guide_legend(ncol=1),
          col = guide_legend(ncol=2))
   
 ```
 
-<!--
-### Results for Signatures
 
-\hh{For signatures from NIST scans we see three problems: 
-\begin{enumerate}
-\item type-2 error rate is at best 30\% for a type-1 error rate of 5\%, which is well above the error rates we see for tool marks from screw drivers, see figure \ref{fig:type2};
-\item the observed type-1 error, which generally close to the nominal type-1 error rate, depends on the size of the optimization window: as the window size increases, the observed type-1 error decreases, see figure \ref{fig:type1};
-\item the Chumbley-score fails to provide a result for up to 3\% of the cases. The number of failed tests increases linearly in the size used for the window in the optimization step. The rate of failed tests is considerably higher when the two lands are from same source than when the lands are from different sources, see figure \ref{fig:missings}. 
-\end{enumerate}
-}
-
-
-Figure \ref{fig:missings} gives an overview of the number of failed tests, i.e. tests in which a particular parameter setting did not return a valid result. This happens e.g.\ when the shift to align two markings is so large, that the remaining overlap is too small to accommodate  windows for validation. The problem is therefore exacerbated by a larger validation window. Figure \ref{fig:missings}(left) also shows that the number of failed tests is approximately linear in the size of the optimization window.
-Tests also fail at a higher rate than expected when the markings are from the same source (right). This difference is the least pronounced around an optimized window size $w_o$ of around 120. However, even in this scenario, the number of failed tests for markings from the same source is about twice as high as expected given the number of same source and different source pairings in the data set.
--->
-
-
-<!--
-Following on similar lines to the setup of toolmarks, the first step here is to first identify what difference does different window sizes of optimization and the validation step have, when adapting the toolmark method to bullets.
-
-The marking made on bullets are smaller than toolmarks and is also less wider. The idea is to find out possible areas of error while adapting the score based method proposed for toolmarks, using cross-validation setup to identify appropriate parameter settings for (a) signatures and (b) profiles directly
-
-### Signatures
--->
-
-<!--
-```{r type2b, fig.width=8, fig.height=5, out.width='.8\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 120$ we see a drop in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
-errors %>% filter(wv %in% c(30,50)) %>%
-  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
-  geom_point(aes(shape=factor(wv)), size=3.5) +
-#  facet_grid(.~wo, labeller="label_both") + 
-  geom_smooth(aes(group=alpha), se=FALSE, method="loess", size=.7) +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") +
-  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
-  xlab(expression("Window size for optimization "~w[o])) +
-  ylab("Type II error rate")
-
-
-labels = expression(P[M1](tilde(z)>0),P[M0](tilde(z)>0))
-```
--->
-
-
-
-<!--
-```{r missings, out.width='\\textwidth', fig.width=8, fig.height=4, fig.cap="The number of failed tests increases with an increase in the size of the optimization window (left). Unfortunately there is also a dependency between failed tests and ground truth. The plot on the right shows the ratio of the number of land pairs from same sources and different sources for failed tests. For small optimization windows and large windows the number of failed tests for same-source land-to-land comparisons is increasing. Even in the minimum, same-source land-to-land comparisons fail at twice the rate that they are expected to based on the ratio of the number of known matches and known non-matches (horizontal line).",fig.align = "center"}
-#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
-
-fails <- all %>% group_by(wv, wo) %>% summarize(
-  miss = sum(is.na(p_value)),
-  missperc = miss/n()*100
-)
-
-failsbymatch <- all %>% group_by(wv, wo, match) %>% summarize(
-  fails = sum(is.na(p_value))
-) %>% mutate(
-    ratio = fails[match==TRUE]/fails[match==FALSE],
-    match = c("Different Source", "Same Source")[as.numeric(as.logical(match)) + 1]
-    ) 
-
-missings <- fails %>% filter(wv %in% c(30, 50)) %>%
-  ggplot(aes(x = wo, y = missperc, 
-             colour = factor(wv),
-             shape=factor(wv)), size=.3) + 
-  geom_smooth(method="lm", size=.5, se=FALSE) +
-  geom_point(size=2.5) + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab(expression("Size of optimization window "~w[o])) +
-  scale_colour_brewer(expression("Size of validation window "~w[v]), palette="Set1") +
-  scale_shape(expression("Size of validation window "~w[v])) +
-    theme(legend.position="bottom")
-
-
-missingsbymatch <- failsbymatch %>% 
-  filter(wv %in% c(30, 50),
-         match=="Same Source") %>%
-  ggplot(aes(x = wo, y = ratio, 
-             colour = factor(wv),
-             shape=factor(wv)), size=.3) + 
-  geom_hline(yintercept = 43960/2948225, size=0.5, colour="grey30") +
-  geom_smooth(method="loess", span=0.8, size=.5, se=FALSE) +
-  geom_point(size=2.5) + 
-  theme_bw() +
-  ylab("Ratio of same/different source\namong failed tests") +
-  xlab(expression("Size of optimization window "~w[o])) +
-  scale_colour_brewer(expression("Size of validation window "~w[v]), palette="Set1") +
-  scale_shape(expression("Size of validation window "~w[v])) +
-    theme(legend.position="bottom") +
-  scale_y_continuous(breaks=c(0.015, 0.03, 0.06, 0.09))
-
-
-
-gridExtra::grid.arrange(missings, missingsbymatch, ncol=2)
-
-
-```
--->
-
-<!--
-Signatures of lands for all Hamby-44 and Hamby-252 scans made available through the NIST ballistics database \citep{nist} were considered. Both of these sets of scans are part of the larger Hamby study \citep{hamby} and each consist of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
-
-Bullet signatures being compared at this time are therefore from the Hamby 44 and Hamby 252 data. The database setup and pre-processing system used for choosing the Bullet signatures are as described by \citet{aoas}. In order to choose the bullet signatures we first filter out Land_id for Profiles from the Hamby 44 and Hamby 252 data and remove all NA values. Then run_id = 3 is chosen as the signatures generated from this run_id give the closest match. Different run_id's have some different settings for generating the signatures.(The level of smoothing does not seem to be one of them)
-
-The bullet signatures when generated by this process already includes a loess smoothing. Therefore, the coarseness factor is set to 1 while running the chumbley non random algorithm for comparing different optimization windows.The algorithm generates the same_shift, different_shift, U-Stat and P_value parameters which are then used to calculate the errors associated with different sets of window sizes.
-
-### Profiles
-
-The profiles are cross-sectional values of the the bullet striation mark which are chosen at an optimum height (x as used by \citet{aoas}). This x or height is not a randomly chosen level. The rationale behind the choice has been explained by \citet{aoas}. A region is first chosen where the cross-correlation seems to change very less and in this region an optimum height is chosen. The profiles generally resemble a curve which is more or less similar to a quadratic curve (a quadratic fit to the raw data values of the profile is not an exact fit but it does show a similar trend). Profiles are the set of raw values representing the striation marks, and signatures are generated from these by removal of the inherent curvature and applying some smoothing (the signatures generated by \citet{aoas} use a loess function for smoothing). 
-
-Similar to signatures the run_id = 3 was used when applying the chumbley algorithm using the database setup given by \citet{aoas} of Hamby-44 and Hamby-252 datasets, on the profiles. The run_id not only defines the level of smoothing but also signifies the chosen height at which the profiles were selected initially. Another important aspect is the range of horizontal values (which is referred to as the y values in \citet{aoas}) in the signatures. These have already been pre-processed in the database to not include any grooves.
-
-Therefore for the sake of comparison the run_id = 3 is still chosen so as to ensure that the horizontal values remain the same as that of the signatures. This also gives us profiles with the grooves removed.
-
-The idea therefore is to first use these raw values of the profile directly in the chumbley algorithm, and see how the algorithm performs for different coarseness values (smoothing parameter as referred in the function lowess used in the chumbley algorithm).
--->
-
-
-
-
-
-```{r, include =F}
-wo120_sig <- errors %>% filter(wo==120, wv %in% c(30, 50))
-wo120_pr <- errors2 %>% filter(wo==120, wv %in% c(30, 50), coarse == .25)
-
-dt <- rbind(wo120_sig, wo120_pr) %>% 
-  ungroup() %>% 
-  mutate(beta = round(100*beta, 1)) %>%
-  dplyr::select(wv, type, alpha, beta) %>% 
-  spread(alpha, beta)
-print(xtable(dt), include.rownames=FALSE)
-```
-<!--
-\begin{table}[ht]
-\caption{\label{tab:type2} Type II error rates for profiles and signatures of bullet lands. For profiles, a coarseness value of $c = 0.25$ is used to remove bullet curvature.}
-\centering
-\begin{tabular}{rlrrrr}
-  \hline
-validation && \multicolumn{4}{l}{Nominal type I error rate $\alpha$}\\  
-window $w_v$ & source & 0.001 & 0.005 & 0.01 & 0.05 \\ 
-  \hline
- 30 & profiles & 54.40 & 43.80 & 39.70 & 30.00 \\ 
-   30 & signatures & 55.00 & 45.40 & 41.40 & 31.10 \\ \hline
-   50 & profiles & 58.50 & 44.40 & 40.70 & 28.70 \\ 
-   50 & signatures & 62.60 & 49.60 & 44.20 & 30.50 \\ 
-   \hline
-\end{tabular}
-\end{table}
--->
 
 # Conclusions
 
