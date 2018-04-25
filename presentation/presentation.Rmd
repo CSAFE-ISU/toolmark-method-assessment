@@ -494,10 +494,10 @@ More precisely, let us define starting points of the windows of validation $s_i^
 \begin{eqnarray}\label{eq.start}
 s^{(k)}_i = 
 \begin{cases}
-t_k^* + i w_v^* & \text{ for } i < 0 \\
-t_k^* + w_ o^* + i w_v^* & \text{ for } i \ge 0,
+t_k^o + i w_v & \text{ for } i < 0 \\
+t_k^o + w_o + i w_v & \text{ for } i \ge 0,
 \end{cases}
-\end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le 1 - w_v^*$
+\end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le T_k - w_v$ where $s \ \in \mathbb{Z}$
 <!-- $0 <  s^{(k)}_i \le T_k - w_v$. -->
 
 ## The \citet{hadler} method (CS1)
@@ -657,3 +657,124 @@ We then define the pairs for different-shifts as
 \includegraphics[width=.7\textwidth]{imgs/CS1-failure-CS2-success.png}
 \caption{\label{CS1-failure-CS2-success}Sketch of a case where CS1 fails but CS2 does not fail}
 \end{figure}
+
+
+## Results Failed Tests
+
+## Conclusions Failed Tests
+
+- The number of failed tests is highly dependent on the size of the comparison windows and is correlated to the ground truth, 
+- Higher for known same-sourced lands than for known different sourced lands. 
+- The \textbf{CS1} algorithm fails to conduct a test about 8 to 13 % of the time for known same-source lands, and 2 to 6% of the time for known different source lands.
+- number of failed tests for CS1 is always higher than the corresponding theoretical number of failed tests.
+- Using CS2, the case with \textbf{largest} # of failed tests is still \textbf{lower} than the case where CS1 gives the \textbf{lowest} # of failed tests
+- Even when the coarseness is high, CS2 will have lower number of failed tests than CS1, Making it more robust.
+- CS2 performs better for both same and different-sources
+- Solves a critical issue of CS1 known same-source matching, by having a negligible number of Known same-source failed tests
+ 
+## Coarseness
+
+- Remove (sub-)class characteristics from profiles before comparisons for matching.
+- \citet{hadler} suggest a coarseness parameter of 0.25 for toolmark comparisons. 
+- For bullet lands, coarseness might need to be adjusted because of the strong effect bullet curvature has on profiles.
+- Optimal locations are distributed uniformly once (sub-)class characteristics are removed. 
+- Distinct boundary effects: c > 0.20 optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.
+-smaller coarseness value of $c = 0.15$ to be suitable
+
+##
+
+```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
+profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw10 <- lowess(x = profile$y, y = profile$value, f=.10)$y
+profile$lw15 <- lowess(x = profile$y, y = profile$value, f=.15)$y
+profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
+profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
+profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
+#profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
+#profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
+#profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
+
+profiles <- tidyr::gather(profile, coarseness, values, lw10:lw30)
+profiles <- profiles %>% mutate(
+  c = readr::parse_number(coarseness)/100
+)
+p1 <- profiles %>% 
+  ggplot(aes(x = y, y = value-values)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
+  facet_grid(~c, labeller="label_both") 
+
+profc10 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_10.rds")
+profc15 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_15.rds")
+profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_20.rds")
+profc20$coarseness <- 0.2
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_25.rds")
+profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30.rds")
+profc30$coarseness <- .30
+profc <- bind_rows(profc10, profc15, profc20, profc25, profc30)
+profc <- profc %>% mutate(
+  locations = chumbley %>% purrr::map_int(.f = function(x) {
+    res <- NULL
+    try(res <- x$locations[1], silent = TRUE)
+    res
+  })
+)
+profsumm <- read.csv("../data/profiles-summary.csv")
+profsumm <- profsumm %>% dplyr::select(-run_id)
+profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
+
+
+p2 <- profc %>% 
+  ggplot(aes(x = locations/(length-wo))) +
+  geom_histogram(binwidth = 0.025) +
+  facet_grid(.~coarseness, labeller="label_both") + 
+  theme_bw() +
+  xlab(expression("Relative optimal location "~t^"*")) +
+  ylab("Number of profiles") +
+  scale_x_continuous(breaks=seq(0,1, by=0.25), labels=c("0", "0.25", "0.50", "0.75", "1"))
+ 
+grid.arrange(p1, p2, ncol=1)
+```
+## Type II error rates
+
+<!-- \autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. -->
+```{r type2, fig.height = 8, fig.width = 8.5, out.width='0.6\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error.", eval = FALSE}
+
+# source("./type-II.R")
+type2<- readRDS("./imgs/type2.rds")
+grid.arrange(type2)
+
+```
+
+<!-- \small{\textbf{CS1} \citet{hadler}} algorithm \newline  \small{\textbf{CS2} the suggested modified algorithm} -->
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.9\textwidth]{imgs/type-2-both-methods.png}
+\caption{\label{type2}  Type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. Top two figures are for a \textbf{coarseness} $\approx$ \textit{0.15} and the bottom one is for \textit{0.3}}
+\end{figure}
+
+## Conclusions for Type II Error
+
+\fontsize{10pt}{11}\selectfont
+
+#### CS1
+- Best works for $w_o$ of $\approx$ 130 to 160 and $w_v$ 50 when the smoothing is $c$ $\approx$ 0.3.
+- The Type II rate is lowest for a nominal $\alpha$ of 5%, with type I error rate of  6.2% and the Type II error rate of 24%. 
+- For lower nominal alpha levels of 1%, 0.5% and 0.1% the lowest type II error rate increases to about 36.4%, 41% and 52.5% respectively.
+- Gets worse for coarseness 0.15
+
+#### CS2
+- For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. 
+- Smaller validation sizes $w_v$ are typically associated with a smaller type II error.
+- CS2 shows an increase in the power of the test.
+- Fix in CS2 will also improve power for matching toolmarks.
+- While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
+- Might be able to get more power out of the test by adapting C2 in a bullet-to-bullet comparison.
+
+
+
+
+
+
+
