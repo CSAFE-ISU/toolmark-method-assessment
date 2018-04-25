@@ -238,7 +238,7 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 - What is the Chumbley Score Method?
 - Identifying Best parameter Settings for Bullets
 - Modifications to the Algorithm
-- Results using \citet{hadler} method and results using Modified method
+- Results
 
 
 
