@@ -233,6 +233,7 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 
 
 ### Structure
+- Error rates in toolmarks
 - Data being used
 - What is the Chumbley Score Method?
 - Identifying Best parameter Settings for Bullets
