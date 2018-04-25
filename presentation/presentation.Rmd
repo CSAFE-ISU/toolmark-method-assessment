@@ -800,3 +800,28 @@ grid.arrange(type2)
 
 ### \textbf{THANK YOU. Questions?}
 
+##
+
+## Appendix
+
+###U Statistic:
+
+This is computed from the joint rank of all correlations of both the same and different shift samples. As given by \citet{hadler}
+
+Null Hypothesis: If the toolmarks were not match i.e not made by the same tool.
+
+Let $n_s$ and $n_d$ be the number of same shift and different shift windows $N = n_{s} + n_{d}$
+
+The mann whitney U statistic is given by $U =\sum^{ns}{i=1}R{s}\left( i\right)$
+
+with the standardized version which includes provision for rank ties
+
+$\overline{U}= \dfrac{U-M}{\sqrt{V}}$
+
+where prior to normalization the U-statistic has the mean as
+
+$M = n_{s}\left(\dfrac{N+1}{2}\right)$
+
+and variance
+
+$V = \dfrac{n_{s}n_{d}}{N\left(N-1\right)}\left[\Sigma^{n_{s}}R_{s}\left(i\right)^{2}+\Sigma^{n_{d}}R_{d}\left(j\right)^{2}\right] -\dfrac{n_{s} n_{d}\left(N+1\right)^{2}}{4\left(N-1\right)}$
