@@ -284,8 +284,6 @@ land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
 
 Comparisons of striae from bullets are usually based on comparisons of striae in land engraved areas, which are extracted in form of cross sections, called *profiles* \citep{aoas,ma2004}. From profiles bullet *signatures* \citep{chu2013,aoas} are extracted as residuals of a loess fit or Gaussian filter. This effectively removes topographic structure from the data in the attempt to increase the signal to noise ratio. The span of the loess fit was found using cross-validation, as described by \citet{aoas}.
 
-\hh{don't split the discussion on the size. between the next paragraph and }
-<!--The majority of Bullet profiles and signatures of the Hamby study \citep{hamby} used in this paper are extracted by procedures mentioned by  \citet{aoas}.--> 
 There are two sources of scans for sets from the Hamby study available to us: scans of Hamby 44 and Hamby 252 are available from the NIST database \citep{nist}. Hamby 44 has also been made available to us and has been scanned locally for CSAFE at the Roy J.\ Carver High Resolution Microscopy Facility using a Sensofar confocal light microscope. 
 Scans in the NIST database are made with a NanoFocus at 20x magnification. The resolutions of the two instruments are different: the NIST scans are taken at a resolution of 1.5625 $\mu m$ per pixel, while the CSAFE scans are available at a resolution of  0.645 $\mu m$ per pixel.
 The length of an average bullet land from Hamby (9 mm Ruger P85) is about 2 millimeter, resulting in signatures of about 1200 pixels for NIST scans, and about 3000 pixels for CSAFE scans.
@@ -567,9 +565,10 @@ For both same- and different-shift pairs correlations between the  markings are 
 The intuition here is that for two markings from the same source the correlation for the in-phase sample should be high, while the correlations of the out-of-phase sample  provide a measure for the base-level correlation for non-matching marks of a given length $w_v$. The Chumbley score is then computed as a Mann Whitney U statistic to compare between in-phase sample and out-of-phase sample. 
 In the original method proposed in \citet{chumbley} both in-phase and out-of-phase sample are extracted randomly, whereas \citet{hadler} proposed the above specified deterministic rules for both samples to make the resulting score deterministic while simultaneously avoiding overlaps within selected marks to ensure independence.
 
-## A problem with failures and modification
+## A problem with failed tests
 
-Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result, either because the number of eligible same-shift pairs is zero, or the number of different-shift opairs is zero. \hh{XXX The problem of failed tests is first mentioned in XXX}
+Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result. \hh{The problem of failed tests is first mentioned in \citet{afte-chumbley}. Unfortunately, the authors do not provide any percentage of how many tests failed for their data.}
+The algorithm fails to produce for two reasons: either the number of eligible same-shift pairs is zero, or the number of different-shift pairs is zero. 
 
 The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$, i.e. we have a failure rate of 
 \[
@@ -579,6 +578,8 @@ While we can assume that once (sub-)class characteristics are removed, optimal l
 In that case, we expect a test to fail with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
 
 The number of possible different-shift pairs also depends on the location of  the  optimal locations $t_1^o$ and $t_2^o$. Whenever the optimal locations are close to the boundaries, the number of possible pairings decreases and reaches zero, if $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. Assuming a correlation between optimal locations $t_1^o$ and $t_2^o$ of close to one for same-source profiles, this results in an expected rate of failure of $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels. Assuming independence in the optimal locations for different source profiles the expected probability for a failed test is, again, $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$.
+
+## A modified approach
 
 While failures due to missing correlations from same-shift pairs are unavoidable by definition of the Chumbley score, failures due to missing correlations from different-shift pairs can be prevented by using a different strategy in assigning pairs.
 
@@ -609,10 +610,10 @@ This pairing ensures that the number of different-shift pairings is the same or 
 
 ```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right) for one of the lands of Hamby-44."}
 p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
-  ggplot(aes(x = y/1000, y = value)) + geom_line() +
+  ggplot(aes(x = y, y = value)) + geom_line() +
   theme_bw() +
   ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative location (in mm)", sep=""))) + 
+  xlab(expression(paste("Relative location (in ",mu,m,")", sep=""))) + 
   ggtitle("Profile")
 
 p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
@@ -741,10 +742,10 @@ profiles <- profiles %>% mutate(
   c = readr::parse_number(coarseness)/100
 )
 p1 <- profiles %>% 
-  ggplot(aes(x = y, y = value-values)) + geom_line() +
+  ggplot(aes(x = y/1000, y = value-values)) + geom_line() +
   theme_bw() +
   ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
-  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) +
+  xlab(expression(paste("Relative Location (in mm)", sep=""))) +
   facet_grid(~c, labeller="label_both") 
 
 profc10 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_10.rds")
