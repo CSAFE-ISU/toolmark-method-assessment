@@ -869,6 +869,73 @@ cvcs %>% filter(!wo %in% c(130, 140) ) %>%
 
 ```
 
+```{r eer, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap=""}
+auc <- function(tpr, fpr){
+  # from http://blog.revolutionanalytics.com/2016/11/calculating-auc.html
+  # inputs already sorted, best scores first 
+  dfpr <- c(diff(fpr), 0)
+  dtpr <- c(diff(tpr), 0)
+  sum(tpr * dfpr) + sum(dtpr * dfpr)/2
+}
+
+eer <- function(tpr, fpr) {
+  diff = abs(fpr-1+tpr)
+  idx <- which.min(diff)
+  EER <- 0.5*(fpr[idx]+1-tpr[idx])
+  EER
+}
+
+EER <- function(score, match) {
+  bstats <-data.frame(score, match)
+  bstats <- bstats %>% arrange(desc(score))
+  
+  bstats <- bstats %>% mutate(
+    tpr=cumsum(match)/sum(match), 
+    fpr=cumsum(!match)/sum(!match)
+  ) %>% unique()
+  
+  with(bstats, eer(tpr, fpr))
+}
+
+AUC <- function(score, match) {
+  bstats <-data.frame(score, match)
+  bstats <- bstats %>% arrange(desc(score))
+  
+  bstats <- bstats %>% mutate(
+    tpr=cumsum(match)/sum(match), 
+    fpr=cumsum(!match)/sum(!match)
+  ) %>% unique()
+  
+  with(bstats, auc(tpr, fpr))
+}
+
+roc.summary <- cvcs %>% group_by(wo, wv, method) %>%
+  summarize(
+    eer = EER(1-p_value, match),
+    auc = AUC(1-p_value, match)
+  )
+p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
+  ggplot(aes( x = wo, y=eer, shape=factor(wv))) +
+  geom_point() +
+  facet_wrap(~method, labeller="label_both") + 
+  theme_bw() +
+  scale_shape_discrete("Size of \nvalidation window") +
+  ylab("Equal Error rate (EER)") +
+  xlab("Size of optimization window in pixels") +
+  theme(legend.position = "none")
+
+p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
+  ggplot(aes( x = wo, y=auc, shape=factor(wv))) +
+  geom_point() +
+  facet_wrap(~method, labeller="label_both") + 
+  theme_bw() +
+  scale_shape_discrete("Size of \nvalidation window") +
+  ylab("Area under the curve (AUC)") +
+  xlab("Size of optimization window in pixels")+
+  theme(legend.position = "none")
+grid.arrange(p1, p2)
+```
+
 
 
 <!--
@@ -923,12 +990,12 @@ Optimized window sizes were found based on cross-validation to minimize type 2 e
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
 XXX
-The algorithm CS2 introduced here is constructed in a way that reduces the number of failures by a magnitude of XXX. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates reach a minimum of XXX for an optimized window size of YYY. While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
+The algorithm CS2 introduced here is constructed in a way that reduces the number of failures by a magnitude of about XXX. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates reach a minimum of XXX for an optimized window size of YYY. While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the -much larger- toolmarks.
 However, bullets usually have multiple lands - in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to deal work in a bullet-to-bullet comparison.
 }
 
 \hh{
-Fix in CS2 will also improve power for matching toolmarks. 
+Fix in CS2 should also improve power for matching toolmarks. 
 }
 
 <!-- The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
