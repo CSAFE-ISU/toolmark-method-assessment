@@ -912,7 +912,7 @@ p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   scale_shape_discrete("Size of \nvalidation window") +
   ylab("Equal Error rate (EER)") +
   xlab("Size of optimization window in pixels") +
-  theme(legend.position = c(0.3, 0.2))
+  theme(legend.position = c(0.25, 0.25))
 
 p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   ggplot(aes( x = wo, y=auc, shape=factor(wv))) +
@@ -922,7 +922,7 @@ p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   scale_shape_discrete("Size of \nvalidation window") +
   ylab("Area under the curve (AUC)") +
   xlab("Size of optimization window in pixels")+
-  theme(legend.position = c(0.7, 0.2))
+  theme(legend.position = c(0.75, 0.25))
 grid.arrange(p1, p2, nrow=1)
 ```
 
