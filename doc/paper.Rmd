@@ -260,6 +260,23 @@ Various toolmarks have been studied in the literature:  \citet{manytoolmarks1} a
 \citet{manytoolmarks2} define a relative distance metric and use it as similarity measure between two toolmarks. \citet{manytoolmarks1} extract many small segments in the markings of two toolmarks and compare similiarity using a maximum pearson correlation coefficient. 
 The Chumbley scoring method, first introduced by \citet{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach is non-deterministic, because segments are chosen randomly.  \citep{hadler} make the score deterministic for each pair of toolmarks by choosing segments for comparison systematically. This approach also ensures independence between segements of striae.  In this paper, we are investigating the applicability of the Chumbley scoring method by \citet{hadler} to assess striation marks on bullet lands for same-source identification.
 
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Research paper & Method & Data Source & False Positives & False Negatives\\
+  \hline
+ \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
+  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
+  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ 
+   \hline
+\end{tabular}}
+\caption{\label{tab:toolmarks-ER} Error Rates for Toolmarks using  variations of the chumbley score method}
+\end{table}
+
+ <!-- \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\ -->
+ 
 Striation marks on bullets are made by impurities in the barrel. As the bullet travels through the barrel, these imperfections leave "scratches" on the bullet surface. Typically, only striation marks in the land engraved areas (LEAs) are considered \citet{afte-article1992}. Bullet lands are depressed areas between the  grooves made by the rifling action of the barrel. Compared to toolmarks made by screwdrivers striation marks on bullets are typically much smaller, both in length and in width. Bullets also have a curved cross-sectional topography. Figure \ref{fig:rgl} shows us how the signature from a bullet land (bottom) lines up with the image of the land (top) from which it was extracted. We can also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature.
 
 Bullet matching methods are usually based on these associated signatures. \citet{chu2013} use an automatic method for counting consecutive matching striae (CMS). The authors report an error rate of 52% of the known same source lands comparisons as misidentified (false negative) and zero false positives for known different source lands. \citet{ma2004} and \citet{vorburger2011} discuss CCF (cross-correlation function) and its discriminating power and applicability for same-source analyses of bullets, but do not provide any error rates in their discussion. \citet{aoas} use multiple features like CCF, CMS, D (distance measure) etc in a random forest based method and compare every land against every other land of  digitised versions of Hamby 252 and Hamby 44 \citep{hamby} published on the NIST Ballistics Database \citep{nist}. The authors report an out-of-bag overall error rate of 0.46%, comprised of an error rate of 30.05% of  same-source pairs that were not identified and an error rate of 0.026% of different-source pairs that were incorrectly identified as same-source.
@@ -1120,7 +1137,7 @@ total2<- wo120_profile %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=
 
 ```
 
-```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures"}
+```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures", eval = FALSE}
 
 
 #ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
