@@ -25,7 +25,7 @@ abstract: null
 
 
 \newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
-\newcommand{\gk}[1]{{\textcolor{green}{#1}}}
+\newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
 \setlength\parindent{0pt}
 
@@ -77,62 +77,6 @@ errorrate <- function(data, alpha) {
 }
 
 
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
- if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-#  ref: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 ```
 
 ```{r data}
@@ -166,6 +110,7 @@ ns <- all %>% group_by(wv, wo, match) %>% summarize(
   missperc = miss/n()*100
 )
 ```
+
 
 ```{r data-profiles}
 if (!file.exists("../data/all-profiles.rds")) {
@@ -269,7 +214,8 @@ Research paper & Method & Data Source & False Positives & False Negatives\\
  \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
  \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
   \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
-  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ 
+  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
+  \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
    \hline
 \end{tabular}}
 \caption{\label{tab:toolmarks-ER} Error Rates for Toolmarks using  variations of the chumbley score method}
@@ -621,6 +567,28 @@ This pairing ensures that the number of different-shift pairings is the same or 
 
 
 
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.62\textwidth]{images/same-shift-failure.png}
+
+\caption{\label{same-shift-failure}Sketch of same-shift pairings  (top) when the lag is too large to accomodate a a vaildation window in either of the two signatures}
+\end{figure}
+
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/diff-shift-failure.png}
+
+\caption{\label{diff-shift-failure}Sketch of diff-shift pairings  (top) when the number of diff-shift computations is likely to 0}
+\end{figure}
+
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/CS1-failure-CS2-success.png}
+\caption{\label{CS1-failure-CS2-success}Sketch of a case where CS1 fails but CS2 does not fail}
+\end{figure}
+
 # Testing setup
 
 ## The Data
@@ -736,12 +704,16 @@ fails %>%
   scale_size_manual("Failures", values=c(1.5,3))
 ```
 
+
+
 ## Coarseness
 The purpose of the coarseness parameter is to remove (sub-)class characteristics from profiles before comparisons for matching.
 \citet{hadler} suggest a coarseness parameter of 0.25 in the setting of toolmark comparisons. For bullet lands, coarseness might need to be adjusted because of the strong effect  bullet curvature has on profiles.
 
 \hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. 
 The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.}
+
+\gk{The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but also does not remove important (sub-)class characteristics}
 
 ```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
