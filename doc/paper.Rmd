@@ -17,8 +17,12 @@ output:
   html_document: default
 blinded: 0
 keywords:
-- 3 to 6 keywords
-- that do not appear in the title
+- forensic science
+- toolmark
+- cross-correlation
+- Mann-Whitney U statistic
+- 
+- 
 bibliography: bibliography
 abstract: null
 ---
@@ -715,7 +719,7 @@ The purpose of the coarseness parameter is to remove (sub-)class characteristics
 \hh{\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signature after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with the coarseness specified. 
 The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.}
 
-\gk{The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but also does not remove important (sub-)class characteristics}
+\gk{The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but also does not remove important individual characteristics}
 
 ```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
@@ -801,6 +805,10 @@ saveRDS(cvcs1, file = "../data/cvcs1.RDS")
 } else cvcs1 <- readRDS("../data/cvcs1.RDS")
 
 cvcs <- rbind(cvcs1, cvcs2)
+
+fails <- cvcs %>% group_by(wo, wv, coarse, method, match) %>% summarize(
+  fails = 100.0*sum(is.na(p_value))/n()
+)
 
 errorsCV2 <- rbind(errorrate(cvcs2, 0.001), 
                 errorrate(cvcs2, 0.005), 
