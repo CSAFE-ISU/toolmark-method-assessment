@@ -447,7 +447,7 @@ performance on the available scans of the Hamby study.
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
-\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair. }
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair under algorithm (CS2). }
 \end{figure}
 
 \hypertarget{testing-setup}{%
@@ -472,10 +472,13 @@ heel of the bullet while avoiding break-off as described in
 \hypertarget{setup}{%
 \subsection{Setup}\label{setup}}
 
-Both algorithms (CS1) and (CS2) are implemented in the R package
-\texttt{toolmaRk} \citep{toolmark}. We applied both methods to all
-pairwise land-to-land comparisons of the Hamby scans provided by NIST
-for a total of 85,491 land-to-land comparisons.
+Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is
+available from package \texttt{toolmaRk} \citep{toolmark}, (CS2) is
+available from a modified version of the \texttt{toolmaRk} package
+available from GitHub (\url{https://github.com/heike/toolmaRk}). We
+applied both methods to all pairwise land-to-land comparisons of the
+Hamby scans provided by NIST for a total of 85,491 land-to-land
+comparisons.
 
 \hypertarget{results}{%
 \section{Results}\label{results}}
@@ -483,16 +486,32 @@ for a total of 85,491 land-to-land comparisons.
 \hypertarget{failed-tests}{%
 \subsection{Failed Tests}\label{failed-tests}}
 
-Initially, the default settings suggested in \citet{hadler} were used:
+As described above, the Chumbley-score is based on three parameters:
+coarseness \(c\) and the sizes of the optimization window \(w_o\) and
+validation window \(w_v\). In a first run of results, we applied default
+settings for the parameters, as suggested in \citet{hadler}:
 \(w_o = 120\) pixels or about 190 \(\mu m\) (ten percent of the average
-length of profiles) and coarseness \(c = 0.25\). \autoref{fig:fails}
+length of profiles) and coarseness \(c = 0.25\), and varied the size of
+the validation window \(w_v\) in steps of 10 from 10 pixels to 60
+pixels. Based on a significance level \(\alpha\) of 0.05 for the test,
+this results in a correct identification of same-source and
+different-source toolmarks of 93.5\% to 94.1\%, corresponding to a rate
+of false negatives between 0.28 and 0.36 and a rate of false positives
+between 0.05 and 0.06. However, the most prominent result we
+encountered, are the high number of failed tests, i.e.~the number of
+instances, in which CS1 did not return any result. \autoref{fig:fails}
 shows the percentage of failed tests among the 85,491 land-to-land
 comparisons of the NIST data for different values of the validation
 window size \(w_v\). For same-source lands up to 12.5 percent of the
 tests fail using CS1. The highest percentage of failed tests under CS2
 is 1.3\% for different-source tests using a validation window size
-\(w_v\) of 60 pixels.
-{\textcolor{orange}{Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. }}{\textcolor{orange}{ Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.3 resulting in a distribution of optimal locations different from the assumed uniform. }}
+\(w_v\) of 60 pixels. Rates of expected failures are based on simulation
+runs using covariances between locations of same-source profiles of
+0.854, and 0.120 for locations from different-source profiles, matching
+observed covariances for the Hamby scans. Observed failure rates are
+higher than expected. This might be due to remaining sub-class structure
+at a coarseness of 0.25 resulting in a distribution of optimal locations
+different from the assumed uniform.
 
 \begin{figure}
 

@@ -614,8 +614,11 @@ Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is availab
 # Results
 ## Failed Tests
 
-Initially, the default settings suggested in \citet{hadler} were used: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$. 
-\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different-source tests using a validation window size $w_v$ of 60 pixels.  \hh{Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. }\hh{ Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.3 resulting in a distribution of optimal locations different from the assumed uniform. }
+As described above, the Chumbley-score is based on three parameters: coarseness $c$ and the sizes of the optimization window $w_o$ and validation window $w_v$. 
+In a first run of results, we applied default settings for the parameters, as suggested in  \citet{hadler}: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$, and varied the size of the  validation window $w_v$ in steps of 10  from 10 pixels to 60 pixels.
+Based on a significance level $\alpha$ of 0.05 for the test, this results in a correct identification of same-source and different-source toolmarks of 93.5\% to 94.1\%, corresponding to a rate of false negatives between 0.28 and 0.36 and a rate of false positives between 0.05 and 0.06. 
+However, the most prominent result we encountered, are the high number of failed tests, i.e. the number of instances, in which CS1 did not return any result.
+\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different-source tests using a validation window size $w_v$ of 60 pixels.  Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.25 resulting in a distribution of optimal locations different from the assumed uniform. 
 
 ```{r simulation, echo=FALSE}
 library(MASS) 
@@ -658,7 +661,7 @@ simusumm$method = "CS1"
 ```
 
 
-```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates are higher than expected rates."}
+```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates of (CS1) are higher than expected rates."}
 allinv$method <- "CS2"
 allp$method <- "CS1"
 
@@ -674,16 +677,41 @@ prof_fails <- rbind(
   allp %>% filter(coarse == 0.25) %>% 
     dplyr::select(wo, wv, method, p_value, match)
 )
+stats <- prof_fails %>%
+  group_by(wo, wv, method) %>% summarize(
+  failed = sum(is.na(p_value)),
+  correctplus = sum(p_value<=0.05 & match, na.rm=TRUE),
+  correctminus = sum(p_value > 0.05 & !match, na.rm=TRUE),
+  n=n(),
+  correct = (correctplus+correctminus)/(n-failed)
+)
+#stats %>% 
+#  ggplot(aes(x = wv, y = (correctplus+correctminus)/(n-failed))) +
+#  geom_point(aes(colour=method))
+#range(subset(stats, method=="CS1")$correct)
+#[1] 0.9347536 0.9410993
+
 fails <- prof_fails %>%
   group_by(wo, wv, method, match) %>% summarize(
   failed = sum(is.na(p_value)),
-  n=n()
+  n=n(),
+  falseneg = sum(p_value > 0.05 & match, na.rm=TRUE),
+  falsepos = sum(p_value <= 0.05 & !match, na.rm=TRUE)
 )
+fnr <- with(subset(fails, method=="CS1"), falseneg/(n-failed))
+#summary(fnr[fnr>0])
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.2819  0.2882  0.2965  0.3056  0.3075  0.3623 
+fpr <- with(subset(fails, method=="CS1"), falsepos/(n-failed))
+#summary(fpr[fpr>0])
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#0.05468 0.05588 0.05855 0.05852 0.06120 0.06227 
+
 
 fails %>% 
   ggplot(aes(x = wv, y = failed/n*100, colour=factor(match), shape=factor(match))) +
   geom_point(aes(size="Observed")) +
-  xlab("Size of validation window in pixels") +
+  xlab(expression("Size of validation window "~w[v]~" in pixels")) +
   ylab("Percent of failed tests") +
   theme_bw() +
   scale_colour_brewer("Same-source", palette="Set1") +
