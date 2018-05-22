@@ -728,10 +728,10 @@ fails %>%
 The purpose of the coarseness parameter is to remove (sub-)class characteristics from profiles before comparisons for matching.
 \citet{hadler} suggest a coarseness parameter of 0.25 in the setting of toolmark comparisons. For bullet lands, coarseness might need to be adjusted because of the strong effect  bullet curvature has on profiles.
 
-\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signatures after smoothing the profile shown in Figure~\ref{fig:sigs-profiles} with different levels of coarseness. 
+\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signatures after smoothing the profile shown in \autoref{fig:sigs-profiles} with different levels of coarseness. 
 The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.
 
-\gk{The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but also does not remove important individual characteristics}
+The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but does not remove important individual characteristics. Based on \autoref{fig:profile-sketch} a coarseness value of $c = 0.15$ seems to be best suited to strike this balance for this example. For the remainder of the analysis, we will use this value for $c$.
 
 ```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
 profile <- sigs_graphics[[1]] %>% filter(land_id==19)
@@ -787,9 +787,9 @@ p2 <- profc %>%
 grid.arrange(p1, p2, ncol=1)
 ```
 
-## Type II error rates
+## Error rate assessment
 
-\autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. 
+<!--\autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. -->
 
 ```{r type2, fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 if (!file.exists("../data/cvcs2.RDS")) {
@@ -834,8 +834,8 @@ errorsCV1 <- rbind(errorrate(cvcs1, 0.001),
 errorsCV1$method <- "CS1"
 
 errorsCV <- rbind(errorsCV1, errorsCV2)
-errorsCV %>% 
-  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) + 
+ggerrors <- errorsCV %>%
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) +
   geom_point(aes(shape=factor(wv)), size=2.5) +
   geom_smooth(aes(group=alpha), se=FALSE, method="loess", span=1,  size=.7) +
   theme_bw() +
@@ -845,22 +845,29 @@ errorsCV %>%
   xlab(expression("Window size for optimization "~w[o])) +
   ylab("Type II error rate") +
   facet_wrap(~method, labeller="label_both")
+
 ```
 
-\autoref{fig:roc} gives an overview of  ROC (Receiver operating characteristic) curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$. The different color hues represent the two methods CS1 (red) and CS2 (blue). The ROC curves show the superior performance of CS2 over CS1. Generally, an optimization window $w_o$ of 150 pixels or more leads to the best performance with respect to ROC curves.
+
+
+\autoref{fig:roc} gives an overview of  ROC (Receiver operating characteristic) curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$ and two sizes for the validation window $w_v$ (shape). The different color hues represent the two methods CS1 (red) and CS2 (blue). The ROC curves show the superior performance of CS2 over CS1. Generally, an optimization window $w_o$ of 150 pixels or more leads to the best performance with respect to ROC curves. Results based on a  validation window of size $w_v = 30$ are generally better than results for $w_v = 50$.
+
+\autoref{fig:eer}
+\autoref{tab:aucs}
 
 ```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Best performances with respect to  ROC curves are reached for optimization windows of sizes 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 library(plotROC)
 library(RColorBrewer)
 cols <- c(brewer.pal(6, "Reds")[-1], brewer.pal(6, "Blues")[-1])
 
-cvcs <- cvcs %>% mutate(
+cvcs <- cvcs %>% 
+  mutate(
   method.wo = paste(method, wo, sep= " / "),
   method.wo = factor(method.wo, 
                      levels = c("CS1 / 90", "CS1 / 120", "CS1 / 150", "CS1 / 180", "CS1 / 210", "CS2 / 90", "CS2 / 120", "CS2 / 150", "CS2 / 180", "CS2 / 210"))
 )
 
-cvcs %>% filter(!wo %in% c(130, 140) ) %>%
+cvcs %>% filter(!wo %in% c(130, 140)) %>%
   ggplot(aes(d = as.numeric(match), m = 1-p_value)) + 
   geom_roc(labels=FALSE, n.cuts=100, pointsize=0, size=0.6, 
            aes(colour = method.wo)) +
@@ -919,53 +926,87 @@ AUC <- function(score, match) {
   with(bstats, auc(tpr, fpr))
 }
 
-roc.summary <- cvcs %>% group_by(wo, wv, method) %>%
+roc.summary <- cvcs %>% group_by(wo, wv, method, coarse) %>%
   summarize(
     eer = EER(1-p_value, match),
-    auc = AUC(1-p_value, match)
+    auc = list(pROC::ci.auc(match, 1-p_value))
   )
+roc.summary <- roc.summary %>% 
+  mutate(
+    lower = auc %>% purrr::map_dbl(.f = function(x) x[1]),
+    upper = auc %>% purrr::map_dbl(.f = function(x) x[3]),
+    AUC = auc %>% purrr::map_dbl(.f = function(x) x[2])
+  )
+roc.summary <- roc.summary %>% left_join(
+  errorsCV %>% dplyr::select(wv, wo, method, alpha, actual, beta) %>% 
+    dplyr::filter(alpha == 0.05)
+)
+
 p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
-  ggplot(aes( x = wo, y=eer, shape=factor(wv))) +
+  ggplot(aes( x = wo, y=eer, colour=method, shape=method)) +
   geom_point() +
-  facet_wrap(~method, labeller="label_both") + 
+  facet_wrap(~wv, labeller="label_both") + 
   theme_bw() +
-  scale_shape_discrete("Size of \nvalidation window") +
   ylab("Equal Error rate (EER)") +
   xlab("Size of optimization window in pixels") +
-  theme(legend.position = c(0.25, 0.25))
+  theme(legend.position = "bottom") + #c(0.25, 0.25)) +
+  scale_colour_brewer(palette="Set1") +
+  scale_y_continuous(limits=c(0, 0.25))
 
 p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
-  ggplot(aes( x = wo, y=auc, shape=factor(wv))) +
-  geom_point() +
-  facet_wrap(~method, labeller="label_both") + 
+  ggplot(aes( x = wo, y=AUC, colour = method, shape=method)) +
+  geom_point(size=2) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=5) +
+  facet_wrap(~wv, labeller="label_both") + 
   theme_bw() +
-  scale_shape_discrete("Size of \nvalidation window") +
   ylab("Area under the curve (AUC)") +
   xlab("Size of optimization window in pixels")+
-  theme(legend.position = c(0.75, 0.25))
+  theme(legend.position = "bottom") + #c(0.75, 0.25)) +
+  scale_colour_brewer(palette="Set1")
 grid.arrange(p1, p2, nrow=1)
 ```
 
-
-
-<!--
-## Type II error rate and coarseness
-\hh{Figure \ref{fig:coarse} shows the type II error rates for profiles using an optimization window $w_o= 120$ and a validation window $w_v = 30$ for varying level of coarseness. The type II error for all nominal levels of  $\alpha$ are the lowest for a coarseness range of 0.20 to 0.30, with a minimum in type II reached at a coarseness $c = 0.25$. The histograms suggest to use a value of coarseness below 0.2.}
-\hh{However, for an optimal value of coarseness other aspects have to be condsidered.}
-```{r coarse, fig.cap="Type II error with respect to coarseness parameter over profiles, $w_o = 120$, $w_v = 30$. Optimal values for coarseness are around $c \\approx 0.30$", fig.width=5, fig.height = 3, out.width='.6\\textwidth'}
-e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
-  ylab("Type II error") 
-e1
+```{r, fig.cap="Overview of all of the results."}
+rocs <- roc.summary %>% dplyr::select(-auc, -coarse, -alpha)
+rocs <- rocs %>% mutate(
+  aucplus = sprintf("%.3f (%.3f, %.3f)", AUC, lower, upper)
+)
+rocs <- rocs %>% dplyr::filter(wv==30)
+rocs <- rocs %>% dplyr::select(-AUC, -lower, -upper, -wv)
+rocs1 <- rocs %>% dplyr::filter(method=="CS1")
+rocs2 <- rocs %>% dplyr::filter(method=="CS2")
+rocs_tab <- data.frame(rocs1 %>% ungroup() %>% dplyr::select(-wv, -method, -eer), 
+                  rocs2 %>% ungroup() %>% dplyr::select(actual, beta, aucplus))
+dt <- xtable(rocs_tab, 
+             digits=c(0,0,3, 3,0,3,3,0))
+#print(dt, include.rownames = FALSE)
 ```
 
--->
+\begin{table}[ht]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrlrrl}
+  \hline
+  & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
+$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\ 
+  \hline
+90 & 0.068 & 0.330 & 0.850 (0.835, 0.865) & 0.075 & 0.242 & 0.877 (0.863, 0.890) \\ 
+  120 & 0.065 & 0.309 & 0.864 (0.850, 0.878) & 0.072 & 0.236 & 0.890 (0.877, 0.903) \\ 
+  130 & 0.065 & 0.317 & 0.863 (0.850, 0.877) & 0.072 & 0.224 & 0.898 (0.886, 0.910) \\ 
+  140 & 0.065 & 0.304 & 0.873 (0.859, 0.886) & 0.071 & 0.229 & 0.902 (0.891, 0.914) \\ 
+  150 & 0.067 & 0.326 & 0.863 (0.850, 0.877) & 0.072 & 0.225 & 0.904 (0.892, 0.916) \\ 
+  180 & 0.061 & 0.326 & 0.877 (0.864, 0.890) & 0.070 & 0.229 & 0.907 (0.896, 0.919) \\ 
+  210 & 0.064 & 0.342 & 0.865 (0.851, 0.878) & 0.066 & 0.231 & 0.906 (0.895, 0.918) \\ 
+   \hline
+\end{tabular}
+\end{adjustbox}
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals \citep{delong}. CS2 significantly outperforms CS1 with respect to its predictive power. }
+\end{table}
+
 
 ## Observed versus Nominal Type I error rates
 
-\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates.   
+\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates. 
 
 ```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
@@ -995,7 +1036,7 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
 # Conclusions
 
 \hh{
-We started out trying to assess the suitability of the Chumbley Score's suitability for matching striae on bullet lands. Besides using recommended defaults, we also proposed ways to optimize parameters: based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile, we found  for bullets the smaller coarseness value of $c = 0.15$ to be suitable. 
+We started out trying to assess the suitability of the Chumbley Score's for matching striae on bullet lands. Besides using recommended defaults, we also proposed ways to optimize parameters: based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile, we found  for bullets the smaller coarseness value of $c = 0.15$ to be suitable. 
 Optimized window sizes were found based on cross-validation to minimize type 2 error rates. 
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
@@ -1008,160 +1049,7 @@ However, bullets usually have multiple lands - in the case of Ruger P85s as used
 Fix in CS2 should also improve power for matching toolmarks. 
 }
 
-<!-- The results suggest that the Nominal type I error $\alpha$ value shows dependence on the size of the window of optimization. For a given window of optimization the actual Type I error is comparable to the nominal level for only a select few validation window sizes and for comparable validation window sizes of 30 and 50 as done here, the actual type I error does not seem to vary as much as it varies with the optimization window sizes .
-A Test Fail, i.e. tests in which a particular parameter setting did not return a valid result, happens, when the shift to align two signatures is so large, that the remaining overlap is too small to accommodate  windows for validation, depends on whether known-match or known non-matches has predictive value, with test results from different-sources having a much higher chance to fail. On conducting an analysis of all known bullet lands using the adjusted chumbley algorithm, Type II error was identified to be least bad for window of validation 30 and window of optimization 120. In case of unsmoothed raw marks (profiles), Type II error increases with the amount of smoothing and least for LOWESS smoothing coarseness value about 0.25 or 0.3. In an effort to identify the level of adaptiveness of the algorithm, comparisons were made between signatures and profiles. Their comparison with respect to validation window size for a fixed optimization window size suggested that, profiles have a total error (i.e all incorrect classification of known-matches and known non-matches) greater than or equal to the total error of signatures for all sizes of validation window. Profiles also fail more number of times than signatures in a test fail (for different coarseness keeping windows fixed and also for different validation windows keeping coarseness fixed) which lets us conclude that the behaviour of the algorithm for the profiles instead of pre-processed signatures is not better. Finally it should be noted that the current version of the adjusted chumbley algorithm seems to fall short when compared to other machine-learning based methods \citet{aoas}, and some level of modification to the deterministic algorithm needs to be identified and tested that would reduce the number of incorrect classifications.
 
-```{r wo120-profile, fig.width = 6, fig.height=4, fig.cap="The figure shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120", eval = FALSE}
-wo120_profile <- errors2 %>% filter(wo==120, coarse == 0.25) %>% 
-  #gather(type, error, actual:beta) %>% 
-  gather(type, error, beta) %>% 
-  ggplot(aes(x = wv, y = error, colour = factor(alpha)))  + 
-  geom_line() + geom_point() + facet_wrap(~type, scales="free") +
-    theme_bw()+ 
-  theme(legend.position="bottom") + ggtitle("Profile" , subtitle = "Varying validation window sizes, Optimization window = 120, Coarseness = 0.25")
-
-#combined120 <- full_join(errors2 %>% filter(wo==120, coarse == 0.25), wo120 %>% 
-
-wo120_1<- wo120_profile %>% gather(type, error, beta) %>%  
-  ggplot(aes(x = wv, y = error, colour = factor(alpha)))+
-  geom_line(linetype=5)+  geom_point(shape= 24) + facet_wrap(~type, scales="free") +
-  theme_bw()+ 
-  theme(legend.position="bottom") + ggtitle("Signatures" , subtitle = "Varying validation window sizes, Optimization window = 120")
-
-combined120<- 
-  ggplot(data = wo120_profile %>% gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha)))+
-  geom_line(aes(linetype="Signatures"))+  geom_point(shape= 24) + 
-  geom_line(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
-  gather(type, error, beta), aes(x = wv, y = error, colour = factor(alpha), linetype = "Profiles")) +       geom_point(data =  errors2 %>% filter(wo==120, coarse == 0.25) %>% 
-  gather(type, error, beta)) +
-  facet_wrap(~type, scales="free") +
-  scale_linetype_manual("Lines",values=c("Signatures"=2,"Profiles"=1))+
-  guides(fill = guide_legend(keywidth = 1, keyheight = 1),
-    linetype=guide_legend(keywidth = 3, keyheight = 1),
-    colour=guide_legend(keywidth = 3, keyheight = 1))+
-  theme_bw()+ 
-  theme(legend.position="right") + ggtitle("Type II error with Validation window" , subtitle = "Profiles at coarseness 0.25") + xlab("Type II error")
-    
-combined120
-#wo120_profile
-#wo120_1
-#multiplot(wo120_1, wo120_profile1)
-```
-```{r failtest-coarseness, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120", eval= FALSE}
-
-miss_1
-```
-```{r failtest-wv, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120", eval= FALSE}
-
-miss_2
-```
-```{r failtest-wo, fig.width = 6, fig.height=4, fig.cap="The figure on the left shows the actual Type I error while the figure on the right shows the Type II error for different validation window sizes and different chosen nominal alpha levels when the size of the optimization window = 120", eval= FALSE}
-
-miss_2
-```
--->
-
-<!-- # Algorithm Modification -->
-
-<!-- The proposed algorithm modification is at the same shift step which comes after the shift distance is identified by finding two windows in the two markings that have the highest correlation. -->
-
-<!-- The modification allows for a "wiggle" room in the second marking of the two sets of markings being compared. This means that each set of same shift windows that are being compared, the second marking will window that is under consideration is allowd to move a little towards the left and a little towards the right. -->
-
-<!-- This gives us a new set of 4 windows, 2 to the left and 2 to the right of the original comparison window. Then the correlations for each one of these 5 windows with the window under consideration of the 1st marking is retrieved (from the validation step correlation matrix) or computed. -->
-
-<!-- Then the window that has the maximum correlation (from the set of 5 windows in the 2nd marking) with the window of the 1st marking is chosen. -->
-
-<!-- This new maximum correlation is then used to compute the U-statistics using the same method as before. -->
-
-<!-- ## Expected advantage of modification -->
-
-<!-- We are expecting that this modification would improve the type I and II errors for the good. Less number of false negatives and false positives. -->
-<!-- The reason for this expectation is many a times the bullet markings are not made at the same distances for two or more bullets because of the way it comes out of the barrel. -->
-
-<!-- Therefore rigid same shifts might not necessarily compare the right set of windows. In the same shift step for one set of windows, allowing the window in the 2nd marking to wiggle left and right and finding the best match to the window in the 1st marking, lets us adjust for situations where markings are compressed or elongated. -->
-
-<!-- ## Dependence on the delta of new windows from the original same shift window -->
-
-<!-- From initial tests the amount of movement to get new windows left and right of the original same shift window seems to directly influence the -->
-<!-- the pvalue and U statistic that we look at.  -->
-
-<!-- ### other questions -->
-<!-- How much movement is reasonable and should be used? Is there a way to understand if the 2nd marking in comparison to the 1st marking is compressed or elongated or neither? Should the amount of movement selected depend on this compression or elongation? or using a static delta movement value justifieable. -->
-<!--
-# Appendix
-\begin{appendix}
-
-On the other hand Figure \ref{fig:prof_missings} (b) shows if the coarseness level set in the chumbley agorithm has any effect on the signatures, which are pre-processed and already smoothed to a certain extent. From Figure \ref{fig:prof_missings} (b) we can notice that for different nominal $\alpha$ levels, the type II error fluctuates slightly but does not change much, thereby helping us conclude that the coarseness levels set in the LOWESS smoothing in the chumbley alggorithm does effect the type II error much for signatures.
-
-\subsection{Comparison of profiles and signatures}
-
-Another reason for failed tests can be incorrect identification of maximum correlation windows in the optimization step as seen in figure \ref{fig:prof_missings}(d) because of the level of smoothing, as too much smoothing would subdue intricate features that might otherwise help in the correlation calculations and correct identification of maximum correlation windows irrespective of the size. This would again cause a simiar effect as explained for figure \ref{fig:missings} with validation windows, irrespective of size, during the shifts end up at the ends of the markings resulting in an invalid calculation and failed comparison attempt. 
-
-In figure \ref{fig:prof_missings}(d) and (f), we compare profiles and signatures on the basis of number of failed tests. The profiles chosen for figure \ref{fig:prof_missings}(f) have a constant coarseness of 0.25 and window of optimization as 120. The signatures in this case are not smoothed using the chumbley algorithm step of LOWESS smoothing. Instead signatures are used as calculated by \citet{aoas}. The smoothing in these signatures were determined and fixed on the basis of their performance in the random forest based algorithm proposed by \citet{aoas}. The comparison of profiles and signatures with variation of validation window size therefore is made on even footing. The trends are similar to figure \ref{fig:missings} in the sense that for known non-matches the number of failed tests are more for both signatures and profiles and increasing linearly with the validation window size. The problem is however, worse for profiles which has higher number of failed tests than signatures for all validation windows.
-
-The total error for different validation window sizes for signatures and profiles can be seen in figure \ref{fig:prof_missings} (e).The optimization window size is 120 and profiles are calculated at a default 0.25 coarseness level while signatures as before are not smoothed again in the modified chumbley algorithm. We can see that the total error is always higher for profiles as compared to signatures for all sizes of validation window. 
-
-```{r, fig.cap="Type II errors for different levels of coarseness."}
-e1<-errors2 %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Profile Coarseness")+
-  ylab("Type II error") + ggtitle(label = "(a)")
-
-e2<- errors_sig_c %>% filter(wv==30)%>% ggplot(aes(x = coarse, y=beta, colour=factor(alpha))) +
-  geom_point() + geom_line() +
-  theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2")+ xlab("Signature Coarseness") + ylab("Type II error") + ggtitle(label = "(b)")
-
-#multiplot(e1,e2, cols = 1)
-
-```
-
-
-
-```{r, eval=FALSE}
-#errors %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + facet_grid(~wo) +geom_point(data=errors2, aes(shape="profiles"))
-
-total1<- errors_sig_c %>% ggplot(aes(x = coarse, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line()  + geom_point(data= errors2 %>% filter(wv==30), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv==30), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + xlab("Coarseness") +ylab("Total error") + ggtitle(label = "(c)")
-
-total2<- wo120_profile %>% filter(wv>10) %>% ggplot(aes(x = wv, y=total, colour=factor(alpha), shape="signatures")) + geom_point() + geom_line() +geom_point(data=errors2 %>% filter(wv>10) %>% filter(coarse==0.25), aes(shape="profiles")) + geom_line(data=errors2 %>% filter(wv>10)%>% filter(coarse==0.25), aes(shape="profiles")) + theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha), palette="Set2") + ylab("Total error") + ggtitle(label = "(e)")
-
-
-```
-
-```{r prof_missings, fig.width=10, fig.height=10, fig.cap="Row 3:  Total error and Number of failed tests by the window validation size, wv, and ground truth, Row 2: Total error and Number of failed tests with Coarseness for both profiles and signatures, Row 1: Type II error for different coarseness levels as used in the modified chumbley algorithm for profiles and signatures", eval = FALSE}
-
-
-#ns1<- ns[which(ns$wv == c(30,50), arr.ind = T),]
-miss_1<- nsp %>% filter(wv == 30) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = coarse, y = missperc, shape= "profile", colour = factor(match))) + 
-  #geom_smooth(method="auto", size=.5, se=FALSE) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("Coarseness") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns_sig_c  %>% filter(wv %in% c(30,50)) , aes(shape="signature"), size = 2) + ggtitle(label = "(d)")
-# + scale_colour_brewer("Match", palette="Set2") #+geom_smooth(method="auto", size=.5, se=FALSE) 
-  #scale_shape_discrete("Size of \nvalidation\nwindow, #wv")
-
-miss_2<- nsp %>% filter(coarse == 0.25) %>%
-#ns %>% filter(wv == c(30, 50)) %>%
-  ggplot(aes(x = wv, y = missperc, shape= "profile", colour = factor(match))) + 
-  #geom_smooth(method="auto", size=.5, se=FALSE) +
-  geom_point(size = 2) + 
-  theme_bw() +
-  ylab("Percent of failed tests.") +
-  xlab("wv") +
-  scale_colour_brewer("Match", palette="Set1") + geom_point(data=ns %>% filter(wo == 120)  %>% filter(coarse == 1) , aes(shape="signature"), size = 2) + ggtitle(label = "(f)")#+ scale_colour_brewer("Match", palette="Set2")
-
-#multiplot(plotlist = list(total1, total2, miss_1, miss_2, e1, e2), cols = 2)#, matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
-multiplot(plotlist = list(e1, total1, total2,e2, miss_1, miss_2), cols = 2)
-```
-\end{appendix} 
--->
 
 # Appendix
 \begin{appendix}
@@ -1186,12 +1074,6 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
 \end{figure}
 
-<!--
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=.7\textwidth]{images/CS1-failure-CS2-success.png}
-\caption{\label{CS1-failure-CS2-success}Sketch of a case where CS1 fails but CS2 does not fail.}
-\end{figure}
--->
+
 
 \end{appendix}

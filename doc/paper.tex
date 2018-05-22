@@ -8,6 +8,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{adjustbox}
 \usepackage{multirow}
 \usepackage{subfig}
 \usepackage[table]{xcolor}
@@ -519,7 +520,7 @@ different from the assumed uniform.
 
 }
 
-\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates are higher than expected rates.}\label{fig:fails}
+\caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates of (CS1) are higher than expected rates.}\label{fig:fails}
 \end{figure}
 
 \hypertarget{coarseness}{%
@@ -535,15 +536,24 @@ adjusted because of the strong effect bullet curvature has on profiles.
 different coarseness parameters: from left to right, coarseness levels
 \(c\) are varied in steps of 0.05 from 0.1 to 0.3. The top row shows
 resulting signatures after smoothing the profile shown in
-Figure\textasciitilde{}\ref{fig:sigs-profiles} with different levels of
-coarseness. The histograms in the bottom row show the relative optimal
-location \(t^*\). Optimal locations are distributed uniformly once
-(sub-)class characteristics are removed. However, for coarseness values
-of \(c > 0.20\) we see quite distinct boundary effects: optimal
-locations \(t^*\) are found at the very extreme ends of a profile more
-often than one would expect based on a uniform distribution.
+\autoref{fig:sigs-profiles} with different levels of coarseness. The
+histograms in the bottom row show the relative optimal location \(t^*\).
+Optimal locations are distributed uniformly once (sub-)class
+characteristics are removed. However, for coarseness values of
+\(c > 0.20\) we see quite distinct boundary effects: optimal locations
+\(t^*\) are found at the very extreme ends of a profile more often than
+one would expect based on a uniform distribution.
 
-{\textcolor{blue}{The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but also does not remove important individual characteristics}}
+The key effect of the optimal locations and thereby the coarseness is
+seen in the number of failed tests. Irrespective of whether CS1 or CS2
+is being used, if the relative optimal locations are at the boundaries
+we will see an increase in the number of failed tests. A balance is
+therefore needed in the selection of the coarseness parameter which
+reduces the boundary effect but does not remove important individual
+characteristics. Based on \autoref{fig:profile-sketch} a coarseness
+value of \(c = 0.15\) seems to be best suited to strike this balance for
+this example. For the remainder of the analysis, we will use this value
+for \(c\).
 
 \begin{figure}
 
@@ -554,28 +564,21 @@ often than one would expect based on a uniform distribution.
 \caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. }\label{fig:profile-sketch}
 \end{figure}
 
-\hypertarget{type-ii-error-rates}{%
-\subsection{Type II error rates}\label{type-ii-error-rates}}
-
-\autoref{fig:type2} gives an overview of the type 2 error of methods CS1
-and CS2 across a range of different optimization windows \(w_o\).
-
-\begin{figure}
-
-{\centering \includegraphics[width=0.9\textwidth]{figures/type2-1} 
-
-}
-
-\caption{Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error.}\label{fig:type2}
-\end{figure}
+\hypertarget{error-rate-assessment}{%
+\subsection{Error rate assessment}\label{error-rate-assessment}}
 
 \autoref{fig:roc} gives an overview of ROC (Receiver operating
 characteristic) curves for methods CS1 and CS2 over a range of different
-optimization window sizes \(w_o\). The different color hues represent
-the two methods CS1 (red) and CS2 (blue). The ROC curves show the
-superior performance of CS2 over CS1. Generally, an optimization window
-\(w_o\) of 150 pixels or more leads to the best performance with respect
-to ROC curves.
+optimization window sizes \(w_o\) and two sizes for the validation
+window \(w_v\) (shape). The different color hues represent the two
+methods CS1 (red) and CS2 (blue). The ROC curves show the superior
+performance of CS2 over CS1. Generally, an optimization window \(w_o\)
+of 150 pixels or more leads to the best performance with respect to ROC
+curves. Results based on a validation window of size \(w_v = 30\) are
+generally better than results for \(w_v = 50\).
+
+\autoref{fig:eer}
+\autoref{tab:aucs}
 
 \begin{figure}
 
@@ -594,6 +597,27 @@ to ROC curves.
 
 \caption{Comparison of results for CS1 and CS2 using area under the curve (AUC) and equal error rates (EER). }\label{fig:eer}
 \end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrlrrl}
+  \hline
+  & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
+$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\ 
+  \hline
+90 & 0.068 & 0.330 & 0.850 (0.835, 0.865) & 0.075 & 0.242 & 0.877 (0.863, 0.890) \\ 
+  120 & 0.065 & 0.309 & 0.864 (0.850, 0.878) & 0.072 & 0.236 & 0.890 (0.877, 0.903) \\ 
+  130 & 0.065 & 0.317 & 0.863 (0.850, 0.877) & 0.072 & 0.224 & 0.898 (0.886, 0.910) \\ 
+  140 & 0.065 & 0.304 & 0.873 (0.859, 0.886) & 0.071 & 0.229 & 0.902 (0.891, 0.914) \\ 
+  150 & 0.067 & 0.326 & 0.863 (0.850, 0.877) & 0.072 & 0.225 & 0.904 (0.892, 0.916) \\ 
+  180 & 0.061 & 0.326 & 0.877 (0.864, 0.890) & 0.070 & 0.229 & 0.907 (0.896, 0.919) \\ 
+  210 & 0.064 & 0.342 & 0.865 (0.851, 0.878) & 0.066 & 0.231 & 0.906 (0.895, 0.918) \\ 
+   \hline
+\end{tabular}
+\end{adjustbox}
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals \citep{delong}. CS2 significantly outperforms CS1 with respect to its predictive power. }
+\end{table}
 
 \hypertarget{observed-versus-nominal-type-i-error-rates}{%
 \subsection{Observed versus Nominal Type I error
@@ -657,13 +681,7 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
 \end{figure}
 
-<!--
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=.7\textwidth]{images/CS1-failure-CS2-success.png}
-\caption{\label{CS1-failure-CS2-success}Sketch of a case where CS1 fails but CS2 does not fail.}
-\end{figure}
--->
+
 
 \end{appendix}
 
