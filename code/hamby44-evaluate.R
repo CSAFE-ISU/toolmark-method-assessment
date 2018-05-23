@@ -13,18 +13,18 @@ for (file in files) {
 }
 
 h44 <- h44 %>% separate(source, into=c("method", "rest"), sep="/") %>%
-  select(-rest)
+  dplyr::select(-rest)
 
 h44.summ <- h44 %>% group_by(wo, wv, method, coarseness) %>%
   mutate(
-    fails = sum(is.na(p_value))/n() 
+    fails = sum(is.na(p_value))/length(p_value)
   ) %>% filter(!is.na(p_value)) %>%
   summarize(
     AUC = AUC(1-p_value, match),
     EER = EER(1-p_value, match),
     ci = list(AUC_confint(1-p_value, match)),
     fails = fails[1],
-    delong = list(ci.auc(match, 1-p_value))
+    delong = list(pROC::ci.auc(match, 1-p_value))
   )
 h44.summ <- h44.summ %>% mutate(
   lower = ci %>% purrr::map_dbl(.f = function(x) x[[1]][1]),

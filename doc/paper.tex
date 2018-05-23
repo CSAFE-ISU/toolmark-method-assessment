@@ -577,8 +577,26 @@ of 150 pixels or more leads to the best performance with respect to ROC
 curves. Results based on a validation window of size \(w_v = 30\) are
 generally better than results for \(w_v = 50\).
 
-\autoref{fig:eer}
-\autoref{tab:aucs}
+\autoref{fig:eer} shows a comparison of the performance of the two
+methods CS1 and CS2 with respect to EER (eaual error rate) and AUC (area
+under the curve) corresponding to the ROC curves shown in
+\autoref{fig:roc}. Equal error rates are reduced using method CS2, while
+area under the curve significantly increases (at a significance level
+\(\alpha\) of 0.05) compared to method CS1.
+
+The results from Figures \ref{fig:roc} and \ref{fig:eer} are summarized
+in numbers in \autoref{tab:aucs}. Equal error rates (EER), rates for
+false positives (FPR) and false negatives (FNR) are shown side by side
+with the area under the curve (AUR) for both methods for a set of
+different optimization windows \(w_o\) and a validation window \(w_v\)
+of 30 pixels. The rate of false positive same-source identifications is
+equal to the statistical type I error rate, which is set to
+\(\alpha = 0.05\) for this example. The rate of false negatives are
+missed same-source markings. This rate is also known as the type II
+error rate.\\
+Area under the curve (AUC) is shown with confidence intervals as given
+by \citet{delong}. CS2 significantly outperforms CS1 with respect to its
+predictive power in most situations.
 
 \begin{figure}
 
@@ -616,7 +634,7 @@ $w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (9
    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals \citep{delong}. CS2 significantly outperforms CS1 with respect to its predictive power. }
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals. }
 \end{table}
 
 \hypertarget{observed-versus-nominal-type-i-error-rates}{%
@@ -643,7 +661,7 @@ rates.
 \section{Conclusions}\label{conclusions}}
 
 {\textcolor{orange}{
-We started out trying to assess the suitability of the Chumbley Score's suitability for matching striae on bullet lands. Besides using recommended defaults, we also proposed ways to optimize parameters: based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile, we found  for bullets the smaller coarseness value of $c = 0.15$ to be suitable. 
+We started out trying to assess the suitability of the Chumbley Score's for matching striae on bullet lands. Besides using recommended defaults, we also proposed ways to optimize parameters: based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile, we found  for bullets the smaller coarseness value of $c = 0.15$ to be suitable. 
 Optimized window sizes were found based on cross-validation to minimize type 2 error rates. 
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of XXX for an optimized window size of YYY - which is considerably higher than the error rates achieved on matching toolmarks. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 

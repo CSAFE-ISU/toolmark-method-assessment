@@ -852,8 +852,10 @@ ggerrors <- errorsCV %>%
 
 \autoref{fig:roc} gives an overview of  ROC (Receiver operating characteristic) curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$ and two sizes for the validation window $w_v$ (shape). The different color hues represent the two methods CS1 (red) and CS2 (blue). The ROC curves show the superior performance of CS2 over CS1. Generally, an optimization window $w_o$ of 150 pixels or more leads to the best performance with respect to ROC curves. Results based on a  validation window of size $w_v = 30$ are generally better than results for $w_v = 50$.
 
-\autoref{fig:eer}
-\autoref{tab:aucs}
+\autoref{fig:eer} shows a comparison of the performance of the two methods CS1 and CS2 with respect to EER (eaual error rate) and AUC (area under the curve) corresponding to the ROC curves shown in \autoref{fig:roc}. Equal error rates are reduced using method CS2, while area under the curve significantly increases (at a significance level $\alpha$ of 0.05) compared to method CS1.
+
+The results from Figures \ref{fig:roc} and \ref{fig:eer} are summarized in numbers in \autoref{tab:aucs}. Equal error rates (EER), rates for false positives (FPR) and false negatives (FNR) are shown side by side with the area under the curve (AUR) for both methods for a set of different optimization windows $w_o$ and a validation window $w_v$ of 30 pixels. The rate of false positive same-source identifications is equal to the statistical type I error rate, which is set to $\alpha = 0.05$ for this example. The rate of false negatives are missed same-source markings. This rate is also known as the type II error rate.   
+Area under the curve (AUC) is shown with confidence intervals as given by \citet{delong}. CS2 significantly outperforms CS1 with respect to its predictive power in most situations.
 
 ```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Best performances with respect to  ROC curves are reached for optimization windows of sizes 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
 library(plotROC)
@@ -944,25 +946,27 @@ roc.summary <- roc.summary %>% left_join(
 
 p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   ggplot(aes( x = wo, y=eer, colour=method, shape=method)) +
-  geom_point() +
-  facet_wrap(~wv, labeller="label_both") + 
+  geom_point(size=2) +
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) + 
   theme_bw() +
   ylab("Equal Error rate (EER)") +
   xlab("Size of optimization window in pixels") +
   theme(legend.position = "bottom") + #c(0.25, 0.25)) +
-  scale_colour_brewer(palette="Set1") +
+  scale_colour_brewer("Method", palette="Set1") +
+  scale_shape("Method") +
   scale_y_continuous(limits=c(0, 0.25))
 
 p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   ggplot(aes( x = wo, y=AUC, colour = method, shape=method)) +
   geom_point(size=2) +
   geom_errorbar(aes(ymin=lower, ymax=upper), width=5) +
-  facet_wrap(~wv, labeller="label_both") + 
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) + 
   theme_bw() +
   ylab("Area under the curve (AUC)") +
   xlab("Size of optimization window in pixels")+
   theme(legend.position = "bottom") + #c(0.75, 0.25)) +
-  scale_colour_brewer(palette="Set1")
+  scale_colour_brewer("Method", palette="Set1") +
+  scale_shape("Method") 
 grid.arrange(p1, p2, nrow=1)
 ```
 
@@ -1000,13 +1004,13 @@ $w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (9
    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals \citep{delong}. CS2 significantly outperforms CS1 with respect to its predictive power. }
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$) or type I error rate, FNR is the false negative rate or type II eror rate. Area under the curve (AUC) is shown with confidence intervals. }
 \end{table}
 
 
 ## Observed versus Nominal Type I error rates
 
-\autoref{fig:type1} shows observed type I error rates across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates. 
+\autoref{fig:type1} shows observed type I error rates (FPR) across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates. 
 
 ```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
@@ -1018,11 +1022,11 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
   geom_smooth(aes(group=factor(method)), 
               size=.8, se=FALSE, method="lm", alpha=.9) +
   theme_bw() +
-  ylab("Observed type I error rate") +
-  xlab(expression("Window size for optimization, "~w[o])) +
+  ylab(expression("Observed type I error rate "~hat(alpha))) +
+  xlab(expression("Window size for optimization "~w[o])) +
   scale_colour_brewer(
     expression("Nominal type I error "~alpha), palette="Set2") +
-  facet_wrap(~alpha, labeller="label_both", scales="free") +
+  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha)), scales="free") +
   theme(legend.position="bottom") +
   scale_shape_manual(expression("Method / Validation window "~w[v]), values=c(1,2,16,17)) +
   scale_linetype_manual("Method", values=c(3,1), guide=FALSE) +
@@ -1031,6 +1035,68 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
   
 ```
 
+## High resolution Hamby 44 scans
+
+```{r h44, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="AUC and EER for methods CS1 and CS@ based on high resolution scans of Hamby 44. "}
+if (!file.exists("../data/h44.rds")) {
+files <- dir("../data/hamby44/", pattern="rds", recursive=TRUE)
+
+h44 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/hamby44", file))
+  tmp$source <- file
+  tmp <- tmp %>% mutate(
+    match = replace(match, is.na(match), FALSE)
+  )
+  h44 <- rbind(h44, tmp)
+}
+  saveRDS(h44, "../data/h44.rds")
+} else {
+  readRDS("../data/h44.rds")
+}
+
+h44 <- h44 %>% separate(source, into=c("method", "rest"), sep="/") %>%
+  dplyr::select(-rest)
+
+h44.summ <- h44 %>% group_by(wo, wv, method, coarseness) %>%
+  mutate(
+    fails = sum(is.na(p_value))/length(p_value)
+  ) %>% filter(!is.na(p_value)) %>%
+  summarize(
+    AUC = AUC(1-p_value, match),
+    EER = EER(1-p_value, match),
+  #  ci = list(AUC_confint(1-p_value, match)),
+    fails = fails[1],
+    delong = list(pROC::ci.auc(match, 1-p_value))
+  )
+
+h44.summ <- h44.summ %>% mutate(
+#  lower = ci %>% purrr::map_dbl(.f = function(x) x[[1]][1]),
+#  upper = ci %>% purrr::map_dbl(.f = function(x) x[[1]][2]),
+  low_delong = delong %>% purrr::map_dbl(.f = function(x) x[1]),
+  upp_delong = delong %>% purrr::map_dbl(.f = function(x) x[3]),
+  Method = toupper(method)
+)
+
+h44.summ %>% gather(type, value, AUC, EER) %>% 
+  filter(wv %in% c(75, 125), coarseness==0.125,
+         between(wo, 210, 390)) %>% 
+  ggplot(aes(x = wo, y = value, colour=Method, shape=factor(wv)))  +
+  geom_point(size=2.5) +
+#  geom_point(aes(y = lower), size=1) +
+#  geom_point(aes(y = upper), size=1) +
+  facet_wrap(~type, scales="free") +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1", guide = guide_legend(ncol = 1)) +
+  geom_smooth(aes(linetype = factor(wv), colour=Method), se=FALSE, span=2) +
+  xlab(expression("Size of optimization window "~w[o]~" in pixels")) +
+  ylab("Value") +
+  theme(legend.position = "bottom", 
+        legend.key.width = unit(2,"line")) +
+  scale_shape(expression("Size of validation window "~w[v]~" in pixels"), guide = guide_legend(ncol=1))+
+  scale_linetype(expression("Size of validation window "~w[v]~" in pixels"), guide = guide_legend(ncol=1)) 
+
+```
 
 
 # Conclusions
