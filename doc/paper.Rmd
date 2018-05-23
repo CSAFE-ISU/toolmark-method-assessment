@@ -986,7 +986,7 @@ dt <- xtable(rocs_tab,
 #print(dt, include.rownames = FALSE)
 ```
 
-\begin{table}[ht]
+\begin{table}[hbtp]
 \centering
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{rrrlrrl}
@@ -1037,7 +1037,10 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
 
 ## High resolution Hamby 44 scans
 
-```{r h44, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="AUC and EER for methods CS1 and CS@ based on high resolution scans of Hamby 44. "}
+The high-resolution scans of Hamby set 44 are capturing images at a resolution of $0.645 \mu m$ per pixel. On average, land engraved areas are 3000 pixels in length. A coarseness of $c = 0.15$ was found to be sufficient in removing any bullet curvature.
+\autoref{fig:h44} shows the resulting EER and AUC for methods CS1 and CS2 based on two sizes of validation windows ($w_v \in 75, 125$) and optimization window sizes around 300 pixels (10 percent of the average length). Interestingly, the overall performance of both CS1 and CS2 is a lot lower for the high resolution version of Hamby-44 than for the lower resolution scans. The area under the curve overall is significantly lower for the high resolution scans than for the previous set of scans. Partly, this might be due to the particular choice of the parameters. 
+
+```{r h44, fig.width=7.75, fig.height=5, out.width='\\textwidth', fig.cap="AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. "}
 if (!file.exists("../data/h44.rds")) {
 files <- dir("../data/hamby44/", pattern="rds", recursive=TRUE)
 
@@ -1052,7 +1055,7 @@ for (file in files) {
 }
   saveRDS(h44, "../data/h44.rds")
 } else {
-  readRDS("../data/h44.rds")
+  h44 <- readRDS("../data/h44.rds")
 }
 
 h44 <- h44 %>% separate(source, into=c("method", "rest"), sep="/") %>%

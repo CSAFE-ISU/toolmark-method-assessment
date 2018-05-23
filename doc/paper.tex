@@ -616,7 +616,7 @@ predictive power in most situations.
 \caption{Comparison of results for CS1 and CS2 using area under the curve (AUC) and equal error rates (EER). }\label{fig:eer}
 \end{figure}
 
-\begin{table}[ht]
+\begin{table}[hbtp]
 \centering
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{rrrlrrl}
@@ -641,12 +641,12 @@ $w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (9
 \subsection{Observed versus Nominal Type I error
 rates}\label{observed-versus-nominal-type-i-error-rates}}
 
-\autoref{fig:type1} shows observed type I error rates across a range of
-optimization windows \(w_o\). Generally, observed type I errors are
-higher than expected. Method CS1 shows in this instance slightly better
-performance than method CS2, but for both an increase in the size of the
-optimization window leads to a decrease in the observed type I error
-rates.
+\autoref{fig:type1} shows observed type I error rates (FPR) across a
+range of optimization windows \(w_o\). Generally, observed type I errors
+are higher than expected. Method CS1 shows in this instance slightly
+better performance than method CS2, but for both an increase in the size
+of the optimization window leads to a decrease in the observed type I
+error rates.
 
 \begin{figure}
 
@@ -655,6 +655,32 @@ rates.
 }
 
 \caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
+\end{figure}
+
+\hypertarget{high-resolution-hamby-44-scans}{%
+\subsection{High resolution Hamby 44
+scans}\label{high-resolution-hamby-44-scans}}
+
+The high-resolution scans of Hamby set 44 are capturing images at a
+resolution of \(0.645 \mu m\) per pixel. On average, land engraved areas
+are 3000 pixels in length. A coarseness of \(c = 0.15\) was found to be
+sufficient in removing any bullet curvature. \autoref{fig:h44} shows the
+resulting EER and AUC for methods CS1 and CS2 based on two sizes of
+validation windows (\(w_v \in 75, 125\)) and optimization window sizes
+around 300 pixels (10 percent of the average length). Interestingly, the
+overall performance of both CS1 and CS2 is a lot lower for the high
+resolution version of Hamby-44 than for the lower resolution scans. The
+area under the curve overall is significantly lower for the high
+resolution scans than for the previous set of scans. Partly, this might
+be due to the particular choice of the parameters.
+
+\begin{figure}
+
+{\centering \includegraphics[width=\textwidth]{figures/h44-1} 
+
+}
+
+\caption{AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. }\label{fig:h44}
 \end{figure}
 
 \hypertarget{conclusions}{%
