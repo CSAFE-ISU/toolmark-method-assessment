@@ -89,9 +89,11 @@ form. Methods for matching marks for a variety of tools have been
 studied in the literature. Analysis of these digitized markings require
 the use of statistical methods which can quantify the scientific
 mechanism of comparing markings and serve as basis for an error rate
-calculation. Striation marks on bullets are made by impurities in the
-barrel. The Chumbley score provides us with another approach in the
-same-source assessment of bullet striation marks.
+calculation. In this paper, we are investigating the applicability of
+the Chumbley scoring method by \citet{hadler} to assess striation marks
+on bullet lands for same-source identification. The Chumbley score
+provides us with another approach in the same-source assessment of
+bullet striation marks.
 \end{abstract}
 
 \noindent%
@@ -109,12 +111,8 @@ same-source assessment of bullet striation marks.
 \tableofcontents
 \newpage
 
-\hypertarget{introduction-and-background}{%
-\section{Introduction and
-Background}\label{introduction-and-background}}
-
-\hypertarget{motivation}{%
-\subsection{Motivation}\label{motivation}}
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
 
 Same-source analyses are a major part of a Forensic Toolmark Examiner's
 job. In current practice, examiners make these comparisons by visual
@@ -164,9 +162,7 @@ correlation coefficients. This approach is non-deterministic, because
 segments are chosen randomly. \citep{hadler} make the score
 deterministic for each pair of toolmarks by choosing segments for
 comparison systematically. This approach also ensures independence
-between segments of striae. In this paper, we are investigating the
-applicability of the Chumbley scoring method by \citet{hadler} to assess
-striation marks on bullet lands for same-source identification.
+between segments of striae.
 
 \begin{table}[ht]
 \centering
@@ -184,15 +180,17 @@ Research paper & Method & Data Source & False Positives & False Negatives\\
 \caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. All reported papers use some variation of the Chumbley-score method.}
 \end{table}
 
-Striation marks on bullets are made by impurities in the barrel. As the
-bullet travels through the barrel, these imperfections leave
-``scratches'' on the bullet surface (see top of \autoref{fig:rgl}).
-Typically, only striation marks in the land engraved areas (LEAs) are
-considered \citep{afte-article1992}. Bullet lands are depressed areas
-between the grooves made by the rifling action of the barrel. Compared
-to toolmarks made by screwdrivers striation marks on bullets are
-typically much smaller, both in length and in width. Bullets also have a
-curved cross-sectional topography.
+In this paper, we are investigating the applicability of the Chumbley
+scoring method by \citet{hadler} to assess striation marks on bullet
+lands for same-source identification. Striation marks on bullets are
+made by impurities in the barrel. As the bullet travels through the
+barrel, these imperfections leave ``scratches'' on the bullet surface
+(see top of \autoref{fig:rgl}). Typically, only striation marks in the
+land engraved areas (LEAs) are considered \citep{afte-article1992}.
+Bullet lands are depressed areas between the grooves made by the rifling
+action of the barrel. Compared to toolmarks made by screwdrivers
+striation marks on bullets are typically much smaller, both in length
+and in width. Bullets also have a curved cross-sectional topography.
 
 In same-source comparisons this curvature is usually removed using some
 form of Gaussian filter \citep{ma2004} or non-parametric smoothing
@@ -235,6 +233,11 @@ reported as 0.06 for false negatives and 0 for false positives.
 \caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification (top) and a chart of the corresponding signature of the same land (bottom). The dotted lines connect some peaks visible in both visualizations.}
 
 \end{figure}
+
+{\textcolor{orange}{What are we investigating in this paper, and what is the structure for the paper?}}
+
+\hypertarget{background}{%
+\section{Background}\label{background}}
 
 \hypertarget{scans-for-land-engraved-areas}{%
 \subsection{Scans for land engraved
@@ -725,20 +728,21 @@ investigated and reported to allow for a further refinement.
 
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of
 0.272 for an optimized window size of 140 pixels -- which is
-considerably higher than the error rates achieved on matching toolmarks.
-Unfortunately, method CS1 also has a high rate of failed tests --
-situations, in which the algorithm does not provide a result, due to the
-way different-shift pairs are constructed. Algorithm CS2 is introduced
-here as a remedy for failed tests by introducing an alternate version of
-choosing different-shift pairs. The algorithm CS2 introduced here is
-constructed in a way that achieves on average a ten-fold reduction in
-the number of failures. While reducing the failure rate, the algorithm
-also shows an increase in the power of the test. Type II error rates of
-CS2 reach a minimum of 0.217 for an optimized window size of 130 pixels.
-This increase in power of CS2 over CS1 should also apply to previous
-studies on toolmarks. It would be interesting to see these results using
-the adjusted algorithm. Unfortunately, none of the studies have made the
-data publicly accessible.
+considerably higher than the error rates achieved on matching toolmarks,
+but is similar to other single-feature methods proposed for bullet
+matching. Unfortunately, method CS1 also has a high rate of failed tests
+-- situations, in which the algorithm does not provide a result, due to
+the way different-shift pairs are constructed. Algorithm CS2 is
+introduced here as a remedy for failed tests by introducing an alternate
+version of choosing different-shift pairs. The algorithm CS2 introduced
+here is constructed in a way that achieves on average a ten-fold
+reduction in the number of failures. While reducing the failure rate,
+the algorithm also shows an increase in the power of the test. Type II
+error rates of CS2 reach a minimum of 0.217 for an optimized window size
+of 130 pixels. This increase in power of CS2 over CS1 should also apply
+to previous studies on toolmarks. It would be interesting to see these
+results using the adjusted algorithm. Unfortunately, none of the studies
+have made the data publicly accessible.
 
 While significantly reduced over CS1, CS2 still has type 2 error rates
 on bullet lands that are higher than the error rates achieved on the
