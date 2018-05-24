@@ -256,7 +256,7 @@ In same-source comparisons this curvature is usually removed using some form of 
   \hline
 Method & Data Source & False Positives & False Negatives\\
   \hline
-Consecutive Matching Bullets Striae (CMS) & & & \\ \textbf{\citet{aoas}} &  & 6.25\% &  33.851\% \\ \hline
+Consecutive Matching Bullets Striae (CMS) & Bullets & & \\ \textbf{\citet{aoas}} &  & 6.25\% &  33.851\% \\ \hline
 Consecutive Non-matching Striae (CNMS) & Bullets & & \\  \textbf{\citet{aoas}} & & 6.26\% & 35.4166\%  \\ \hline
 Average Distance (D) & Bullets  &  & \\ \textbf{\citet{aoas}} & & 6.25\% & 45.833\% \\ \hline 
 Cross-correlation Function (CCF) & Bullets & & \\ \textbf{\citet{aoas}}  & & 6.25\% & 17.7083\%  \\ \hline
