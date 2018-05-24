@@ -82,22 +82,31 @@ University.} \\
 
 \bigskip
 \begin{abstract}
-Same-source analyses are a major part of a Forensic Toolmark Examiner's
-job. Technological advances, such as profilometers and confocal
-microscopy allow to measure 3D surfaces in a high-resolution digitized
-form. Methods for matching marks for a variety of tools have been
-studied in the literature. Analysis of these digitized markings require
-the use of statistical methods which can quantify the scientific
-mechanism of comparing markings and serve as basis for an error rate
-calculation. In this paper, we are investigating the applicability of
-the Chumbley scoring method by \citet{hadler} to assess striation marks
-on bullet lands for same-source identification. The Chumbley score
-provides us with another approach in the same-source assessment of
-bullet striation marks.
+One of the major problems in forensic toolmark examination is the
+same-source problem, i.e.~the identification of whether the marks on two
+different objects were made by the same tool. Profilometers and confocal
+microscopy and other technological advances allow us to measure 3D
+surfaces in previously unforeseen resolution and also enable digitized
+images. The literature provides various methods to measure similarity of
+toolmarks. In this paper, we are investigating the applicability of the
+Chumbley scoring method by \citet{hadler}, which was introduced for the
+assessment of marks made by screwdrivers, to assess striation marks on
+bullet lands for same-source identification. We provide methods to
+identify parameters that minimize the error rates for matching of LEAs
+at the example of the Hamby data, sets 44 and 252 measured by NIST and
+CSAFE. We provide a remedial algorithm to alleviate the problem of
+failed tests in the method proposed by \citet{hadler}. This increases
+the power of the test and reduces error rates in the process. Type II
+error rates for the Hamby data using the adjusted method showed an
+improvement of more than 20\% points over the performance of the
+algorithm proposed by \citet{hadler} (for a Type I error of 0.05).
+Overall, type II error rates of the adjusted method are on average at
+0.22, putting the method on similar footing as other single feature
+matching approaches in the literature.
 \end{abstract}
 
 \noindent%
-{\it Keywords:} forensic science, toolmark, cross-correlation, Mann-Whitney U statistic, , 
+{\it Keywords:} forensic science, toolmark, cross-correlation, Mann-Whitney U statistic, land engraved areas (LEAs), algorithm
 \vfill
 
 \newpage
@@ -194,22 +203,43 @@ and in width. Bullets also have a curved cross-sectional topography.
 
 In same-source comparisons this curvature is usually removed using some
 form of Gaussian filter \citep{ma2004} or non-parametric smoothing
-\citep{aoas}. \citet{chu2013} use an automatic method for counting
-consecutive matching striae (CMS). The authors report an error rate of
-52\% for known same-source land comparisons to be (incorrectly)
-identified as different-source (false negative) and zero false positives
-for known different-source lands. \citet{ma2004} and
-\citet{vorburger2011} discuss CCF (cross-correlation function) and its
-discriminating power and applicability for same-source analyses of
-bullets, but do not provide any error rates in their discussion.
-\citet{aoas} use multiple features, such as CCF, CMS, D (distance
-measure), etc. in a random forest based method and compare every land
-against every other land of digitized versions of Hamby 252 and Hamby 44
-\citep{hamby} published on the NIST Ballistics Database \citep{nist}.
-The authors report an out-of-bag overall error rate of 0.46\%, comprised
-of an error rate of 30.05\% of same-source pairs that were not
-identified and an error rate of 0.026\% of different-source pairs that
-were incorrectly identified as same-source.
+\citep{aoas}. An overview of some of the error rates reported in the
+literature on bullet matching is given in \autoref{tab:bullets-ER}.
+\citet{chu2013} use an automatic method for counting consecutive
+matching striae (CMS). The authors report an error rate of 52\% for
+known same-source land comparisons to be (incorrectly) identified as
+different-source (false negative) and zero false positives for known
+different-source lands. \citet{ma2004} and \citet{vorburger2011} discuss
+CCF (cross-correlation function) and its discriminating power and
+applicability for same-source analyses of bullets, but do not provide
+any error rates in their discussion. \citet{aoas} use multiple features,
+such as CCF, CMS, D (distance measure), etc. in a random forest based
+method and compare every land against every other land of digitized
+versions of Hamby 252 and Hamby 44 \citep{hamby} published on the NIST
+Ballistics Database \citep{nist}. The authors report an out-of-bag
+overall error rate of 0.46\%, comprised of an error rate of 30.05\% of
+same-source pairs that were not identified and an error rate of 0.026\%
+of different-source pairs that were incorrectly identified as
+same-source.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Method & Data Source & False Positives & False Negatives\\
+  \hline
+  \textbf{\citet{aoas}} & LEAs \\
+Consecutive Matching Bullets Striae (CMS) &  &  6.25\% &  33.85\% \\ 
+Consecutive Non-matching Striae (CNMS)  & &  6.26\% & 35.42\%  \\ 
+Average Distance (D) &   &   6.25\% & 45.83\% \\ 
+Cross-correlation Function (CCF) & &  6.25\% & 17.71\%  \\ 
+Sum of Peaks (S) &  &  6.25\% &  18.23\% \\
+   \hline
+   \textbf{\citet{chu2013}} & LEAs \\
+Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\ 
+\end{tabular}}
+\caption{\label{tab:bullets-ER} Error Rates in same-source land-to-land analysis reported in the literature.}
+\end{table}
 
 The Chumbley score provides us with another approach in the same-source
 assessment of bullet striation marks. \citet{chumbley} compare two
@@ -234,7 +264,17 @@ reported as 0.06 for false negatives and 0 for false positives.
 
 \end{figure}
 
-{\textcolor{orange}{What are we investigating in this paper, and what is the structure for the paper?}}
+In this paper we evaluate the adaptability of the Chumbley score as a
+measure to quantify similarity in land engraved areas (LEAs) on bullets.
+For that we briefly introduce the deterministic method suggested by
+\citet{hadler} in section 2. In the process we provide methods to
+identify parameters that minimize the error rates. We then investigate
+persistent scenarios in which the method proposed by \citet{hadler}
+fails to come to a result. We go on to provide a solution to the failed
+tests problem, consequently increasing the power of the test and
+reducing error rates in the process. We set up a testing framework to
+compare the performance of the two algorithms in section 3 and finally
+discuss results in section 4.
 
 \hypertarget{background}{%
 \section{Background}\label{background}}
