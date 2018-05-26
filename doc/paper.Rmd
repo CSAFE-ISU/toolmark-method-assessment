@@ -1181,7 +1181,7 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
 \end{figure}
 
-## Type 2 errors: CS1 vs CS2
+\section{Type 2 errors: CS1 vs CS2}
 
 \autoref{type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance. 
 
