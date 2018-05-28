@@ -265,6 +265,10 @@ Sum of Peaks (S) &  &  6.25\% &  18.23\% \\
    \hline
    \textbf{\citet{chu2013}} & LEAs \\
 Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\ 
+   \hline
+   \textbf{\citet{chu2010}} \& \textbf{\citet{ma2004}} & LEAs \\
+Cross-Correlation Function (CCF) &  &  - &  - \\ 
+    \hline
 \end{tabular}}
 \caption{\label{tab:bullets-ER} Error Rates in same-source land-to-land analysis reported in the literature.}
 \end{table}
@@ -830,7 +834,7 @@ grid.arrange(p1, p2, ncol=1)
 
 <!--\autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. -->
 
-```{r , fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+```{r t, echo = FALSE}
 if (!file.exists("../data/cvcs2.RDS")) {
 files <- dir("../data/crossvalidate-cs2/")
 cvcs2 <- data.frame()
@@ -1181,13 +1185,13 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
 \end{figure}
 
+\newpage
 \section{Type 2 errors: CS1 vs CS2}
 
-\autoref{type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance. 
+\autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
 
-```{r type2, fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+```{r type2, fig.pos = 'h', fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
 ggerrors
 ```
-
 
 \end{appendix}
