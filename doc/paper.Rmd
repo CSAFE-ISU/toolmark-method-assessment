@@ -33,6 +33,12 @@ abstract: One of the major problems in forensic toolmark examination is the same
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
 \setlength\parindent{0pt}
 
+\gk{ABSTRACT (150 words version)}
+\newline
+\gk{Same-source problem is a major challenge in forensic toolmark/ firearm examination. Technological advances in surface imaging allow us to measure 3D surfaces in previously unforeseen resolution and enable digitized images. Here, we investigate the applicability of the Chumbley scoring method by \citet{hadler}, developed for screwdriver markings, for same-source identification of bullet striation marks. We provide methods to identify parameters that minimize the error rates for matching of LEAs using Hamby datasets 44 and 252 measured by NIST and CSAFE. We then, provide a remedial algorithm to alleviate the problem of failed tests in the method, thereby increasing the power of the test and reducing error rates. Type II error rates of the proposed method showed an improvement of more than 20\% points (Type I error of 0.05) and are on average about 0.22. This puts the proposed method on similar footing as other single feature matching approaches in the literature.}\newline
+\gk{Other potential \textbf{Keywords} : (minimum of 6)
+profiles, signatures, same-source, different-source, comparison windows}
+
 \tableofcontents
 \newpage
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
@@ -212,14 +218,14 @@ The Chumbley scoring method, first introduced by \citet{chumbley}, uses a simila
   \hline
 Research paper & Method & Data Source & False Positives & False Negatives\\
   \hline
- \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{manytoolmarks1}} & Maximum Pearson & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
  \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
   \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
   \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
   \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
    \hline
 \end{tabular}}
-\caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. All reported papers use some variation of the Chumbley-score method.}
+\caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. The top four reported papers use some variation of the Chumbley-score method.}
 \end{table}
 
  <!-- \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\ -->
@@ -270,7 +276,7 @@ Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\
 Cross-Correlation Function (CCF) &  &  - &  - \\ 
     \hline
 \end{tabular}}
-\caption{\label{tab:bullets-ER} Error Rates in same-source land-to-land analysis reported in the literature.}
+\caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature.}
 \end{table}
 
 The Chumbley score  provides us with another approach in the same-source assessment of bullet striation marks. \citet{chumbley} compare two toolmarks for same-source. The data for this study was obtained from 50 sequentially manufactured screwdriver tips. \citet{chumbley} report error rates for markings made by the tips at different angles. For markings made at 30 degree the authors  report an average false negative error rate of 0.089  and an average false positive error rate of 0.023. For marks made under angles of 60 and 85 degrees, respectively, the false negatives error rate is 0.09 while the rate of false positives decreases to 0.01. The paper by \citet{hadler} is based on the same data but the authors focus on  markings made under the same angle. The error rates associated with the deterministic version of the score are reported as  0.06 for false  negatives and  0 for false positives.
