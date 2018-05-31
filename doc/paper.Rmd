@@ -297,7 +297,7 @@ land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
 
 In this paper we evaluate the adaptability of the Chumbley score as a measure to quantify similarity in land engraved areas (LEAs) on bullets. For that we briefly introduce the deterministic method suggested by \citet{hadler} in section 2. In the process we provide methods to identify parameters that minimize the error rates. We then investigate persistent scenarios in which the method proposed by \citet{hadler} fails to come to a result. We go on to provide a solution to the failed tests problem, consequently increasing the power of the test and reducing error rates in the process. We set up a testing framework to compare the performance of the two algorithms in section 3 and finally discuss results in section 4.
 
-# Background
+# Methods
 
 ## Scans for land engraved areas
 
@@ -647,9 +647,9 @@ In the remainder of the paper, we will refer to the algorithm defined by \citet{
 
 
 
-# Testing setup
+## Testing setup
 
-## The Data
+### The Data
 
 
 Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and are considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby}. Each set consists of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
@@ -657,7 +657,7 @@ Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST b
 Profiles for each bullet land were extracted from scans close to the heel of the bullet while avoiding break-off as described in \citet{aoas}.
 
 
-## Setup
+### Setup
 Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is available from package `toolmaRk` \citep{toolmark}, (CS2) is available from a modified version of the `toolmaRk` package available from GitHub (\url{https://github.com/heike/toolmaRk}). We applied both methods to all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
 
 # Results
