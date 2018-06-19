@@ -82,31 +82,24 @@ University.} \\
 
 \bigskip
 \begin{abstract}
-One of the major problems in forensic toolmark examination is the
-same-source problem, i.e.~the identification of whether the marks on two
-different objects were made by the same tool. Profilometers and confocal
-microscopy and other technological advances allow us to measure 3D
-surfaces in previously unforeseen resolution and also enable digitized
-images. The literature provides various methods to measure similarity of
-toolmarks. In this paper, we are investigating the applicability of the
-Chumbley scoring method by \citet{hadler}, which was introduced for the
-assessment of marks made by screwdrivers, to assess striation marks on
-bullet lands for same-source identification. We provide methods to
-identify parameters that minimize the error rates for matching of LEAs
-at the example of the Hamby data, sets 44 and 252 measured by NIST and
-CSAFE. We provide a remedial algorithm to alleviate the problem of
-failed tests in the method proposed by \citet{hadler}. This increases
-the power of the test and reduces error rates in the process. Type II
-error rates for the Hamby data using the adjusted method showed an
-improvement of more than 20\% points over the performance of the
-algorithm proposed by \citet{hadler} (for a Type I error of 0.05).
-Overall, type II error rates of the adjusted method are on average at
-0.22, putting the method on similar footing as other single feature
-matching approaches in the literature.
+The same-source problem remains a major challenge in forensic toolmark
+and firearm examination. Technological advances in surface imaging allow
+measurements of 3D surfaces at previously unforeseen resolutions and
+enable digitized imaging. Here, we investigate the applicability of the
+Chumbley scoring method \citep{hadler}, developed for screwdriver
+markings, for same-source identification of bullet striae. We provide
+methods to identify parameters that minimize the error rates for
+matching of LEAs using Hamby datasets 44 and 252 measured by NIST and
+CSAFE. We suggest a remedial algorithm to alleviate the problem of
+failed tests in the method, increasing both the power of the test and
+reducing error rates. Type II error rates of the proposed method improve
+by more than one third (Type I error of 0.05) and are on average about
+0.22. This puts the proposed method on similar footing as other single
+feature matching approaches in the literature.
 \end{abstract}
 
 \noindent%
-{\it Keywords:} forensic science, toolmark, cross-correlation, Mann-Whitney U statistic, land engraved areas (LEAs), algorithm
+{\it Keywords:} forensic science, toolmark, cross-correlation, Mann-Whitney U statistic, land engraved areas (LEAs), algorithm, signatures, same-source problem
 \vfill
 
 \newpage
@@ -179,14 +172,14 @@ between segments of striae.
   \hline
 Research paper & Method & Data Source & False Positives & False Negatives\\
   \hline
- \textbf{\citet{manytoolmarks1}} & Maximized & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{manytoolmarks1}} & Maximum Pearson & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
  \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
   \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
   \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
   \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
    \hline
 \end{tabular}}
-\caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. All reported papers use some variation of the Chumbley-score method.}
+\caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. The top four reported papers use some variation of the Chumbley-score method.}
 \end{table}
 
 In this paper, we are investigating the applicability of the Chumbley
@@ -237,8 +230,12 @@ Sum of Peaks (S) &  &  6.25\% &  18.23\% \\
    \hline
    \textbf{\citet{chu2013}} & LEAs \\
 Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\ 
+   \hline
+   \textbf{\citet{chu2010}} \& \textbf{\citet{ma2004}} & LEAs \\
+Cross-Correlation Function (CCF) &  &  - &  - \\ 
+    \hline
 \end{tabular}}
-\caption{\label{tab:bullets-ER} Error Rates in same-source land-to-land analysis reported in the literature.}
+\caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature.}
 \end{table}
 
 The Chumbley score provides us with another approach in the same-source
@@ -276,8 +273,8 @@ reducing error rates in the process. We set up a testing framework to
 compare the performance of the two algorithms in section 3 and finally
 discuss results in section 4.
 
-\hypertarget{background}{%
-\section{Background}\label{background}}
+\hypertarget{methods}{%
+\section{Methods}\label{methods}}
 
 \hypertarget{scans-for-land-engraved-areas}{%
 \subsection{Scans for land engraved
@@ -505,10 +502,10 @@ performance on the available scans of the Hamby study.
 \end{figure}
 
 \hypertarget{testing-setup}{%
-\section{Testing setup}\label{testing-setup}}
+\subsection{Testing setup}\label{testing-setup}}
 
 \hypertarget{the-data}{%
-\subsection{The Data}\label{the-data}}
+\subsubsection{The Data}\label{the-data}}
 
 Lands for all Hamby-44 and Hamby-252 scans are made available through
 the NIST ballistics database \citep{nist} and are considered, here. Both
@@ -524,7 +521,7 @@ heel of the bullet while avoiding break-off as described in
 \citet{aoas}.
 
 \hypertarget{setup}{%
-\subsection{Setup}\label{setup}}
+\subsubsection{Setup}\label{setup}}
 
 Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is
 available from package \texttt{toolmaRk} \citep{toolmark}, (CS2) is
@@ -820,11 +817,12 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
 \end{figure}
 
+\newpage
 \section{Type 2 errors: CS1 vs CS2}
 
-\autoref{type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance. 
+\autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
 
-\begin{figure}
+\begin{figure}[h]
 
 {\centering \includegraphics[width=0.9\textwidth]{figures/type2-1} 
 
@@ -832,7 +830,6 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 
 \caption{Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error.}\label{fig:type2}
 \end{figure}
-
 
 \end{appendix}
 
