@@ -60,23 +60,56 @@
 
   \author{
     $for(authors)$
-    $authors.name$ $if(authors.thanks)$\thanks{$authors.thanks$} $endif$\\
-    $authors.affiliation$\\
+    $authors.name$\\ %$if(authors.thanks)$\thanks{$authors.thanks$} $endif$\\
+    $authors.degree$\\
+    % $authors.affiliation$\\
     $sep$ and \\ $endfor$
   }
-  \maketitle
+    \maketitle
+  \bigskip
+  \begin{center}
+  {\textbf{Affiliation(s)}\\
+  $affiliation$\\
+  \bigskip
+  \textbf{Source of funding}\\
+  $funding$\\
+  \bigskip
+  \textbf{Acknowledgement}\\
+  $thank$\\
+  \bigskip
+  \textbf{Information on presentation of work}\\
+  $presentedat$}
+  \end{center}
+
 } \fi
 
-\if1\blind
+  % \bigskip
+
+  % \bigskip
+\newpage
+
+\if0\blind
 {
   \bigskip
   \bigskip
   \bigskip
   \begin{center}
-    {\LARGE\bf $title$}
+  \title{\LARGE\bf $title$}
   \end{center}
-  \medskip
+  \bigskip
+  \maketitle
 } \fi
+
+% \if1\blind
+% {
+%   \bigskip
+%   \bigskip
+%   \bigskip
+%   \begin{center}
+%     {\LARGE\bf $title$}
+%   \end{center}
+%   \medskip
+% } \fi
 
 \bigskip
 \begin{abstract}

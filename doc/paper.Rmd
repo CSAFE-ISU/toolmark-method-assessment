@@ -1,11 +1,17 @@
 ---
-title: "Adaption of the Chumbley Score to matching of bullet striation marks"
+title: "Adapting the Chumbley Score to match striae on Land Engraved Areas of bullets"
 authors:
-- affiliation: Department of Statistics, Iowa State University 
-  name: Ganesh Krishnan
-  thanks: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. 
-- affiliation: Department of Statistics and CSAFE, Iowa State University 
-  name: Heike Hofmann
+# - affiliation: Department of Statistics, Iowa State University 
+- name: Ganesh Krishnan,
+  degree: Master of Science (M.Sc.)
+  # thank: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. We would also like to thank the efforts of CSAFE and Roy J carver Microscopy lab in scanning the Hamby-44 set and providing the scans to us.
+# - affiliation: Department of Statistics and CSAFE, Iowa State University 
+- name: Prof. Heike Hofmann,
+  degree: Doctor of Philosophy (Ph.D.)
+affiliation: Department of Statistics, Iowa State University and CSAFE (Center for Statistics and Applications in Forensic Evidence)
+funding: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. 
+thank: We would like to thank the efforts of CSAFE and Roy J Carver Microscopy lab in scanning the Hamby-44 set and providing the scans to us. We would also like to thank NIST for providing the Hamby-44 bullets to us for scanning.
+presentedat:  This work was presented in the form of a poster in the AFTE 2018 49th Annual Training Seminar, held from June 3rd to June 8th, 2018 in Charleston, West Virginia
 biblio-style: apsr
 output:
   pdf_document:
@@ -634,7 +640,7 @@ We then define the pairs for different-shifts as
 \end{equation}
 i.e.\ for an odd number of same-shift correlations, we skip the middle pair for the different-shift correlations (see \autoref{sketch-diff-2}).
 This pairing ensures that the number of different-shift pairings is the same or at most one less than the number of same-shift pairings in all tests.
-In the remainder of the paper, we will refer to the algorithm defined by \citet{hadler} as \textbf{(CS1)} and the suggested modified algorithm as \textbf{(CS2)} and compare their performance on the available scans of the Hamby study.
+In the remainder of the paper, we will refer to the algorithm defined by \citet{hadler} as \textbf{(CS1)} and the suggested modified algorithm as \textbf{(CS2)} and compare their performance on the available scans of the Hamby study. The section \ref{appendix:appxfailed} of the Appendix discusses about the various scenarious of failed tests.
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
@@ -882,13 +888,17 @@ errorsCV1$method <- "CS1"
 
 errorsCV <- rbind(errorsCV1, errorsCV2)
 ggerrors <- errorsCV %>%
-  ggplot(aes(x = wo, y = beta, colour=factor(alpha))) +
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha), linetype=factor(alpha))) +
   geom_point(aes(shape=factor(wv)), size=2.5) +
   geom_smooth(aes(group=alpha), se=FALSE, method="loess", span=1,  size=.7) +
   theme_bw() +
   scale_colour_brewer(expression("Nominal\ntype I error"~alpha),
-                      palette="Set2") +
+                      palette="Set2", guide=FALSE) +
+  scale_linetype_manual(values = c(2,1,3,4), guide=FALSE)+
   scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
+  guides(
+    colour = guide_legend(override.aes = list(linetype= c(2,1,3,4)))
+  )+
   xlab(expression("Window size for optimization "~w[o])) +
   ylab("Type II error rate") +
   facet_wrap(~method, labeller="label_both")
@@ -901,7 +911,7 @@ ggerrors <- errorsCV %>%
 
 \autoref{fig:eer} shows a comparison of the performance of the two methods CS1 and CS2 with respect to EER (equal error rate) and AUC (area under the curve) corresponding to the ROC curves shown in \autoref{fig:roc}. Equal error rates are reduced using method CS2, while area under the curve significantly increases (at a significance level $\alpha$ of 0.05) compared to method CS1.
 
-The results from Figures \ref{fig:roc} and \ref{fig:eer} are summarized in numbers in \autoref{tab:aucs}. Equal error rates (EER), rates for false positives (FPR) and false negatives (FNR) are shown side by side with the area under the curve (AUR) for both methods for a set of different optimization windows $w_o$ and a validation window $w_v$ of 30 pixels. The rate of false positive same-source identifications is equal to the statistical type I error rate, which is set to $\alpha = 0.05$ for this example. The rate of false negatives are missed same-source markings. This rate is also known as the type II error rate.   
+The results from Figures \ref{fig:roc} and \ref{fig:eer} are summarized in numbers in \autoref{tab:aucs}. Equal error rates (EER), rates for false positives (FPR) and false negatives (FNR) are shown side by side with the area under the curve (AUR) for both methods for a set of different optimization windows $w_o$ and a validation window $w_v$ of 30 pixels. The rate of false positive same-source identifications is equal to the statistical type I error rate, which is set to $\alpha = 0.05$ for this example. The rate of false negatives are missed same-source markings. This rate is also known as the type II error rate. A detailed plot on the type II error rates for CS1 and CS2 can be found in the section \ref{appendix:appxtype2} of the Appendix.
 Area under the curve (AUC) is shown with confidence intervals as given by \citet{delong}. CS2 significantly outperforms CS1 with respect to its predictive power in most situations.
 
 ```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Best performances with respect to  ROC curves are reached for optimization windows of sizes 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
@@ -919,15 +929,16 @@ cvcs <- cvcs %>%
 cvcs %>% filter(!wo %in% c(130, 140)) %>%
   ggplot(aes(d = as.numeric(match), m = 1-p_value)) + 
   geom_roc(labels=FALSE, n.cuts=500, pointsize=0, size=0.6, 
-           aes(colour = method.wo)) +
+           aes(colour = method.wo, linetype= method.wo)) + 
   facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) +
+    scale_linetype_manual(values=c(2,2,2,2,2,1,1,1,1,1), guide = FALSE) +
   scale_alpha_discrete(range=c(0.1, 0.6)) +
   scale_colour_manual(expression("Method /\nOptimization\nwindow size"~w[o]), values=cols) +
   theme_bw() +
   xlab("False Positives Rate (1 - Specificity)") +
   ylab("True Positives Rate (Sensitivity)") +
   guides(
-   colour = guide_legend(ncol=2)
+   colour = guide_legend(override.aes = list(linetype = c(2,2,2,2,2,1,1,1,1,1)), ncol=2)
   ) +
   geom_abline(slope=-1, intercept = 1, linetype = 3, 
               colour="grey30", size = 0.25)
@@ -1169,8 +1180,8 @@ However, bullets usually have multiple lands -- in the case of Ruger P85s as use
 # Appendix
 \begin{appendix}
 
-\section{Scenarios of failed tests}
-
+\subsection{Scenarios of failed tests}
+\label{appendix:appxfailed}
 Figures \ref{same-shift-failure} and \ref{diff-shift-failure} show scenarios in which the deterministic Chumbley score can fail. 
 In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between optimal locations is so large that no same-shift pairs can be found once the signatures are aligned. These failures are inherent to the Chumbley Score and cannot be prevented.
 \begin{figure}[hbtp]
@@ -1190,8 +1201,8 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \end{figure}
 
 \newpage
-\section{Type 2 errors: CS1 vs CS2}
-
+\subsection{Type 2 errors: CS1 vs CS2}
+\label{appendix:appxtype2}
 \autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
 
 ```{r type2, fig.pos = 'h', fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
