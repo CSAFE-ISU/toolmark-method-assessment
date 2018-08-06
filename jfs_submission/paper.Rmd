@@ -1,0 +1,1212 @@
+---
+title: "Adapting the Chumbley Score to match striae on Land Engraved Areas of bullets"
+authors:
+# - affiliation: Department of Statistics, Iowa State University 
+- name: Ganesh Krishnan,
+  degree: Master of Science (M.Sc.)
+  # thank: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. We would also like to thank the efforts of CSAFE and Roy J carver Microscopy lab in scanning the Hamby-44 set and providing the scans to us.
+# - affiliation: Department of Statistics and CSAFE, Iowa State University 
+- name: Prof. Heike Hofmann,
+  degree: Doctor of Philosophy (Ph.D.)
+affiliation: Department of Statistics, Iowa State University and CSAFE (Center for Statistics and Applications in Forensic Evidence)
+funding: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. 
+thank: We would like to thank the efforts of CSAFE and Roy J Carver Microscopy lab in scanning the Hamby-44 set and providing the scans to us. We would also like to thank NIST for providing the Hamby-44 bullets to us for scanning.
+presentedat:  This work was presented in the form of a poster in the AFTE 2018 49th Annual Training Seminar, held from June 3rd to June 8th, 2018 in Charleston, West Virginia
+biblio-style: apsr
+output:
+  pdf_document:
+    citation_package: natbib
+    fig_caption: yes
+    keep_tex: yes
+    latex_engine: pdflatex
+    template: template.tex
+  html_document: default
+blinded: 0
+keywords:
+- forensic science
+- toolmark
+- cross-correlation
+- Mann-Whitney U statistic
+- land engraved areas (LEAs)
+- algorithm
+- signatures 
+- same-source problem
+bibliography: bibliography
+abstract: The same-source problem remains a major challenge in forensic toolmark and firearm examination. Technological advances in surface imaging allow measurements of 3D surfaces at previously unforeseen resolutions and enable digitized imaging. Here, we investigate the applicability of the Chumbley scoring method \citep{hadler}, developed for screwdriver markings, for same-source identification of bullet striae. We provide methods to identify parameters that minimize the error rates for matching of LEAs using Hamby datasets 44 and 252 measured by NIST and CSAFE. We suggest a remedial algorithm to alleviate the problem of failed tests in the method, increasing both the power of the test and reducing error rates. Type II error rates of the proposed method improve by more than one third (Type I error of 0.05) and are on average about 0.22. This puts the proposed method on similar footing as other single feature matching approaches in the literature. 
+---
+
+
+\newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
+\newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
+\newcommand{\cited}[1]{{\textcolor{red}{#1}}}
+\setlength\parindent{0pt}
+
+
+
+\tableofcontents
+\newpage
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  collapse = TRUE,
+  comment = "",
+  fig.height = 6,
+  fig.width = 6,
+  fig.align = "center",
+  out.width= '\\textwidth',
+  cache = FALSE,
+  fig.path='figures/',
+  echo=FALSE,
+  cache=TRUE
+)
+options(knitr.table.format = "latex")
+library(tidyverse)
+library(kableExtra)
+library(xtable)
+library(gridExtra)
+```
+
+```{r functions}
+errorrate <- function(data, alpha) {
+  summ <- data %>% filter(!is.na(p_value)) %>%
+    mutate(signif = p_value < alpha) %>%
+    group_by(wv, wo, match, coarse, signif) %>% tally()
+  summ$error <- with(summ, match != signif)
+  summ$alpha <- alpha
+  
+  rates <- summ %>% dplyr::group_by(wv, wo, coarse, match, alpha) %>% dplyr::summarize(
+    rate = n[error==TRUE]/sum(n)
+  )
+  totals <- summ %>% dplyr::group_by(wv, wo, coarse, alpha) %>% dplyr::summarize(
+    total= sum(n[error==TRUE])/sum(n)
+  )
+  rates <- rates %>% spread(match,rate) %>% dplyr::rename(
+    actual = `FALSE`,
+    beta = `TRUE`
+  )
+  left_join(rates, totals)
+}
+
+
+```
+
+```{r data}
+if (!file.exists("../data/all-sigs.rds")) {
+  files <- dir("../data/signatures", pattern="csv")
+  all <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/signatures", file)) 
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
+    all <- rbind(all, tmp)
+  }
+  all <- all %>% filter(land1_id < land2_id)
+  saveRDS(all, file="../data/all-sigs.rds")
+} else {
+  all <- readRDS("../data/all-sigs.rds")
+}
+
+all$coarse <- 1
+errors <- rbind(errorrate(all, 0.001), 
+                errorrate(all, 0.005), 
+                errorrate(all, 0.01), 
+                errorrate(all, 0.05))
+errors$type <- "signatures"
+
+ns <- all %>% group_by(wv, wo, match) %>% summarize(
+  n_ss = mean(same_shift_n),
+  n_ds = mean(diff_shift_n),
+  zero_ss = sum(same_shift_n==0),
+  zero_ds = sum(diff_shift_n==0),
+  miss = sum(is.na(p_value)),
+  missperc = miss/n()*100
+)
+```
+
+
+```{r data-profiles}
+if (!file.exists("../data/all-profiles.rds")) {
+  files <- dir("../data/profiles/", pattern="csv")
+  allp <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/profiles", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coar-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
+    allp <- rbind(allp, tmp)
+  }
+  allp <- allp %>% filter(land1_id < land2_id)
+  allp <- allp %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(allp, file="../data/all-profiles.rds")
+} else {
+  allp <- readRDS("../data/all-profiles.rds")
+}
+
+errors2 <- rbind(errorrate(allp, 0.001), 
+                errorrate(allp, 0.005), 
+                errorrate(allp, 0.01), 
+                errorrate(allp, 0.05))
+errors2$type <- "CS1"
+
+
+if (!file.exists("../data/invprofiles.rds")) {
+  files <- dir("../data/inverse-profiles/", pattern="rds")
+  allinv <- data.frame()
+  for (file in files) {
+    tmp <- readRDS(file=file.path(path="../data/inverse-profiles", file)) 
+    allinv <- rbind(allinv, tmp)
+  }
+  allinv <- allinv %>% filter(land1_id < land2_id)
+  allinv <- allinv %>% dplyr::select(-coarseness)
+  saveRDS(allinv, file="../data/invprofiles.rds")
+} else {
+  allinv <- readRDS("../data/invprofiles.rds")
+}
+
+errors3 <- rbind(errorrate(allinv, 0.001), 
+                errorrate(allinv, 0.005), 
+                errorrate(allinv, 0.01), 
+                errorrate(allinv, 0.05))
+errors3$type <- "CS2"
+
+
+```
+
+```{r data-sig-coars}
+if (!file.exists("../data/all-sig-c.rds")) {
+  files <- dir("../data/sig_diff_coarseness/", pattern="csv")
+  all_sig_c <- data.frame()
+  for (file in files) {
+    tmp <- read.csv(file=file.path(path="../data/sig_diff_coarseness/", file)) 
+    #print(names(tmp))
+    if (length(grep("coarse",names(tmp))) == 0)
+      tmp$coarse <- gsub(".*coarse-(.*).csv", "\\1", file)
+    if (length(grep("x",names(tmp)) > 0)) tmp <- tmp %>% dplyr::select(-x)
+    all_sig_c <- rbind(all_sig_c, tmp)
+  }
+  all_sig_c <- all_sig_c %>% filter(land1_id < land2_id)
+  all_sig_c <- all_sig_c %>% mutate(coarse = as.numeric(gsub("pt", ".", coarse)))
+  saveRDS(all_sig_c, file="../data/all-sig-c.rds")
+} else {
+  all_sig_c <- readRDS("../data/all-sig-c.rds")
+}
+
+errors_sig_c <- rbind(errorrate(all_sig_c, 0.001), 
+                errorrate(all_sig_c, 0.005), 
+                errorrate(all_sig_c, 0.01), 
+                errorrate(all_sig_c, 0.05))
+
+
+```
+
+
+# Introduction
+
+Same-source analyses are a major part of a Forensic Toolmark Examiner's job. In current practice, examiners  make these comparisons by visual inspection under a comparison microscope and come to one of the following four conclusions: identification, inconclusive, elimination or unsuitable for examination \citep{afte-toolmarks1998}. These conclusions are made on the basis of "unique surface contours" of the two toolmarks being in "sufficient agreement" \citep{afte-toolmarks1998}. AFTE describes the term "sufficient agreement" as the possibility of another tool producing the markings under comparison, as practically impossible \citep{afte-toolmarks1998}. Potential subject bias in the assessment as well as the lack of specified error rates are the main points of criticisms  first raised by the National Research Council in 2009 \citep{NAS:2009} and later emphasized further by the President's Council of Advisors on Science and Technology \citep{pcast2016}.
+
+Technological advances, such as profilometers and confocal microscopy allow to measure 3D surfaces in a high-resolution digitized form. This technology has become more accessible over the last decade, and has made its way into topological images of ballistics evidence, such as bullet lands and breech faces \citep{DeKinder1, DeKinder2, Bachrach1, vorburger2016}.
+Digitized images of 3D surfaces of form the data basis of statistical analysis of toolmarks. A statistical approach based on data  removes both subjectivity from the assessment and allows a quantification of error rates for both false positive and false negative identifications.
+
+Methods for matching marks for a variety of tools have been studied in the literature (see \autoref{tab:toolmarks-ER} for an overview):  \citet{manytoolmarks1} and \citet{chumbley} have been analyzing screwdriver marks  digitized using a profilometer;  \citet{manytoolmarks2} have investigated 3D marks from screwdriver, tongue and groove pliers captured using a confocal microscope; \citet{afte-chumbley} have been investigated digitized marks from slip-joint pliers generated by a surface profilometer. 
+
+Analysis of these digitized markings require the use of statistical methods which can quantify the scientific mechanism of comparing markings and serve as basis for an error rate calculation.
+\citet{manytoolmarks2} define a relative distance metric and use it as similarity measure between two toolmarks. \citet{manytoolmarks1} extract many small segments in the markings of two toolmarks and compare similarity using a maximum Pearson correlation coefficient. 
+The Chumbley scoring method, first introduced by \citet{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach is non-deterministic, because segments are chosen randomly.  \citep{hadler} make the score deterministic for each pair of toolmarks by choosing segments for comparison systematically. This approach also ensures independence between segments of striae.  
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Research paper & Method & Data Source & False Positives & False Negatives\\
+  \hline
+ \textbf{\citet{manytoolmarks1}} & Maximum Pearson & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
+  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
+  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
+  \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
+   \hline
+\end{tabular}}
+\caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. The top four reported papers use some variation of the Chumbley-score method.}
+\end{table}
+
+ <!-- \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\ -->
+ 
+In this paper, we are investigating the applicability of the Chumbley scoring method by \citet{hadler} to assess striation marks on bullet lands for same-source identification.
+Striation marks on bullets are made by impurities in the barrel. As the bullet travels through the barrel, these imperfections leave "scratches" on the bullet surface (see top of \autoref{fig:rgl}). Typically, only striation marks in the land engraved areas (LEAs) are considered \citep{afte-article1992}. Bullet lands are depressed areas between the  grooves made by the rifling action of the barrel. Compared to toolmarks made by screwdrivers striation marks on bullets are typically much smaller, both in length and in width. Bullets also have a curved cross-sectional topography. 
+
+<!--\hh{signatures haven't been introduced yet}-->
+<!--Figure \ref{fig:rgl} shows us how the signature from a bullet land (bottom) lines up with the image of the land (top) from which it was extracted. We can also see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as the signature.-->
+
+<!--Bullet matching methods are usually based on these associated signatures.-->
+In same-source comparisons this curvature is usually removed using some form of Gaussian filter \citep{ma2004} or non-parametric smoothing \citep{aoas}. An overview of some of the error rates reported in the literature on bullet matching is given in \autoref{tab:bullets-ER}.
+\citet{chu2013} use an automatic method for counting consecutive matching striae (CMS). The authors report an error rate of 52% for known same-source land comparisons to be (incorrectly) identified as different-source (false negative) and zero false positives for known different-source lands. \citet{ma2004} and \citet{vorburger2011} discuss CCF (cross-correlation function) and its discriminating power and applicability for same-source analyses of bullets, but do not provide any error rates in their discussion. \citet{aoas} use multiple features, such as CCF, CMS, D (distance measure), etc. in a random forest based method and compare every land against every other land of  digitized versions of Hamby 252 and Hamby 44 \citep{hamby} published on the NIST Ballistics Database \citep{nist}. The authors report an out-of-bag overall error rate of 0.46%, comprised of an error rate of 30.05% of  same-source pairs that were not identified and an error rate of 0.026% of different-source pairs that were incorrectly identified as same-source. 
+
+<!-- \begin{table}[ht] -->
+<!-- \centering -->
+<!-- \resizebox{\textwidth}{!}{\begin{tabular}{rlrrr} -->
+<!--   \hline -->
+<!-- Research paper & Method & Data Source & False Positives & False Negatives\\ -->
+<!--   \hline -->
+<!--  \textbf{\citet{aoas}} & Consecutive Matching & Bullets & & \\ & Striae (CMS) &  & 6.25\% &  33.851\% \\ \hline -->
+<!--  \textbf{\citet{aoas}} & Consecutive Non-matching & Screwdrivers & & \\  & striae (CNMS) & & 6.26\% & 35.4166\%  \\ \hline -->
+<!--   \textbf{\citet{aoas}} & Average & Bullets  &  & \\ & Distance &  & 6.25\% & 45.833\% \\ \hline  -->
+<!--   \textbf{\citet{aoas}} & Cross-correlation & Bullets & & \\  & Function (CCF) & & 6.25\% & 17.7083\%  \\ \hline -->
+<!--   \textbf{\citet{aoas}} & Sum of Peaks & Bullets & & \\  & (S) & & 6.25\% &  18.22915\% \\ &  & & -\% &  -\% \\ -->
+<!--    \hline -->
+<!-- \end{tabular}} -->
+<!-- \caption{\label{tab:bullets-ER} Error Rates in same-source bullet analysis reported in the literature.} -->
+<!-- \end{table} -->
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{rlrrr}
+  \hline
+Method & Data Source & False Positives & False Negatives\\
+  \hline
+  \textbf{\citet{aoas}} & LEAs \\
+Consecutive Matching Bullets Striae (CMS) &  &  6.25\% &  33.85\% \\ 
+Consecutive Non-matching Striae (CNMS)  & &  6.26\% & 35.42\%  \\ 
+Average Distance (D) &   &   6.25\% & 45.83\% \\ 
+Cross-correlation Function (CCF) & &  6.25\% & 17.71\%  \\ 
+Sum of Peaks (S) &  &  6.25\% &  18.23\% \\
+   \hline
+   \textbf{\citet{chu2013}} & LEAs \\
+Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\ 
+   \hline
+   \textbf{\citet{chu2010}} \& \textbf{\citet{ma2004}} & LEAs \\
+Cross-Correlation Function (CCF) &  &  - &  - \\ 
+    \hline
+\end{tabular}}
+\caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature.}
+\end{table}
+
+The Chumbley score  provides us with another approach in the same-source assessment of bullet striation marks. \citet{chumbley} compare two toolmarks for same-source. The data for this study was obtained from 50 sequentially manufactured screwdriver tips. \citet{chumbley} report error rates for markings made by the tips at different angles. For markings made at 30 degree the authors  report an average false negative error rate of 0.089  and an average false positive error rate of 0.023. For marks made under angles of 60 and 85 degrees, respectively, the false negatives error rate is 0.09 while the rate of false positives decreases to 0.01. The paper by \citet{hadler} is based on the same data but the authors focus on  markings made under the same angle. The error rates associated with the deterministic version of the score are reported as  0.06 for false  negatives and  0 for false positives.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{images/B6-B2-L6-rescaled.png}
+```{r, eval=FALSE, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'}
+land <- read.csv("../data/b6b2l6.csv")
+land %>% ggplot(aes(x = y, y=resid)) +geom_line() +theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep="")))
+```
+
+\caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification (top) and a chart of the corresponding signature of the same land (bottom). The dotted lines connect some peaks visible in both visualizations.}
+
+\end{figure}
+
+In this paper we evaluate the adaptability of the Chumbley score as a measure to quantify similarity in land engraved areas (LEAs) on bullets. For that we briefly introduce the deterministic method suggested by \citet{hadler} in section 2. In the process we provide methods to identify parameters that minimize the error rates. We then investigate persistent scenarios in which the method proposed by \citet{hadler} fails to come to a result. We go on to provide a solution to the failed tests problem, consequently increasing the power of the test and reducing error rates in the process. We set up a testing framework to compare the performance of the two algorithms in section 3 and finally discuss results in section 4.
+
+# Methods
+
+## Scans for land engraved areas
+
+Comparisons of striae from bullets are usually based on comparisons of striae in land engraved areas, which are extracted in form of cross sections, called *profiles* \citep{aoas,ma2004}. From profiles bullet *signatures* \citep{chu2013,aoas} are extracted as residuals of a loess fit or Gaussian filter. This effectively removes topographic structure from the data in the attempt to increase the signal to noise ratio. \autoref{fig:rgl}  shows how the signature from a bullet land (bottom) lines up with the image of the land (top) from which it was extracted. We can see in the figure how the depth and relative position of the striation markings seen in the image are interpreted as peaks and valleys in the signature. <!--The span of the loess fit was found using cross-validation, as described by \citet{aoas}.-->
+
+There are two sources of scans for sets from the Hamby study available to us: scans of Hamby 44 and Hamby 252 are available from the NIST database \citep{nist}. The physical Hamby 44 set has also been made available to us and has been scanned locally for CSAFE at the Roy J.\ Carver High Resolution Microscopy Facility using a Sensofar confocal light microscope. 
+Scans in the NIST database are made with a NanoFocus at 20x magnification. The resolutions of the two instruments are different: the NIST scans are taken at a resolution of 1.5625 $\mu m$ per pixel, while the CSAFE scans are available at a resolution of  0.645 $\mu m$ per pixel.
+The length of an average bullet land from Hamby (9 mm Ruger P85) is about 2 millimeter, resulting in signatures of about 1200 pixels for NIST scans, and about 3000 pixels for CSAFE scans.
+
+In comparison, scans from the profilometer used by \citet{chumbley, hadler} were taken at a resolution of about 0.73 $\mu m$ per pixel. The screw driver toolmarks are  about 7 mm in length \citep{manytoolmarks1}, for a total of over 9000 pixels for the width of these scans.
+
+This severe limitation in the amount of available data poses the main challenge in adapting the Chumbley score to matching bullet lands, because of the resulting loss in power.
+
+
+
+## The Chumbley Score Test
+
+A digitized toolmark forms a spatial process $z(t)$ with location indexed by $t$. $t$ here denotes equally spaced pixel locations for the striation marks under consideration. For a toolmark consisting of $t$ pixels, $t = 1, ..., T$.
+ Let further $z^s(t)$ denote a vector of markings of length $s$ starting in location  $t$. 
+
+The Chumbley score algorithm takes input in form of two digitized toolmarks:
+
+Let $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$ be two digitized toolmarks (where $T_1$ and $T_2$, the lengths of the two marks, are not necessarily equal). 
+<!--The vectorized processes representing two sets of striaes are therefore shown as $x(t_1)$, $t_1 = 1,2,...T_1$ and $y(t_2)$, $t_2 = 1,2...T_2$. Here $x$ and $y$ denote two instances of the process $z(*)$ which means two striation marks, while the indexing $t$ or pixel range is shown as $t_1$ and $t_2$ for $x$ and $y$ respectively. This representation of $t$ as $t_1$ and $t_2$ lets us identify them as either of same or different lengths.--> 
+The toolmarks under consideration are potentially from two different-sources or the same-source. <!--$T_1$ and $T_2$, as represented above, are the final pixel indexes of each marking and therefore give the respective lengths of the markings. -->
+
+```{r sigs-profiles, fig.width = 8, fig.height = 2.5, fig.cap="Bullet land profile (left) and the corresponding signature (right) for one of the lands of Hamby-44."}
+sigs_graphics <- readRDS("../data/sigs_generate_window.rds")
+sigs_graphics$sigs_land_id_1_match <- sigs_graphics$sigs_land_id_1_match %>% group_by(land_id) %>% mutate(y = y-min(y, na.rm=T))
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+p1 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = value)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Profile")
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id==19) %>%
+  ggplot(aes(x = y, y = l30)) + 
+  geom_line(aes(y=resid), size=.25) +
+  geom_line(aes(y=l30)) +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Signature")
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+In a pre-processing step  the two markings are smoothed using a LOWESS \citep{lowess} with coarseness parameter $c$. 
+ Originally, this smoothing is intended to remove drift and (sub)class characteristics from individual markings, however, in the setting of matching bullet striae, we can also make use of this mechanism to separate bullet curvature in profiles from signatures before matching signatures.  \autoref{fig:sigs-profiles} shows an example of a bullet land profile (left) and the corresponding signature (right).
+ 
+After removing sub-class structure, 
+the Chumbley score is calculated in two steps: an optimization step and a validation step.
+In the optimization step, the two markings are aligned horizontally such that within a pre-defined window of length $w_o$ the correlation between $x(t_1)$ and $y(t_2)$ is maximized:
+\[
+\left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1-w_o, 1 \le t_2 \le T_2-w_o} \text{cor} \left(x^{w_o} (t_1), y^{w_o}(t_2) \right)
+\]
+This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. 
+
+In the validation step,  two sets of windows of size $w_v$ are chosen from both markings,  \autoref[see][]{fig:win-comparison}. In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
+
+More precisely, let us define starting points $s_i^{(k)}$ for each signature $k = 1, 2$ as 
+\begin{eqnarray}\label{eq.start}
+s^{(k)}_i = 
+\begin{cases}
+t_k^* + i w_v & \text{ for } i < 0 \\
+t_k^* + w_ o + i w_v & \text{ for } i \ge 0,
+\end{cases}
+\end{eqnarray} for integer values of $i$ with $0 <  s^{(k)}_i \le T_k - w_v$.
+
+Same-shift pairs of length $w_v$ are defined in \citet{hadler} as all 
+pairs $(s_i^{(1)}, s_i^{(2)})$ with integer values $i$ for which both $s_i^{(1)}$ and  $s_i^{(2)}$ are defined. Similarly, different-shift pairs are defined as $(s_i^{(1)}, s_{-i-1}^{(2)})$ for all $i$ where both $s_i^{(1)}$ and  $s_{-i-1}^{(2)}$ are defined (see \autoref{sketch-same-diff}).
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/sketch-same.png}
+
+\includegraphics[width=.7\textwidth]{images/sketch-diff.png}
+\caption{\label{sketch-same-diff}Sketch of same-shift pairings  (top) and different-shift pairings (bottom). Filled in rectangles show pairings resulting in correlations, unfilled rectangles are segments without a match.}
+\end{figure}
+
+
+
+
+```{r win-comparison, warning=FALSE, fig.width=8, fig.height=3.5, fig.cap="Two same-source markings. For convenience, the markings are moved into phase on the left and out-of phase on the right. In-phase (left) and out-of-phase (right) samples are shown by the light grey background. The Chumbley-score is based on a Mann-Whitney U test of the correlations derived from these two sets of samples."}
+
+# Matching signature
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==276,arr.ind = TRUE),]
+data1<-d1 %>%dplyr::select(l30)
+#data1<- data1$y
+data2<- d2 %>%dplyr::select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+
+sigs1.min = sigs_graphics[[1]] %>% filter(land_id==1) %>%
+  dplyr::select(y) %>% min()
+sigs2.min = sigs_graphics[[1]] %>% filter(land_id==276) %>% 
+  dplyr::select(y) %>% min()
+window_val <- 3*window_val*0.645
+
+same.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min 
+xs <- seq(100, 1800, length=10)
+rects <- data.frame(ymin=-Inf, ymax= Inf, xmin = xs, xmax = xs+window_val)
+
+
+p1 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-same.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("In-phase sample")
+
+diff.shift <- -(365-338)*1/.645 + sigs2.min - sigs1.min + 70 
+
+p2 <- sigs_graphics[[1]] %>% filter(land_id %in% c(1, 276)) %>% 
+  ggplot() + 
+  geom_segment(aes(x = xmin, y=ymin, xend = xmin, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_segment(aes(x = xmax, y=ymin, xend = xmax, yend=ymax), 
+               colour="grey50", linetype=3, data = rects) +
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            data=rects, fill= "grey90") +
+  geom_line(aes(x = y-diff.shift*I(land_id==276), 
+                y=l30-5*I(land_id==276), group=land_id)) + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlab(expression(paste("Relative Location (in ",mu,m,")", sep=""))) + 
+  ggtitle("Out-of-phase sample")
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+```{r win-comparison-2, fig.width=8, fig.height=5, out.width='\\textwidth', fig.cap=" The two plots on the left show how the same shift behaves in case of a matching pair and the two plots on the right show how the different shift behaves in case of a matching pair.", eval=FALSE}
+
+asd<- all %>% filter(wo==120, wv==50, match == TRUE, land1_id == 1)
+
+sigs_graphics<- readRDS("../data/sigs_generate_window.rds")
+
+sigs_graphics.match<- as.data.frame(sigs_graphics[1])
+sigs_graphics.nonmatch<- as.data.frame(sigs_graphics[2])
+colnames(sigs_graphics.match)<- gsub("^.*\\.","", colnames(sigs_graphics.match))
+colnames(sigs_graphics.nonmatch)<- gsub("^.*\\.","", colnames(sigs_graphics.nonmatch))
+
+# Matching signature
+#gi<-
+#sigs_graphics.match<- sigs_graphics.match %>% filter(land_id == c(1,9))  
+#sigs_graphics.match<- sigs_graphics.match %>% select(y, l30, land_id)
+d1<- sigs_graphics.match[which(sigs_graphics.match$land_id==1,arr.ind = TRUE),]
+d2<- sigs_graphics.match[which(sigs_graphics.match$land_id==19,arr.ind = TRUE),]
+data1<-d1 %>%dplyr::select(l30)
+#data1<- data1$y
+data2<- d2 %>%dplyr::select(l30)
+#data2<- data2$y
+window_opt = 120 
+window_val = 50
+coarse = 1
+data1<- matrix(unlist(data1))
+data2<- matrix(unlist(data2))
+
+  unity <- function(x) {x / sqrt(sum(x^2))} ## normalize columns of a matrix to make correlation computation faster
+  
+  ####################################################
+  ##Clean the marks and compute the smooth residuals##
+  ####################################################
+  
+  data1 <- matrix(data1[round((0.01*nrow(data1))):round(0.99*nrow(data1)),], ncol = 1)
+  data2 <- matrix(data2[round((0.01*nrow(data2))):round(0.99*nrow(data2)),], ncol = 1)
+  
+  ##Normalize the tool marks
+  y1 <- data1 - lowess(y = data1,  x = 1:nrow(data1), f= coarse)$y
+  y2 <- data2 - lowess(y = data2,  x = 1:nrow(data2), f= coarse)$y
+  
+  
+  ############################################
+  ##Compute the observed maximum correlation##
+  ############################################
+  
+  #####################
+  ##Optimization step##
+  #####################
+  ##Each column in these matrices corresponds to a window in the respective tool mark
+  y1_mat_opt <- matrix(NA, ncol = length(1:(length(y1) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y1) - (window_opt - 1))){
+    y1_mat_opt[,l] <- y1[l:(l+(window_opt - 1))]
+  }
+  y2_mat_opt <- matrix(NA, ncol = length(1:(length(y2) - (window_opt - 1))), nrow = window_opt)
+  for(l in 1:(length(y2) - (window_opt - 1))){
+    y2_mat_opt[,l] <- y2[l:(l+(window_opt - 1))]
+  }
+  
+  ##Compute the correlation between all pairs of windows for the two marks
+  ##Rows in the following matrix are mark 2, columns are mark 1
+  y2_mat_opt <- apply(scale(y2_mat_opt), 2, unity)
+  y1_mat_opt <- apply(scale(y1_mat_opt), 2, unity)
+  corr_mat_opt <- t(y2_mat_opt) %*% y1_mat_opt ##correlation matrix
+  max_corr_opt_loc <- which(corr_mat_opt == max(corr_mat_opt), arr.ind = TRUE) ##pair of windows maximizing the correlation
+  
+
+  s1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    s1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-window_val, xmax= max_corr_opt_loc[1,2]- 2*window_val, ymin=-Inf, ymax=Inf)
+       s1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  s2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    s2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       s2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ window_val, xmax= max_corr_opt_loc[1,1]+ 2*window_val, ymin=-Inf, ymax=Inf)
+       
+p1<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=s1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p2<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=s2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=s2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+ ##########
+ 
+ d1.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,2], xmax= max_corr_opt_loc[1,2]+window_opt, ymin=-Inf, ymax=Inf)
+    d1.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,2]-2*window_opt, xmax= max_corr_opt_loc[1,2]-2*window_opt-window_val, ymin=-Inf, ymax=Inf)
+       d1.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,2]+window_opt+ window_val, xmax= max_corr_opt_loc[1,2]+ window_opt+2*window_val, ymin=-Inf, ymax=Inf)
+       
+  d2.rect.opt <- data.frame(xmin=max_corr_opt_loc[1,1], xmax= max_corr_opt_loc[1,1]-window_opt, ymin=-Inf, ymax=Inf)
+    d2.rect.sameshift1 <- data.frame(xmin=max_corr_opt_loc[1,1]-window_opt-window_val, xmax= max_corr_opt_loc[1,1]-window_opt- 2*window_val, ymin=-Inf, ymax=Inf)
+       d2.rect.sameshift2 <- data.frame(xmin=max_corr_opt_loc[1,1]+ 4*window_val, xmax= max_corr_opt_loc[1,1]+ 5*window_val, ymin=-Inf, ymax=Inf)
+       
+p3<-  ggplot(data = d1, aes(x = y, y = l30)) + geom_line() + 
+  geom_rect(data=d1.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d1.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 1")
+  
+ p4<-   ggplot(data = d2, aes(x = y, y = l30)) + geom_line() + 
+   geom_rect(data=d2.rect.opt, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "black",alpha=0.5, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift1, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "red",alpha=0.1, inherit.aes = FALSE)+
+    geom_rect(data=d2.rect.sameshift2, aes(xmin=xmin, xmax=xmax , ymin=ymin, ymax=ymax),color = "blue",alpha=0.1, inherit.aes = FALSE)+
+  theme_bw() + labs(y = "Signature Land Id = 9")
+  
+
+multiplot(p1, p2, p3, p4, cols=2)
+```
+
+
+For both same- and different-shift pairs correlations between the  markings are calculated. 
+The intuition here is that for two markings from the same-source the correlation for the in-phase sample should be high, while the correlations of the out-of-phase sample  provide a measure for the base-level correlation for non-matching marks of a given length $w_v$. The Chumbley score is then computed as a Mann Whitney U statistic to compare between in-phase sample and out-of-phase sample. 
+In the original method proposed in \citet{chumbley} both in-phase and out-of-phase sample are extracted randomly, whereas \citet{hadler} proposed the above specified deterministic rules for both samples to make the resulting score deterministic while simultaneously avoiding overlaps within selected marks to ensure independence.
+
+## A problem with failed tests
+
+Looking closer at \autoref{eq.start}, we see that by definition, some number of tests will fail to produce a result. The problem of failed tests is first mentioned in \citet{afte-chumbley}. Unfortunately, the authors do not provide any percentage of how many tests failed for their data.
+The algorithm fails to produce for two reasons: either the number of eligible same-shift pairs is zero, or the number of different-shift pairs is zero. 
+
+The number of same-shift pairs will be zero, if the optimal locations $t_1^{o}$ and $t_2^{o}$ are so far apart, that no segments of size $w_v$ are left on the same sides of the optimal locations, i.e. $t_1^{o} < w_v$ and $t_2^{o} > T_2-w_o-w_v$ or  $t_1^{o} < T_1- w_o - w_v$ and $t_2^{o} < w_v$, i.e. we have a failure rate of 
+\[
+P\left( t_1^{o} < w_v \ \cap \ t_2^{o} > T_2-w_o-w_v\right) + P\left( t_1^{o} < T_1- w_o - w_v \ \cap \ t_2^{o} < w_v\right).
+\]
+While we can assume that once (sub-)class characteristics are removed, optimal locations $t_i^{o}$ are uniformly distributed across the length of the profile, we cannot assume that $t_1^o$ and $t_2^o$ are independent of each other. In particular, for same-source profiles, we would expect a strong dependency between these locations, in which case a large difference between locations is unlikely. However, for different-source matches, we can assume that  locations are independent.
+In that case, we expect a test to fail with a probability of $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$. For an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels this probability is about 0.0015.
+
+The number of possible different-shift pairs also depends on the location of  the  optimal locations $t_1^o$ and $t_2^o$. Whenever the optimal locations are close to the boundaries, the number of possible pairings decreases and reaches zero, if $t_i^{(o)} < w_v$ or  $t_i^{(o)} > T_i-w_o- w_v$. Assuming a correlation between optimal locations $t_1^o$ and $t_2^o$ of close to one for same-source profiles, this results in an expected rate of failure of $2 w_v / (T_i-w_o)$, or about 5.6\% for an average length of $T_i$ of 1200 pixels, $w_o = 120$ pixels and $w_v = 30$ pixels. Assuming independence in the optimal locations for different-source profiles the expected probability for a failed test is, again, $\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}$.
+
+## A modified approach
+
+While failures due to missing correlations from same-shift pairs are unavoidable by definition of the Chumbley score, failures due to missing correlations from different-shift pairs can be prevented by using a different strategy in assigning pairs.
+
+Using the same notation as in \autoref{eq.start}, we define same-shift pairs identical to \citet{hadler} as pairs $(s_i^{(1)}, s_i^{(2)})$ for all $i$ where the boundary conditions of both sequences are met simultaneously. Let us assume that this results in $I$ pairs. Define $s_{(j)}^{(k)}$ to be the $j$th starting location in sequence $k = 1, 2$, i.e.\ $s_{(1)}^{(k)} < s_{(2)}^{(k)} < ... < s_{(I)}^{(k)}$.  
+
+We then define the pairs for different-shifts as
+\begin{equation}\label{eq.diff2}
+\left(s_{(j)}^{(1)}, s_{(I-j+1)}^{(1)} \right) \text{ for } j = 
+\begin{cases}
+1, ..., I & \text{ for even } I \\
+1, ..., (I-1)/2, (I-1)/2 + 2, ..., I & \text{ for odd } I
+\end{cases},
+\end{equation}
+i.e.\ for an odd number of same-shift correlations, we skip the middle pair for the different-shift correlations (see \autoref{sketch-diff-2}).
+This pairing ensures that the number of different-shift pairings is the same or at most one less than the number of same-shift pairings in all tests.
+In the remainder of the paper, we will refer to the algorithm defined by \citet{hadler} as \textbf{(CS1)} and the suggested modified algorithm as \textbf{(CS2)} and compare their performance on the available scans of the Hamby study. The section \ref{appendix:appxfailed} of the Appendix discusses about the various scenarious of failed tests.
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair under algorithm (CS2). }
+\end{figure}
+
+
+
+
+
+## Testing setup
+
+### The Data
+
+
+Lands for all Hamby-44 and Hamby-252 scans are made available through the NIST ballistics database \citep{nist} and are considered, here. Both of these sets of scans are part of the larger Hamby study \citep{hamby}. Each set consists of twenty known bullets (two each from ten consecutively rifled Ruger P85 barrels) and fifteen questioned bullets (each matching one of the ten barrels). Ground truth for both of these Hamby sets is known and was used to assess correctness of the tests results. 
+
+Profiles for each bullet land were extracted from scans close to the heel of the bullet while avoiding break-off as described in \citet{aoas}.
+
+
+### Setup
+Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is available from package `toolmaRk` \citep{toolmark}, (CS2) is available from a modified version of the `toolmaRk` package available from GitHub (\url{https://github.com/heike/toolmaRk}). We applied both methods to all pairwise land-to-land comparisons of the Hamby scans provided by NIST for a total of 85,491 land-to-land comparisons. 
+
+# Results
+## Failed Tests
+
+As described above, the Chumbley-score is based on three parameters: coarseness $c$ and the sizes of the optimization window $w_o$ and validation window $w_v$. 
+In a first run of results, we applied default settings for the parameters, as suggested in  \citet{hadler}: $w_o = 120$ pixels or about 190 $\mu m$ (ten percent of the average length of profiles) and coarseness $c = 0.25$, and varied the size of the  validation window $w_v$ in steps of 10  from 10 pixels to 60 pixels.
+Based on a significance level $\alpha$ of 0.05 for the test, this results in a correct identification of same-source and different-source toolmarks of 93.5\% to 94.1\%, corresponding to a rate of false negatives between 0.28 and 0.36 and a rate of false positives between 0.05 and 0.06. 
+However, the most prominent result we encountered, are the high number of failed tests, i.e. the number of instances, in which CS1 did not return any result.
+\autoref{fig:fails} shows the percentage of failed tests among the 85,491 land-to-land comparisons of the NIST data for different values of the validation window size $w_v$. For same-source lands up to 12.5 percent of the tests fail using CS1. The highest percentage of failed tests under CS2 is 1.3% for different-source tests using a validation window size $w_v$ of 60 pixels.  Rates of expected failures are based on simulation runs using covariances between locations of same-source profiles of 0.854, and 0.120 for locations from different-source profiles, matching observed covariances for the Hamby scans. Observed failure rates are higher than expected. This might be due to remaining sub-class structure at a coarseness of 0.25 resulting in a distribution of optimal locations different from the assumed uniform. 
+
+```{r simulation, echo=FALSE}
+library(MASS) 
+Sigsame <- matrix(c(1, 0.85, 0.85, 1), nrow = 2) 
+Sigdiff <- matrix(c(1, 0.12, 0.12, 1), nrow = 2) 
+set.seed(20140501)
+simu <- 1:10 %>% purrr::map_df(.f = function(i) {
+  X1 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigsame) 
+  X2 <- mvrnorm(10000, mu = c(0,0), Sigma = Sigdiff) 
+  Y1 <- pnorm(X1)  # Probability Integral Transform
+  Y2 <- pnorm(X2) 
+  wv <- 10*1:6
+  
+  ps <- wv %>% purrr::map_df(.f = function(x) {
+    p <- x/(1200-120)
+    y1 <- Y1[,1]
+    y2 <- Y1[,2]
+    difffail1 <- sum((y1 < p & y2 < p) | (y1 > 1-p & y2 > 1-p))/length(y1)
+    samefail1 <- sum((y1 < p & y2 >1- p) | (y1 > 1-p & y2 < p))/length(y1)
+    y1 <- Y2[,1]
+    y2 <- Y2[,2]
+    difffail2 <- sum((y1 < p & y2 < p) | (y1 > 1-p & y2 > 1-p))/length(y1)
+    samefail2 <- sum((y1 < p & y2 > 1-p) | (y1 > 1-p & y2 < p))/length(y1)
+    data.frame(wv=x, samefail1=samefail1, samefail2=samefail2,
+               difffail1=difffail1, difffail2=difffail2)
+  })
+  ps$i <- i
+  ps
+})
+simu$`TRUE` <- simu$samefail1+simu$difffail1
+simu$`FALSE` <- simu$samefail2+simu$difffail2
+simulong <- simu %>% dplyr::select(wv, i, `TRUE`, `FALSE`) %>% 
+  gather(match, failed, 3:4)
+simusumm <- simulong %>% group_by(wv, match) %>%
+  summarize(
+    sdfailed = sd(failed),
+    failed = mean(failed)
+  )
+simusumm$method = "CS1"
+```
+
+
+```{r fails, echo=FALSE, fig.height = 3, fig.width = 7, out.width='0.7\\textwidth', fig.cap="Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates of (CS1) are higher than expected rates."}
+allinv$method <- "CS2"
+allp$method <- "CS1"
+
+
+allinv <-  allinv %>% mutate(
+  loc1 = chumbley %>% purrr::map_int(.f = function(x) x$locations[1]),
+  loc2 = chumbley %>% purrr::map_int(.f = function(x) x$locations[2])
+)
+
+
+prof_fails <- rbind(
+  allinv %>% dplyr::select(wo, wv, method, p_value, match),
+  allp %>% filter(coarse == 0.25) %>% 
+    dplyr::select(wo, wv, method, p_value, match)
+)
+stats <- prof_fails %>%
+  group_by(wo, wv, method) %>% summarize(
+  failed = sum(is.na(p_value)),
+  correctplus = sum(p_value<=0.05 & match, na.rm=TRUE),
+  correctminus = sum(p_value > 0.05 & !match, na.rm=TRUE),
+  n=n(),
+  correct = (correctplus+correctminus)/(n-failed)
+)
+#stats %>% 
+#  ggplot(aes(x = wv, y = (correctplus+correctminus)/(n-failed))) +
+#  geom_point(aes(colour=method))
+#range(subset(stats, method=="CS1")$correct)
+#[1] 0.9347536 0.9410993
+
+fails <- prof_fails %>%
+  group_by(wo, wv, method, match) %>% summarize(
+  failed = sum(is.na(p_value)),
+  n=n(),
+  falseneg = sum(p_value > 0.05 & match, na.rm=TRUE),
+  falsepos = sum(p_value <= 0.05 & !match, na.rm=TRUE)
+)
+fnr <- with(subset(fails, method=="CS1"), falseneg/(n-failed))
+#summary(fnr[fnr>0])
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.2819  0.2882  0.2965  0.3056  0.3075  0.3623 
+fpr <- with(subset(fails, method=="CS1"), falsepos/(n-failed))
+#summary(fpr[fpr>0])
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#0.05468 0.05588 0.05855 0.05852 0.06120 0.06227 
+
+
+fails %>% 
+  ggplot(aes(x = wv, y = failed/n*100, colour=factor(match), shape=factor(match))) +
+  geom_point(aes(size="Observed")) +
+  xlab(expression("Size of validation window "~w[v]~" in pixels")) +
+  ylab("Percent of failed tests") +
+  theme_bw() +
+  scale_colour_brewer("Same-source", palette="Set1") +
+  scale_shape_discrete("Same-source") +
+  ylim(c(0,13)) +
+  facet_wrap(~method, labeller="label_both") +
+  geom_point(aes(y = failed*100, size = "Expected"), data=simusumm) +
+  scale_size_manual("Failures", values=c(1.5,3))
+```
+
+
+
+## Coarseness
+The purpose of the coarseness parameter is to remove (sub-)class characteristics from profiles before comparisons for matching.
+\citet{hadler} suggest a coarseness parameter of 0.25 in the setting of toolmark comparisons. For bullet lands, coarseness might need to be adjusted because of the strong effect  bullet curvature has on profiles.
+
+\autoref{fig:profile-sketch} gives an overview of the effect of different coarseness parameters: from left to right, coarseness levels $c$ are varied in steps of 0.05 from 0.1 to 0.3. The top row shows  resulting signatures after smoothing the profile shown in \autoref{fig:sigs-profiles} with different levels of coarseness. 
+The histograms in the bottom row show the relative optimal location $t^*$. Optimal locations are distributed uniformly once (sub-)class characteristics are removed. However, for coarseness values of $c > 0.20$ we see quite distinct boundary effects: optimal locations $t^*$ are found at the very extreme ends of a profile more often than one would expect based on a uniform distribution.
+
+The key effect of the optimal locations and thereby the coarseness is seen in the number of failed tests. Irrespective of whether CS1 or CS2 is being used, if the relative optimal locations are at the boundaries we will see an increase in the number of failed tests. A balance is therefore needed in the selection of the coarseness parameter which reduces the boundary effect but does not remove important individual characteristics. Based on \autoref{fig:profile-sketch} a coarseness value of $c = 0.15$ seems to be best suited to strike this balance for this example. For the remainder of the analysis, we will use this value for $c$.
+
+```{r profile-sketch, fig.height = 4, fig.width='\\textwidth', fig.cap="Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \\ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. "}
+profile <- sigs_graphics[[1]] %>% filter(land_id==19)
+profile$lw10 <- lowess(x = profile$y, y = profile$value, f=.10)$y
+profile$lw15 <- lowess(x = profile$y, y = profile$value, f=.15)$y
+profile$lw20 <- lowess(x = profile$y, y = profile$value, f=.20)$y
+profile$lw25 <- lowess(x = profile$y, y = profile$value, f=.25)$y
+profile$lw30 <- lowess(x = profile$y, y = profile$value, f=.30)$y
+#profile$lw50 <- lowess(x = profile$y, y = profile$value, f=.5)$y
+#profile$lw75 <- lowess(x = profile$y, y = profile$value, f=.75)$y
+#profile$lw100 <- lowess(x = profile$y, y = profile$value, f=1)$y
+
+profiles <- tidyr::gather(profile, coarseness, values, lw10:lw30)
+profiles <- profiles %>% mutate(
+  c = readr::parse_number(coarseness)/100
+)
+p1 <- profiles %>% 
+  ggplot(aes(x = y/1000, y = value-values)) + geom_line() +
+  theme_bw() +
+  ylab(expression(paste("Depth (in ",mu,m,")", sep=""))) + 
+  xlab(expression(paste("Relative Location (in mm)", sep=""))) +
+  facet_grid(~c, labeller="label_both") 
+
+profc10 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_10.rds")
+profc15 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_15.rds")
+profc20 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_20.rds")
+profc20$coarseness <- 0.2
+profc25 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30-c_25.rds")
+profc30 <- readRDS("../data/profiles-coarseness/chumbley-csafe-profiles-inv-wo_160-wv_30.rds")
+profc30$coarseness <- .30
+profc <- bind_rows(profc10, profc15, profc20, profc25, profc30)
+profc <- profc %>% mutate(
+  locations = chumbley %>% purrr::map_int(.f = function(x) {
+    res <- NULL
+    try(res <- x$locations[1], silent = TRUE)
+    res
+  })
+)
+profsumm <- read.csv("../data/profiles-summary.csv")
+profsumm <- profsumm %>% dplyr::select(-run_id)
+profc <- profc %>% left_join(profsumm, by=c("land2_id"="land_id", "profile2_id"="profile_id"))
+
+
+p2 <- profc %>% 
+  ggplot(aes(x = locations/(length-wo))) +
+  geom_histogram(binwidth = 0.025) +
+  facet_grid(.~coarseness, labeller="label_both") + 
+  theme_bw() +
+  xlab(expression("Relative optimal location "~t^"*")) +
+  ylab("Number of profiles") +
+  scale_x_continuous(breaks=seq(0,1, by=0.25), labels=c("0", "0.25", "0.50", "0.75", "1"))
+ 
+grid.arrange(p1, p2, ncol=1)
+```
+
+## Error rate assessment
+
+<!--\autoref{fig:type2} gives an overview of the type 2 error of methods CS1 and CS2 across a range of different optimization windows $w_o$. -->
+
+```{r t, echo = FALSE}
+if (!file.exists("../data/cvcs2.RDS")) {
+files <- dir("../data/crossvalidate-cs2/")
+cvcs2 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/crossvalidate-cs2/",file))
+  cvcs2 <- rbind(cvcs2, tmp)
+}
+cvcs2$coarse <- cvcs2$coarseness
+cvcs2$method <- "CS2"
+saveRDS(cvcs2, file = "../data/cvcs2.RDS")
+} else cvcs2 <- readRDS("../data/cvcs2.RDS")
+
+if (!file.exists("../data/cvcs1.RDS")) {
+files <- dir("../data/crossvalidate-cs1/")
+cvcs1 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/crossvalidate-cs1/",file))
+  cvcs1 <- rbind(cvcs1, tmp)
+}
+cvcs1$coarse <- cvcs1$coarseness
+cvcs1$method <- "CS1"
+saveRDS(cvcs1, file = "../data/cvcs1.RDS")
+} else cvcs1 <- readRDS("../data/cvcs1.RDS")
+
+cvcs <- rbind(cvcs1, cvcs2)
+
+fails <- cvcs %>% group_by(wo, wv, coarse, method, match) %>% summarize(
+  fails = 100.0*sum(is.na(p_value))/n()
+)
+
+errorsCV2 <- rbind(errorrate(cvcs2, 0.001), 
+                errorrate(cvcs2, 0.005), 
+                errorrate(cvcs2, 0.01), 
+                errorrate(cvcs2, 0.05))
+errorsCV2$method <- "CS2"
+errorsCV1 <- rbind(errorrate(cvcs1, 0.001), 
+                errorrate(cvcs1, 0.005), 
+                errorrate(cvcs1, 0.01), 
+                errorrate(cvcs1, 0.05))
+errorsCV1$method <- "CS1"
+
+errorsCV <- rbind(errorsCV1, errorsCV2)
+ggerrors <- errorsCV %>%
+  ggplot(aes(x = wo, y = beta, colour=factor(alpha), linetype=factor(alpha))) +
+  geom_point(aes(shape=factor(wv)), size=2.5) +
+  geom_smooth(aes(group=alpha), se=FALSE, method="loess", span=1,  size=.7) +
+  theme_bw() +
+  scale_colour_brewer(expression("Nominal\ntype I error"~alpha),
+                      palette="Set2", guide=FALSE) +
+  scale_linetype_manual(values = c(2,1,3,4), guide=FALSE)+
+  scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
+  guides(
+    colour = guide_legend(override.aes = list(linetype= c(2,1,3,4)))
+  )+
+  xlab(expression("Window size for optimization "~w[o])) +
+  ylab("Type II error rate") +
+  facet_wrap(~method, labeller="label_both")
+
+```
+
+
+
+\autoref{fig:roc} gives an overview of  ROC (Receiver operating characteristic) curves for methods CS1 and CS2 over a range of different optimization window sizes $w_o$ and two sizes for the validation window $w_v$ (shape). The different color hues represent the two methods CS1 (red) and CS2 (blue). The ROC curves show the superior performance of CS2 over CS1. Generally, an optimization window $w_o$ of 150 pixels or more leads to the best performance with respect to ROC curves. Results based on a  validation window of size $w_v = 30$ are generally better than results for $w_v = 50$.
+
+\autoref{fig:eer} shows a comparison of the performance of the two methods CS1 and CS2 with respect to EER (equal error rate) and AUC (area under the curve) corresponding to the ROC curves shown in \autoref{fig:roc}. Equal error rates are reduced using method CS2, while area under the curve significantly increases (at a significance level $\alpha$ of 0.05) compared to method CS1.
+
+The results from Figures \ref{fig:roc} and \ref{fig:eer} are summarized in numbers in \autoref{tab:aucs}. Equal error rates (EER), rates for false positives (FPR) and false negatives (FNR) are shown side by side with the area under the curve (AUR) for both methods for a set of different optimization windows $w_o$ and a validation window $w_v$ of 30 pixels. The rate of false positive same-source identifications is equal to the statistical type I error rate, which is set to $\alpha = 0.05$ for this example. The rate of false negatives are missed same-source markings. This rate is also known as the type II error rate. A detailed plot on the type II error rates for CS1 and CS2 can be found in the section \ref{appendix:appxtype2} of the Appendix.
+Area under the curve (AUC) is shown with confidence intervals as given by \citet{delong}. CS2 significantly outperforms CS1 with respect to its predictive power in most situations.
+
+```{r roc, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="ROC curves of methods CS1 and CS2 for different sizes of optimization window $w_o$. Best performances with respect to  ROC curves are reached for optimization windows of sizes 150 and higher. Points of equal error rates (EERs) can be found at the intersection of the dotted line and the ROC curves."}
+library(plotROC)
+library(RColorBrewer)
+cols <- c(brewer.pal(6, "Reds")[-1], brewer.pal(6, "Blues")[-1])
+
+cvcs <- cvcs %>% 
+  mutate(
+  method.wo = paste(method, wo, sep= " / "),
+  method.wo = factor(method.wo, 
+                     levels = c("CS1 / 90", "CS1 / 120", "CS1 / 150", "CS1 / 180", "CS1 / 210", "CS2 / 90", "CS2 / 120", "CS2 / 150", "CS2 / 180", "CS2 / 210"))
+)
+
+cvcs %>% filter(!wo %in% c(130, 140)) %>%
+  ggplot(aes(d = as.numeric(match), m = 1-p_value)) + 
+  geom_roc(labels=FALSE, n.cuts=500, pointsize=0, size=0.6, 
+           aes(colour = method.wo, linetype= method.wo)) + 
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) +
+    scale_linetype_manual(values=c(2,2,2,2,2,1,1,1,1,1), guide = FALSE) +
+  scale_alpha_discrete(range=c(0.1, 0.6)) +
+  scale_colour_manual(expression("Method /\nOptimization\nwindow size"~w[o]), values=cols) +
+  theme_bw() +
+  xlab("False Positives Rate (1 - Specificity)") +
+  ylab("True Positives Rate (Sensitivity)") +
+  guides(
+   colour = guide_legend(override.aes = list(linetype = c(2,2,2,2,2,1,1,1,1,1)), ncol=2)
+  ) +
+  geom_abline(slope=-1, intercept = 1, linetype = 3, 
+              colour="grey30", size = 0.25)
+
+
+```
+
+```{r eer, fig.height = 3.25, fig.width = 8, out.width='\\textwidth', fig.cap="Comparison of results for CS1 and CS2 using area under the curve (AUC) and equal error rates (EER). "}
+auc <- function(tpr, fpr){
+  # from http://blog.revolutionanalytics.com/2016/11/calculating-auc.html
+  # inputs already sorted, best scores first 
+  dfpr <- c(diff(fpr), 0)
+  dtpr <- c(diff(tpr), 0)
+  sum(tpr * dfpr) + sum(dtpr * dfpr)/2
+}
+
+eer <- function(tpr, fpr) {
+  diff = abs(fpr-1+tpr)
+  idx <- which.min(diff)
+  EER <- 0.5*(fpr[idx]+1-tpr[idx])
+  EER
+}
+
+EER <- function(score, match) {
+  bstats <-data.frame(score, match)
+  bstats <- bstats %>% arrange(desc(score))
+  
+  bstats <- bstats %>% mutate(
+    tpr=cumsum(match)/sum(match), 
+    fpr=cumsum(!match)/sum(!match)
+  ) %>% unique()
+  
+  with(bstats, eer(tpr, fpr))
+}
+
+AUC <- function(score, match) {
+  bstats <-data.frame(score, match)
+  bstats <- bstats %>% arrange(desc(score))
+  
+  bstats <- bstats %>% mutate(
+    tpr=cumsum(match)/sum(match), 
+    fpr=cumsum(!match)/sum(!match)
+  ) %>% unique()
+  
+  with(bstats, auc(tpr, fpr))
+}
+
+roc.summary <- cvcs %>% group_by(wo, wv, method, coarse) %>%
+  summarize(
+    eer = EER(1-p_value, match),
+    auc = list(pROC::ci.auc(match, 1-p_value))
+  )
+roc.summary <- roc.summary %>% 
+  mutate(
+    lower = auc %>% purrr::map_dbl(.f = function(x) x[1]),
+    upper = auc %>% purrr::map_dbl(.f = function(x) x[3]),
+    AUC = auc %>% purrr::map_dbl(.f = function(x) x[2])
+  )
+roc.summary <- roc.summary %>% left_join(
+  errorsCV %>% dplyr::select(wv, wo, method, alpha, actual, beta) %>% 
+    dplyr::filter(alpha == 0.05)
+)
+
+p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
+  ggplot(aes( x = wo, y=eer, colour=method, shape=method)) +
+  geom_point(size=2) +
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) + 
+  theme_bw() +
+  ylab("Equal Error rate (EER)") +
+  xlab("Size of optimization window in pixels") +
+  theme(legend.position = "bottom") + #c(0.25, 0.25)) +
+  scale_colour_brewer("Method", palette="Set1") +
+  scale_shape("Method") +
+  scale_y_continuous(limits=c(0, 0.25))
+
+p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
+  ggplot(aes( x = wo, y=AUC, colour = method, shape=method)) +
+  geom_point(size=2) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=5) +
+  facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) + 
+  theme_bw() +
+  ylab("Area under the curve (AUC)") +
+  xlab("Size of optimization window in pixels")+
+  theme(legend.position = "bottom") + #c(0.75, 0.25)) +
+  scale_colour_brewer("Method", palette="Set1") +
+  scale_shape("Method") 
+grid.arrange(p1, p2, nrow=1)
+```
+
+```{r, fig.cap="Overview of all of the results."}
+rocs <- roc.summary %>% dplyr::select(-auc, -coarse, -alpha)
+rocs <- rocs %>% mutate(
+  aucplus = sprintf("%.3f (%.3f, %.3f)", AUC, lower, upper)
+)
+rocs <- rocs %>% dplyr::filter(wv==30)
+rocs <- rocs %>% dplyr::select(-AUC, -lower, -upper, -wv)
+rocs1 <- rocs %>% dplyr::filter(method=="CS1")
+rocs2 <- rocs %>% dplyr::filter(method=="CS2")
+rocs_tab <- data.frame(rocs1 %>% ungroup() %>% dplyr::select(-wv, -method, -eer), 
+                  rocs2 %>% ungroup() %>% dplyr::select(actual, beta, aucplus))
+dt <- xtable(rocs_tab, 
+             digits=c(0,0,3, 3,0,3,3,0))
+#print(dt, include.rownames = FALSE)
+```
+
+\begin{table}[hbtp]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrlrrl}
+  \hline
+  & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
+$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\ 
+  \hline
+90 & 0.068 & 0.330 & 0.850 (0.835, 0.865) & 0.075 & 0.242 & 0.877 (0.863, 0.890) \\ 
+  120 & 0.065 & 0.309 & 0.864 (0.850, 0.878) & 0.072 & 0.236 & 0.890 (0.877, 0.903) \\ 
+  130 & 0.065 & 0.317 & 0.863 (0.850, 0.877) & 0.072 & 0.224 & 0.898 (0.886, 0.910) \\ 
+  140 & 0.065 & 0.304 & 0.873 (0.859, 0.886) & 0.071 & 0.229 & 0.902 (0.891, 0.914) \\ 
+  150 & 0.067 & 0.326 & 0.863 (0.850, 0.877) & 0.072 & 0.225 & 0.904 (0.892, 0.916) \\ 
+  180 & 0.061 & 0.326 & 0.877 (0.864, 0.890) & 0.070 & 0.229 & 0.907 (0.896, 0.919) \\ 
+  210 & 0.064 & 0.342 & 0.865 (0.851, 0.878) & 0.066 & 0.231 & 0.906 (0.895, 0.918) \\ 
+   \hline
+\end{tabular}
+\end{adjustbox}
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$), FNR is the false negative rate. Area under the curve (AUC) is shown with confidence intervals. }
+\end{table}
+
+
+## Observed versus Nominal Type I error rates
+
+\autoref{fig:type1} shows observed type I error rates (FPR) across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates. 
+
+```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
+errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
+errorsCV %>% filter(wv %in% c(30,50)) %>%
+  ggplot(aes(x = wo, y = actual, colour=factor(alpha), 
+             linetype=method)) + 
+  geom_hline(aes(yintercept=alpha), colour="grey30", size=.5) +
+  geom_point(aes(shape=factor(wv.method)), size=2.5) +
+  geom_smooth(aes(group=factor(method)), 
+              size=.8, se=FALSE, method="lm", alpha=.9) +
+  theme_bw() +
+  ylab(expression("Observed type I error rate "~hat(alpha))) +
+  xlab(expression("Window size for optimization "~w[o])) +
+  scale_colour_brewer(
+    expression("Nominal type I error "~alpha), palette="Set2") +
+  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha)), scales="free") +
+  theme(legend.position="bottom") +
+  scale_shape_manual(expression("Method / Validation window "~w[v]), values=c(1,2,16,17)) +
+  scale_linetype_manual("Method", values=c(3,1), guide=FALSE) +
+  guides(shape = guide_legend(ncol=2),
+         col = guide_legend(ncol=2))
+  
+```
+
+## High resolution Hamby 44 scans
+
+The high-resolution scans of Hamby set 44 are capturing images at a resolution of $0.645 \mu m$ per pixel. On average, land engraved areas are 3000 pixels in length. A coarseness of $c = 0.125$ seemed to be sufficient in removing any bullet curvature. Both methods have a failed test rate of less than 0.006, indicating, again, that the larger number of pixels alleviates the problem of test failures.
+\autoref{fig:h44} shows the resulting EER and AUC for methods CS1 and CS2 based on two sizes of validation windows ($w_v \in 75, 125$) and optimization window sizes around 300 pixels (10 percent of the average length). Both methods show an increase in performance around $w_o = 300$ pixels. CS2 out-performs CS1 in all scenarios, but the difference is not significant (using DeLong's confidence intervals). Interestingly, the overall performance of both CS1 and CS2 is a lot lower for the high resolution version of Hamby-44 than for the lower resolution scans. The area under the curve overall is significantly lower for the high resolution scans than for the previous set of scans. Partly, this might be due to the particular choice of the parameters, partly the higher-resolution scans might be picking up on real differences between the lands that the lower-resolution scans fail to detect. 
+
+```{r h44, fig.width=7.75, fig.height=5, out.width='\\textwidth', fig.cap="AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. "}
+if (!file.exists("../data/h44.rds")) {
+files <- dir("../data/hamby44/", pattern="rds", recursive=TRUE)
+
+h44 <- data.frame()
+for (file in files) {
+  tmp <- readRDS(file.path("../data/hamby44", file))
+  tmp$source <- file
+  tmp <- tmp %>% mutate(
+    match = replace(match, is.na(match), FALSE)
+  )
+  h44 <- rbind(h44, tmp)
+}
+  saveRDS(h44, "../data/h44.rds")
+} else {
+  h44 <- readRDS("../data/h44.rds")
+}
+
+h44 <- h44 %>% separate(source, into=c("method", "rest"), sep="/") %>%
+  dplyr::select(-rest)
+
+h44.summ <- h44 %>% group_by(wo, wv, method, coarseness) %>%
+  mutate(
+    fails = sum(is.na(p_value))/length(p_value)
+  ) %>% filter(!is.na(p_value)) %>%
+  summarize(
+    AUC = AUC(1-p_value, match),
+    EER = EER(1-p_value, match),
+  #  ci = list(AUC_confint(1-p_value, match)),
+    fails = fails[1],
+    delong = list(pROC::ci.auc(match, 1-p_value))
+  )
+
+h44.summ <- h44.summ %>% mutate(
+#  lower = ci %>% purrr::map_dbl(.f = function(x) x[[1]][1]),
+#  upper = ci %>% purrr::map_dbl(.f = function(x) x[[1]][2]),
+  low_delong = delong %>% purrr::map_dbl(.f = function(x) x[1]),
+  upp_delong = delong %>% purrr::map_dbl(.f = function(x) x[3]),
+  Method = toupper(method)
+)
+
+h44.summ %>% gather(type, value, AUC, EER) %>% 
+  filter(wv %in% c(75, 125), coarseness==0.125,
+         between(wo, 210, 390)) %>% 
+  ggplot(aes(x = wo, y = value, colour=Method, shape=factor(wv)))  +
+  geom_point(size=2.5) +
+#  geom_point(aes(y = lower), size=1) +
+#  geom_point(aes(y = upper), size=1) +
+  facet_wrap(~type, scales="free") +
+  theme_bw() +
+  scale_colour_brewer(palette="Set1", guide = guide_legend(ncol = 1)) +
+  geom_smooth(aes(linetype = factor(wv), colour=Method), se=FALSE, span=2) +
+  xlab(expression("Size of optimization window "~w[o]~" in pixels")) +
+  ylab("Value") +
+  theme(legend.position = "bottom", 
+        legend.key.width = unit(2,"line")) +
+  scale_shape(expression("Size of validation window "~w[v]~" in pixels"), guide = guide_legend(ncol=1))+
+  scale_linetype(expression("Size of validation window "~w[v]~" in pixels"), guide = guide_legend(ncol=1)) 
+
+```
+
+
+# Conclusions
+
+In assessing the suitability of the (deterministic) Chumbley Score for matching striae on bullet lands we have gained valuable insights into the process: method CS1 as proposed by \citet{hadler} has a strong dependency on the specific choice of parameters; the defaults suggested by \citet{hadler} for screw drivers are not directly applicable  for the smaller bullet lands. The coarseness parameter in particular has a strong impact on the performance of the test. However, we were able to suggest some heuristics based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile. For bullet lands we found  a coarseness value of $c = 0.15$ to be suitable for the low-resolution scans from NIST and a value of $c=0.125$ suitable for the higher-resolution scans from CSAFE.
+Sizes for optimization windows $w_o$ were based on cross-validation to minimize overall type 2 error rates. Unfortunately, this kind of assessment is only feasible in the setting of a large study, such as the one we presented, and does not transfer immediately to case work, where a forensic examiner would only deal with a few identifications. Parameter settings for different studies should be investigated and reported to allow for a further refinement.
+
+Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of 0.272 for an optimized window size of 140 pixels -- which is considerably higher than the error rates achieved on matching toolmarks, but is similar to other single-feature methods proposed for bullet matching. 
+Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
+ Algorithm CS2 is introduced here as a remedy for failed tests by introducing an alternate version of choosing different-shift pairs. 
+The algorithm CS2 introduced here is constructed in a way that achieves on average a ten-fold reduction in the number of failures. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates of CS2 reach a minimum of 0.217 for an optimized window size of 130 pixels. This increase in power of CS2 over CS1 should also apply to previous studies on toolmarks. It would be interesting to see these results using the adjusted algorithm. Unfortunately, none of the studies have made the data publicly accessible. 
+
+While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the --much larger-- toolmarks.
+Applying these methods to the high-resolution scans provided by CSAFE shows that better scanning methodology does not guarantee a better matching performance. 
+
+However, bullets usually have multiple lands -- in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to work in a bullet-to-bullet comparison.
+
+
+
+# Appendix
+\begin{appendix}
+
+\subsection{Scenarios of failed tests}
+\label{appendix:appxfailed}
+Figures \ref{same-shift-failure} and \ref{diff-shift-failure} show scenarios in which the deterministic Chumbley score can fail. 
+In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between optimal locations is so large that no same-shift pairs can be found once the signatures are aligned. These failures are inherent to the Chumbley Score and cannot be prevented.
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.62\textwidth]{images/same-shift-failure.png}
+
+\caption{\label{same-shift-failure}Sketch of same-shift pairings. When the lag between optimal reference points is too large to accommodate a validation window in both signatures, both CS1 and CS2 fail.}
+\end{figure}
+
+\autoref{diff-shift-failure} shows two situations, in which CS1 fails to identify any different-shift pairings. This happens, when both relative locations are close to either end of the signature. CS2 can still be computed in this situation as long as there are at least two same-shift pairs identified. 
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/diff-shift-failure.png}
+
+\caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
+\end{figure}
+
+\newpage
+\subsection{Type 2 errors: CS1 vs CS2}
+\label{appendix:appxtype2}
+\autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
+
+```{r type2, fig.pos = 'h', fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
+ggerrors
+```
+
+\end{appendix}
