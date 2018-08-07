@@ -32,7 +32,7 @@ keywords:
 - signatures 
 - same-source problem
 bibliography: bibliography
-abstract: The same-source problem remains a major challenge in forensic toolmark and firearm examination. Technological advances in surface imaging allow measurements of 3D surfaces at previously unforeseen resolutions and enable digitized imaging. Here, we investigate the applicability of the Chumbley scoring method \citep{hadler}, developed for screwdriver markings, for same-source identification of bullet striae. We provide methods to identify parameters that minimize the error rates for matching of LEAs using Hamby datasets 44 and 252 measured by NIST and CSAFE. We suggest a remedial algorithm to alleviate the problem of failed tests in the method, increasing both the power of the test and reducing error rates. Type II error rates of the proposed method improve by more than one third (Type I error of 0.05) and are on average about 0.22. This puts the proposed method on similar footing as other single feature matching approaches in the literature. 
+abstract: The same-source problem remains a major challenge in forensic toolmark and firearm examination. Technological advances in surface imaging allow measurements of 3D surfaces at previously unforeseen resolutions and enable digitized imaging. Here, we investigate the applicability of the Chumbley scoring method \cite{hadler}, developed for screwdriver markings, for same-source identification of bullet striae. We provide methods to identify parameters that minimize the error rates for matching of LEAs using Hamby datasets 44 and 252 measured by NIST and CSAFE. We suggest a remedial algorithm to alleviate the problem of failed tests in the method, increasing both the power of the test and reducing error rates. Type II error rates of the proposed method improve by more than one third (Type I error of 0.05) and are on average about 0.22. This puts the proposed method on similar footing as other single feature matching approaches in the literature. 
 ---
 
 
@@ -205,17 +205,17 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 
 # Introduction
 
-Same-source analyses are a major part of a Forensic Toolmark Examiner's job. In current practice, examiners  make these comparisons by visual inspection under a comparison microscope and come to one of the following four conclusions: identification, inconclusive, elimination or unsuitable for examination \citep{afte-toolmarks1998}. These conclusions are made on the basis of "unique surface contours" of the two toolmarks being in "sufficient agreement" \citep{afte-toolmarks1998}. AFTE describes the term "sufficient agreement" as the possibility of another tool producing the markings under comparison, as practically impossible \citep{afte-toolmarks1998}. Potential subject bias in the assessment as well as the lack of specified error rates are the main points of criticisms  first raised by the National Research Council in 2009 \citep{NAS:2009} and later emphasized further by the President's Council of Advisors on Science and Technology \citep{pcast2016}.
+Same-source analyses are a major part of a Forensic Toolmark Examiner's job. In current practice, examiners  make these comparisons by visual inspection under a comparison microscope and come to one of the following four conclusions: identification, inconclusive, elimination or unsuitable for examination \cite{afte-toolmarks1998}. These conclusions are made on the basis of "unique surface contours" of the two toolmarks being in "sufficient agreement" \cite{afte-toolmarks1998}. AFTE describes the term "sufficient agreement" as the possibility of another tool producing the markings under comparison, as practically impossible \cite{afte-toolmarks1998}. Potential subject bias in the assessment as well as the lack of specified error rates are the main points of criticisms  first raised by the National Research Council in 2009 \cite{NAS:2009} and later emphasized further by the President's Council of Advisors on Science and Technology \cite{pcast2016}.
 
-Technological advances, such as profilometers and confocal microscopy allow to measure 3D surfaces in a high-resolution digitized form. This technology has become more accessible over the last decade, and has made its way into topological images of ballistics evidence, such as bullet lands and breech faces \citep{DeKinder1, DeKinder2, Bachrach1, vorburger2016}.
+Technological advances, such as profilometers and confocal microscopy allow to measure 3D surfaces in a high-resolution digitized form. This technology has become more accessible over the last decade, and has made its way into topological images of ballistics evidence, such as bullet lands and breech faces \cite{DeKinder1, DeKinder2, Bachrach1, vorburger2016}.
 Digitized images of 3D surfaces of form the data basis of statistical analysis of toolmarks. A statistical approach based on data  removes both subjectivity from the assessment and allows a quantification of error rates for both false positive and false negative identifications.
 
 \hh{changed citation style}
 Methods for matching marks for a variety of tools have been studied in the literature (see \autoref{tab:toolmarks-ER} for an overview):  in \cite{manytoolmarks1} and \cite{chumbley} digitized screwdriver marks have been analyzed using a profilometer;  in \cite{manytoolmarks2} 3D marks from screwdriver, tongue and groove pliers captured using a confocal microscope have been investigated; digitized marks from slip-joint pliers generated by a surface profilometer  have been investigated in \cite{afte-chumbley}. 
 
 Analysis of these digitized markings require the use of statistical methods which can quantify the scientific mechanism of comparing markings and serve as basis for an error rate calculation.
-\citet{manytoolmarks2} define a relative distance metric and use it as similarity measure between two toolmarks. \citet{manytoolmarks1} extract many small segments in the markings of two toolmarks and compare similarity using a maximum Pearson correlation coefficient. 
-The Chumbley scoring method, first introduced by \citet{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach is non-deterministic, because segments are chosen randomly.  \citep{hadler} make the score deterministic for each pair of toolmarks by choosing segments for comparison systematically. This approach also ensures independence between segments of striae.  
+In \cite{manytoolmarks2} a relative distance metric is defined and used as similarity measure between two toolmarks. This approach is expanded in \citet{manytoolmarks1}: a set of small segments in the markings of two toolmarks are extracted and  similarity is compared using a maximum Pearson correlation coefficient. 
+The Chumbley scoring method, first introduced in \cite{chumbley}, uses a similar but more extensive framework based on a Mann-Whitney U test of the resulting correlation coefficients. This approach is non-deterministic, because segments are chosen randomly.  In \cite{hadler}  the score is fixed to be deterministic for each pair of toolmarks by choosing segments for comparison systematically. This approach also ensures independence between segments of striae.  
 
 \begin{table}[ht]
 \centering
@@ -223,11 +223,12 @@ The Chumbley scoring method, first introduced by \citet{chumbley}, uses a simila
   \hline
 Research paper & Method & Data Source & False Positives & False Negatives\\
   \hline
- \textbf{\citet{manytoolmarks1}} & Maximum Pearson & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
- \textbf{\citet{chumbley}} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
-  \textbf{\citet{afte-chumbley}} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
-  \textbf{\citet{hadler}} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
-  \textbf{\citet{manytoolmarks2}} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
+ \textbf{Faden et al. (2007)} \cite{manytoolmarks1} & Maximum Pearson & Screwdrivers & & \\ & Correlation &  & - & - \\ \hline
+ \textbf{Chumbley et al. (2010)} \cite{chumbley} & Randomized & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 2.3\% & 8.9\%  \\ \hline
+  \textbf{Grieve et al. (2014)}
+ \cite{afte-chumbley} & Randomized & Slip-joint  &  & \\ & Chumbley Score &  & - & - \\ \hline 
+  \textbf{Hadler \& Morris (2017)} \cite{hadler} & Deterministic & Screwdrivers & & \\ (Same-Surface Same-Angle) & Chumbley Score & & 0\% & 6\%  \\ \hline
+  \textbf{Bachrach et al. (2010)} \cite{manytoolmarks2} & Similarity Measure & Screwdrivers & & \\ (Different Surfaces-same angle) & Relative Distance Metric & & 5.9\% &  9.4\% \\ (Same Surfaces-same angle)&  & & 0.22\% &  0\% \\
    \hline
 \end{tabular}}
 \caption{\label{tab:toolmarks-ER} Error Rates in same-source toolmark analysis reported in the literature. The top four reported papers use some variation of the Chumbley-score method.}
@@ -366,9 +367,9 @@ In the optimization step, the two markings are aligned horizontally such that wi
 \[
 \left(t_1^o, t_2^o\right) = \mathop{\arg \max}\limits_{1 \le t_1 \le T_1-w_o, 1 \le t_2 \le T_2-w_o} \text{cor} \left(x^{w_o} (t_1), y^{w_o}(t_2) \right)
 \]
-This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. 
+This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_k^* = t_k^o/(T_k-w_o)$ for $k=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. 
 
-In the validation step,  two sets of windows of size $w_v$ are chosen from both markings,  \autoref[see][]{fig:win-comparison}. In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
+In the validation step,  two sets of windows of size $w_v$ are chosen from both markings, see \autoref{fig:win-comparison}. In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
 More precisely, let us define starting points $s_i^{(k)}$ for each signature $k = 1, 2$ as 
 \begin{eqnarray}\label{eq.start}
