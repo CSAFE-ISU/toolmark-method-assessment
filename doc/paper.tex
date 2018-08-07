@@ -70,7 +70,8 @@ bullets}
     \maketitle
   \bigskip
   \begin{center}
-  {\textbf{Affiliation(s)}\\
+  {
+  \textbf{Affiliation(s)}\\
   Department of Statistics, Iowa State University and CSAFE (Center for
   Statistics and Applications in Forensic Evidence)\\
   \bigskip
@@ -88,7 +89,8 @@ bullets}
   \textbf{Information on presentation of work}\\
   This work was presented in the form of a poster in the AFTE 2018 49th
   Annual Training Seminar, held from June 3rd to June 8th, 2018 in
-  Charleston, West Virginia}
+  Charleston, West Virginia
+  }
   \end{center}
 
 } \fi
@@ -111,17 +113,6 @@ bullets}
   \maketitle
 } \fi
 
-% \if1\blind
-% {
-%   \bigskip
-%   \bigskip
-%   \bigskip
-%   \begin{center}
-%     {\LARGE\bf Adapting the Chumbley Score to match striae on Land Engraved Areas of
-bullets}
-%   \end{center}
-%   \medskip
-% } \fi
 
 \bigskip
 \begin{abstract}
@@ -151,13 +142,13 @@ feature matching approaches in the literature.
 \newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
 \newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
 \newcommand{\cited}[1]{{\textcolor{red}{#1}}}
-
 \setlength\parindent{0pt}
 
 \tableofcontents
 \newpage
 
-\section{Introduction}\label{introduction}
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
 
 Same-source analyses are a major part of a Forensic Toolmark Examiner's
 job. In current practice, examiners make these comparisons by visual
@@ -316,10 +307,12 @@ reducing error rates in the process. We set up a testing framework to
 compare the performance of the two algorithms in section 3 and finally
 discuss results in section 4.
 
-\section{Methods}\label{methods}
+\hypertarget{methods}{%
+\section{Methods}\label{methods}}
 
+\hypertarget{scans-for-land-engraved-areas}{%
 \subsection{Scans for land engraved
-areas}\label{scans-for-land-engraved-areas}
+areas}\label{scans-for-land-engraved-areas}}
 
 Comparisons of striae from bullets are usually based on comparisons of
 striae in land engraved areas, which are extracted in form of cross
@@ -356,7 +349,8 @@ This severe limitation in the amount of available data poses the main
 challenge in adapting the Chumbley score to matching bullet lands,
 because of the resulting loss in power.
 
-\subsection{The Chumbley Score Test}\label{the-chumbley-score-test}
+\hypertarget{the-chumbley-score-test}{%
+\subsection{The Chumbley Score Test}\label{the-chumbley-score-test}}
 
 A digitized toolmark forms a spatial process \(z(t)\) with location
 indexed by \(t\). \(t\) here denotes equally spaced pixel locations for
@@ -413,17 +407,14 @@ second set the windows are extracted using a different (out-of-phase)
 shift.
 
 More precisely, let us define starting points \(s_i^{(k)}\) for each
-signature \(k = 1, 2\) as
-
-\begin{eqnarray}\label{eq.start}
+signature \(k = 1, 2\) as \begin{eqnarray}\label{eq.start}
 s^{(k)}_i = 
 \begin{cases}
 t_k^* + i w_v & \text{ for } i < 0 \\
 t_k^* + w_ o + i w_v & \text{ for } i \ge 0,
 \end{cases}
-\end{eqnarray}
-
-for integer values of \(i\) with \(0 < s^{(k)}_i \le T_k - w_v\).
+\end{eqnarray} for integer values of \(i\) with
+\(0 < s^{(k)}_i \le T_k - w_v\).
 
 Same-shift pairs of length \(w_v\) are defined in \citet{hadler} as all
 pairs \((s_i^{(1)}, s_i^{(2)})\) with integer values \(i\) for which
@@ -462,8 +453,9 @@ proposed the above specified deterministic rules for both samples to
 make the resulting score deterministic while simultaneously avoiding
 overlaps within selected marks to ensure independence.
 
+\hypertarget{a-problem-with-failed-tests}{%
 \subsection{A problem with failed
-tests}\label{a-problem-with-failed-tests}
+tests}\label{a-problem-with-failed-tests}}
 
 Looking closer at \autoref{eq.start}, we see that by definition, some
 number of tests will fail to produce a result. The problem of failed
@@ -505,7 +497,8 @@ independence in the optimal locations for different-source profiles the
 expected probability for a failed test is, again,
 \(\frac{2 w_v^2}{(T_1-w_o)(T_2-w_o)}\).
 
-\subsection{A modified approach}\label{a-modified-approach}
+\hypertarget{a-modified-approach}{%
+\subsection{A modified approach}\label{a-modified-approach}}
 
 While failures due to missing correlations from same-shift pairs are
 unavoidable by definition of the Chumbley score, failures due to missing
@@ -521,23 +514,20 @@ simultaneously. Let us assume that this results in \(I\) pairs. Define
 i.e.~\(s_{(1)}^{(k)} < s_{(2)}^{(k)} < ... < s_{(I)}^{(k)}\).
 
 We then define the pairs for different-shifts as
-
 \begin{equation}\label{eq.diff2}
 \left(s_{(j)}^{(1)}, s_{(I-j+1)}^{(1)} \right) \text{ for } j = 
 \begin{cases}
 1, ..., I & \text{ for even } I \\
 1, ..., (I-1)/2, (I-1)/2 + 2, ..., I & \text{ for odd } I
 \end{cases},
-\end{equation}
-
-i.e.~for an odd number of same-shift correlations, we skip the middle
-pair for the different-shift correlations (see \autoref{sketch-diff-2}).
-This pairing ensures that the number of different-shift pairings is the
-same or at most one less than the number of same-shift pairings in all
-tests. In the remainder of the paper, we will refer to the algorithm
-defined by \citet{hadler} as \textbf{(CS1)} and the suggested modified
-algorithm as \textbf{(CS2)} and compare their performance on the
-available scans of the Hamby study. The section
+\end{equation} i.e.~for an odd number of same-shift correlations, we
+skip the middle pair for the different-shift correlations (see
+\autoref{sketch-diff-2}). This pairing ensures that the number of
+different-shift pairings is the same or at most one less than the number
+of same-shift pairings in all tests. In the remainder of the paper, we
+will refer to the algorithm defined by \citet{hadler} as \textbf{(CS1)}
+and the suggested modified algorithm as \textbf{(CS2)} and compare their
+performance on the available scans of the Hamby study. The section
 \ref{appendix:appxfailed} of the Appendix discusses about the various
 scenarious of failed tests.
 
@@ -547,9 +537,11 @@ scenarious of failed tests.
 \caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair under algorithm (CS2). }
 \end{figure}
 
-\subsection{Testing setup}\label{testing-setup}
+\hypertarget{testing-setup}{%
+\subsection{Testing setup}\label{testing-setup}}
 
-\subsubsection{The Data}\label{the-data}
+\hypertarget{the-data}{%
+\subsubsection{The Data}\label{the-data}}
 
 Lands for all Hamby-44 and Hamby-252 scans are made available through
 the NIST ballistics database \citep{nist} and are considered, here. Both
@@ -564,7 +556,8 @@ Profiles for each bullet land were extracted from scans close to the
 heel of the bullet while avoiding break-off as described in
 \citet{aoas}.
 
-\subsubsection{Setup}\label{setup}
+\hypertarget{setup}{%
+\subsubsection{Setup}\label{setup}}
 
 Both algorithms (CS1) and (CS2) are implemented in R \citep{R}. (CS1) is
 available from package \texttt{toolmaRk} \citep{toolmark}, (CS2) is
@@ -574,9 +567,11 @@ applied both methods to all pairwise land-to-land comparisons of the
 Hamby scans provided by NIST for a total of 85,491 land-to-land
 comparisons.
 
-\section{Results}\label{results}
+\hypertarget{results}{%
+\section{Results}\label{results}}
 
-\subsection{Failed Tests}\label{failed-tests}
+\hypertarget{failed-tests}{%
+\subsection{Failed Tests}\label{failed-tests}}
 
 As described above, the Chumbley-score is based on three parameters:
 coarseness \(c\) and the sizes of the optimization window \(w_o\) and
@@ -614,7 +609,8 @@ different from the assumed uniform.
 \caption{Percent of failed land-to-land comparisons using an optimization window $w_o = 120$ and a coarseness of $c = 0.25$. With an increase in the size of the validation window  a higher percentage of tests fails under both methods (CS1) and (CS2), but the percentage of failed tests is much smaller under (CS2). Observed failure rates of (CS1) are higher than expected rates.}\label{fig:fails}
 \end{figure}
 
-\subsection{Coarseness}\label{coarseness}
+\hypertarget{coarseness}{%
+\subsection{Coarseness}\label{coarseness}}
 
 The purpose of the coarseness parameter is to remove (sub-)class
 characteristics from profiles before comparisons for matching.
@@ -654,7 +650,8 @@ for \(c\).
 \caption{Overview of the effect of different coarseness parameters $c$ on the profile shown in Figure \ref{fig:sigs-profiles} (top). The bottom row shows histograms of  the (relative) optimal locations $t^o$ identified in the optimization step for different values of the coarseness parameter $c$. }\label{fig:profile-sketch}
 \end{figure}
 
-\subsection{Error rate assessment}\label{error-rate-assessment}
+\hypertarget{error-rate-assessment}{%
+\subsection{Error rate assessment}\label{error-rate-assessment}}
 
 \autoref{fig:roc} gives an overview of ROC (Receiver operating
 characteristic) curves for methods CS1 and CS2 over a range of different
@@ -727,8 +724,9 @@ $w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (9
 \caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$), FNR is the false negative rate. Area under the curve (AUC) is shown with confidence intervals. }
 \end{table}
 
+\hypertarget{observed-versus-nominal-type-i-error-rates}{%
 \subsection{Observed versus Nominal Type I error
-rates}\label{observed-versus-nominal-type-i-error-rates}
+rates}\label{observed-versus-nominal-type-i-error-rates}}
 
 \autoref{fig:type1} shows observed type I error rates (FPR) across a
 range of optimization windows \(w_o\). Generally, observed type I errors
@@ -746,8 +744,9 @@ error rates.
 \caption{Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate.}\label{fig:type1}
 \end{figure}
 
+\hypertarget{high-resolution-hamby-44-scans}{%
 \subsection{High resolution Hamby 44
-scans}\label{high-resolution-hamby-44-scans}
+scans}\label{high-resolution-hamby-44-scans}}
 
 The high-resolution scans of Hamby set 44 are capturing images at a
 resolution of \(0.645 \mu m\) per pixel. On average, land engraved areas
@@ -778,7 +777,8 @@ lower-resolution scans fail to detect.
 \caption{AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. }\label{fig:h44}
 \end{figure}
 
-\section{Conclusions}\label{conclusions}
+\hypertarget{conclusions}{%
+\section{Conclusions}\label{conclusions}}
 
 In assessing the suitability of the (deterministic) Chumbley Score for
 matching striae on bullet lands we have gained valuable insights into
@@ -829,7 +829,8 @@ P85s as used in the Hamby study, there are six lands for each bullet. We
 might be able to get more power out of the test by adapting CS2 to work
 in a bullet-to-bullet comparison.
 
-\section{Appendix}\label{appendix}
+\hypertarget{appendix}{%
+\section{Appendix}\label{appendix}}
 
 \begin{appendix}
 
