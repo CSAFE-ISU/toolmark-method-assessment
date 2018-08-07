@@ -12,7 +12,7 @@ affiliation: Department of Statistics, Iowa State University and CSAFE (Center f
 funding: The authors gratefully acknowledge funding from CSAFE through cooperative agreement \# 70NANB15H176 between NIST and Iowa State University. 
 thank: We would like to thank the efforts of CSAFE and Roy J Carver Microscopy lab in scanning the Hamby-44 set and providing the scans to us. We would also like to thank NIST for providing the Hamby-44 bullets to us for scanning.
 presentedat:  This work was presented in the form of a poster in the AFTE 2018 49th Annual Training Seminar, held from June 3rd to June 8th, 2018 in Charleston, West Virginia
-biblio-style: vancouver
+biblio-style: vancouver-mod
 output:
   pdf_document:
     citation_package: natbib
