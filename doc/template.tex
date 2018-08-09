@@ -4,6 +4,7 @@
 \usepackage{amsthm}
 \usepackage{graphicx,psfrag,epsf}
 \usepackage{enumerate}
+%\usepackage[numbers]{natbib}
 \usepackage{natbib}
 \setcitestyle{numbers} 
 \makeatletter % Reference list option change
@@ -128,7 +129,7 @@ $abstract$
 
 $body$
 
-\bibliographystyle{jfs}
+\bibliographystyle{jfs-authoryear}
 \bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
 
 \end{document}

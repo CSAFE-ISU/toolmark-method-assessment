@@ -205,6 +205,8 @@ errors_sig_c <- rbind(errorrate(all_sig_c, 0.001),
 
 # Introduction
 
+<!-- \citeauthor{manytoolmarks2} -->
+<!-- \citet{manytoolmarks2} -->
 Same-source analyses are a major part of a Forensic Toolmark Examiner's job. In current practice, examiners  make these comparisons by visual inspection under a comparison microscope and come to one of the following four conclusions: identification, inconclusive, elimination or unsuitable for examination \cite{afte-toolmarks1998}. These conclusions are made on the basis of "unique surface contours" of the two toolmarks being in "sufficient agreement" \cite{afte-toolmarks1998}. AFTE describes the term "sufficient agreement" as the possibility of another tool producing the markings under comparison, as practically impossible \cite{afte-toolmarks1998}. Potential subject bias in the assessment as well as the lack of specified error rates are the main points of criticisms  first raised by the National Research Council in 2009 \cite{NAS:2009} and later emphasized further by the President's Council of Advisors on Science and Technology \cite{pcast2016}.
 
 Technological advances, such as profilometers and confocal microscopy allow to measure 3D surfaces in a high-resolution digitized form. This technology has become more accessible over the last decade, and has made its way into topological images of ballistics evidence, such as bullet lands and breech faces \cite{DeKinder1, DeKinder2, Bachrach1, vorburger2016}.
