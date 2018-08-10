@@ -31,8 +31,14 @@
 \usepackage{pdflscape}
 \usepackage{tabu}
 \usepackage{threeparttable}
-
 \usepackage{url} % not crucial - just used below for the URL
+
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\makeatletter
+\patchcmd{\subsection}{\bfseries}{\relax}{}{}% Non-bold \subsection
+\patchcmd{\subsubsection}{\bfseries}{\relax}{}{}% Non-bold \subsection
+\makeatother
+
 
 %\pdfminorversion=4
 % NOTE: To produce blinded version, replace "0" with "1" below.
