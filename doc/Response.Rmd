@@ -156,6 +156,8 @@ The manuscript is using this erroneous description throughout, is other words, "
 
 *Thank you for pointing out the confusing terminology as seen in the "Missed identifications" Page 17. missed same-source marking. *
 
+*We are aware of the current standards of classification as having a section as inconclusive for examination. But for the data sets we are working on, each and every land has been identified and none of the data being used, cannot be classified*
+
 Coarseness of the surface is not a direct indicator of sub-class influence.  More literature review is necessary to understand the earmarks of subclass.  For the surfaces compared in the Hamby sets, there was no indication of subclass influence between fired bullet sets from consecutively rifled barrels.  If the term is instead a parameter of form (curvature) then that should be more fully described, and how it is used. (I suspect that this is how it was used for fired bullets in this research.)
 
 *By coarseness we mean the parameter used to identify smoothing span as used in the LOWESS filter.*
