@@ -3,11 +3,15 @@ title: "Response to the reviewers"
 author: "Ganesh Krishnan and Heike Hofmann"
 date: "8/6/2018"
 output: word_document
+# output: word_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+\newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
+\newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
 
 We would like to thank the reviewers for their in-depth reviews and the suggestions regarding the manuscript. Please find our detailed response addressing each of the points below.
 
@@ -61,9 +65,17 @@ Adaptation of the Chumbley el al algorithm from screwdrivers to bullets makes se
 
 The authors do a nice job covering previous work. I appreciate the summary tables 1 and 2. Table 1 is good as-is. Table 2 can be a bit misleading because we don't know what bullet datasets were used. Because these different papers analyzed different bullet data sets the underlying difficulty of matching impacts the performance. That is, bullets from very well marking firearms are 'easier' to match than those from firearms which mark poorly. So the FP and FN reported should be taken with a grain of salt. The authors should add a statement regarding different performance on different datasets.
 
+*Since different methods are being employed in literature and from what is being done in this paper (to the best of our knowledge, the method in this paper has never been used on bullet striation marks before), it is difficult to assess and quantify performance purely on the basis of different datasets. The method being employed to make the comparisons would seem to also have a say in the performance and FP and FN rates being reported in literature*
+
 I'm also confused how the FP rate for Hare CNMS is 6.26% whereas all other FP are 6.25% This seems to likely be a typo. 6.25% imply close to 10,000 comparisons which I don't think the datasets have. I could be wrong but I wanted to point out this potential typo that should be checked.
 
+*The data set being used by Hare et al. has about 10384 land-to-land comparisons and the error rates being reported here are computed from Receiver operating characteristic (ROC) curves. This means that the error rates for a particular chosen FP rate will have a corresponding FN rate. The FP rates reported, therefore could have been different, and any difference in the rate would mean a corresponding change in the FN rate that is governed and controlled by the ROC curve.*
+
 The authors describe the two methods of 'failure' for the method (Sec 2.3). I agree with the authors statement that this failure 'should' only happen for non-matches. It could also happen for matches if the optimal profiles are incorrect. That is, if there are two possible optimal match pairs (with very similar correlation scores), where the top scoring pair is incorrect but the second best scoring pair is correct. I'm not sure how often that happens. Overall, I would think that failing for non-matches would be ok. It's not clear that the described failures are the biggest cause of performance hits but improving the algorithm to handle these failures seems reasonable.
+
+*One reason for not looking at this is because any slight change in the Maximum Correlation window (second best window) locations would still lie within the vicinity of the top priority window, which would change the lag but not with any drastic difference. Now for the case of failed tests where the Optimal locations on the striation marks sometimes get positioned at the ends, the maximum correlation was high because of almost completely smooth (lacking sub-class characteristics) ends. Any other second or third best correlation windows computed would be positioned with a wiggle room of just a few pixels (say 1 or 2) pixels. This makes it increasingly difficult to identify a threshold in the heirarchy of the maximal correlation optimal position calculations that would be able satisfy and correctly identify the lag.*
+
+*For the performance hit the Failed tests seem to be a very big cause because 20 to 30% of the comparison do not yield a result at all, it means that for almost a quarter of the dataset we cannot make any decision. This would be a huge problem in a real world setting.*
 
 The following sections list specific points that should be addressed before acceptance. They are grouped into clarification/grammar/preciseness, minor, and major revisions.
 
@@ -87,16 +99,35 @@ Major Changes Required before acceptance:
 
 - p8 "This severe limitation in the amount of available data poses the main challenge in". It's unclear what 'this' refers to. Do the authors mean the number of bullets and LEAs in the dataset or do they mean the number of sample points per striation profile (due to the fact that LEAs are shorter than screwdriver profiles)? Both would seem to be limitations but just because the profile is shorter doesn't inherently mean that there are fewer or less informative striaes. You could have a shorter profile with more informative features.
 
+*We agree that shorter profile might have more information features, but with smaller profiles a certain level of distinctiveness is absent in the information that the chumbley algorithm in its original (chumbley et al and hadler et al) form is not able to pickup. Ability to distinguish such informative yet smaller sub-class characterisitic and therefore find relevant highly correlated windows becomes increasingly hard for the algoritm.The longer and wider toolmarks have more pronounced markings which the original chumbley and hadler algorithms are able to pick up in their different steps.*
+
 - Eq 1 uses a variable i, which is defined above as having the values of 1 or 2. I therefore don't understand how i<0 as written in Eq 1. This should be improved. Possibly this is a sloppy reuse of variables?
 
 *thank you for pointing this out - we accidentally changed notations. this is fixed now. Index k=1,2 refers to the two different signatures, index i in Z refers to window locations.*
 
 - How are the original profiles (eg. Figure 2 Left) identified from the 3D surface (eg. Figure 1 Top). That is, does the user simply draw a line from one end of the LEA to the other? How is the original 3D surface resampled to the 1d profile? This is very important because if you 'cut' the 3D profile the wrong way (at the wrong angle) then you will dilate or compress the extracted profile. This needs a lot more description.
 
+*The methods of extracting the profiles are mentioned and described in detail in the Hare et al paper. We have used the same extracted profiles as used in the Hare et al. paper.*
 
 
 - Section 2.4 is not clearly written. I'm not confident that I understand their new method. This section should be rewritten to explain what the authors are doing. My guess is that rather than taking windows in integer number of steps away from the optimal position matching a left shift on one profile with a right shift on the other, the authors simply walk from the right-end to the left-end of one profile and from the left-end to the right-end of the other profile being careful to not compare same shift windows. Note that my description is not clear either as this is a tricky thing to put into words, but is something the authors need to do.
+
+*The alternating choice of windows with respect to the location of the Optimization windows is a key concept of the Hadler and Morris Paper. The choice of integer windows comes because we are dealing with pixels and classify lengths in pixels. It primarily ensures repeating or overlapping windows are avoided. This means that in order to avoid overlapping windows the striations will have a certain integer number of windows which depends on the length of the marking in pixels and the size of the window in pixels.Overlapping windows are to be avoided because as described in the hadler and morris algorithm it is used to solve the problem of lack of independence which was a key incremental contribution of their paper over the original chumbley algorithm*
+
+*For the different shift step, firstly we aim to compare (as in the Hadler and Morris algorithm) windows that have a very small chance of having higher correlations. When starting from Right to left on one striae and going from left to right on the 2nd striae, we end up finding correlations between windows that are the middle too. That creates a problem as for same-source markings we will have higher correlations between such windows.*
+
+*Secondly, since the Optimization window locations has determined the possible lag in the two signatures, by going in opposite direction of the Optimization window we are able to certify that the windows being compared to calculate different-dhift correlations, will have higher correlation only by fluke or chance of nature, and not because of the two striae being from the same or different sources. *
+
+*Thirdly, the aim of this step is to calculate the window correlations that are the worst. These set of correlations can then serve as a base line for comparison with the set of higher correlations from the same-shift step. This enables to designate the two striae as matching (same-source) or non-matching (different source)*
+
+*Fourthly, if as described, we skip the same-shift windows it means we skip the Optimization window pairs too, as the Optimization window pairs are also a same-shift or lag infused pair of windows albeit of a larger size. This means comparing from left to right on one marking with right to left on the other one by skipping the optimization window. This is something similar to what we are doing right now.*
+
+*One the same note, we would like to add that, skipping the same-shift windows is not required, that is, if by skipping of windows, the windows being "used" in the same shift step is being meant. The windows designated in the validation i.e same shift and different shift substeps remain the same,  as they are non overlapping segements which have been designated. The way in which they pair up is what has changed. This means the pair of same-shift windows is what that needs to be avoided from being compared. And this is the issue being addressed in the current setup.*
+
 - The results presented on page 14 list the correct identification of "same-source and difference-source toolmarks of 93.5 to 94.1%". Does this mean the true positives are 93.5% and the true negatives are 94.1%? I don't think so because the next sentence lists the false negative rate of between 0.28 and 0.36. The authors need to explicitly list the true positive rate and the true negative rate. These must be separate because there are many more true negatives than true positives in any matching dataset. That means that an algorithm that always predicts "different source" would be correct most of the time. In fact, for the author's dataset the "always predict different" algorithm would be correct approximately 94% of the time (35 bullets where each has appx 2 matches). The lack of a true positive rate and true negative rate is is a major point that must be corrected. To be clear, the true positive rate, true negative rate, false positive rate, and false negative rate should all be reported for the first dataset, perhaps added to Table 3 or another table like Table 3.
+
+*The 93.5% to 94.1% are the True Negative rates which are being mentioned. It is computed as 1 - Observed FPR. The observed False positive rates can be seen in figure 10. The True positive rates would then be 1 - Observed FNR or about 64% to 72%.*
+
 - The true positive rate, true negative rate, false positive rate, and false negative rate should also be presented for the second dataset (Hamby 44 scans, Sec 3.5). The authors do present AUC and EER curves but these are less informative and can often be used to hide weaker performing models.
 - The results should all be listed as either fractions or all as percent (which is preferred) and not mix them.
 - p21 the authors state "this kind of assessment is only feasible in the setting of a large study, such as the one we presented".  I strongly disagree with the use of the word "large". The presented work is not a large study. Ten firearms were used in each of two studies (it's not clear if both datasets used the same 10 firearms). A large study would include at least 100 different firearms and even 100 is not likely to provide statistical confidence. This is a very important point. If the paper is allowed to state that the described work is a large study it will set a precedent that will be detrimental to the field. 
