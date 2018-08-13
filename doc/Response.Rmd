@@ -150,7 +150,7 @@ If you are going to compare method performance between chisel/tool stria to LEAs
 Another very important point;  in none of the cited texts should there be an impression that if a ground truth match is not indicated by sufficient match score, that it falls into a miss-identification, or Type 2 error "a failed test".  A type 2 error (false positive) would occur if a comparison has a match score over a threshold for identification when the ground truth is two sources.  Therefore, the hot-button term "error rates" in this case is not accurate.
 The manuscript is using this erroneous description throughout, is other words, "Missed identifications" and are improperly indicated as described as "miss-identifications".  This miss-characterization is a major weakness in the manuscript.
 
-*By failed test, what is being meant is that the method fails to conduct a statistical test because of incorrect identification of Maximum correlations windows required for comparison of the two striation marks. This means that there is no resolution as to the two striations being a match or a non-match. Which makes it impossible to classify it as either Type 1 (False Positive) or Type 2 (False Negative) rate.*
+*By failed test, what is being meant is that the method fails to conduct a statistical test although there is a resolution available in the ground truth as whether the lands match or dont match. This is because of incorrect identification of Maximum correlations windows required for comparison of the two striation marks. This means that there is no resolution as to the two striations being a match or a non-match, when there should be one *
 
 *Thank you for pointing this out. For the terminology error rates, we do mean FPR = FP/ (TN + FP) and FNR = FN/ (TP + FN), which holds with the definition of error rates in literature.*
 
@@ -158,7 +158,7 @@ The manuscript is using this erroneous description throughout, is other words, "
 
 Coarseness of the surface is not a direct indicator of sub-class influence.  More literature review is necessary to understand the earmarks of subclass.  For the surfaces compared in the Hamby sets, there was no indication of subclass influence between fired bullet sets from consecutively rifled barrels.  If the term is instead a parameter of form (curvature) then that should be more fully described, and how it is used. (I suspect that this is how it was used for fired bullets in this research.)
 
-*By coarseness we mean the parameter used to identify smoothing span as used in the LOWESS filter. *
+*By coarseness we mean the parameter used to identify smoothing span as used in the LOWESS filter.*
 
 
 Additionally, consider including a firearm examiner who is acquainted with objective methods of comparisons for 3D toolmark profiles to review your updated manuscript draft.
