@@ -270,18 +270,19 @@ In same-source comparisons this curvature is usually removed using some form of 
   \hline
 Method & Data Source & False Positives & False Negatives\\
   \hline
-  \textbf{\citet{aoas}} & LEAs \\
-Consecutive Matching Bullets Striae (CMS) &  Ruger &  6.25\% &  33.85\% \\ 
-Consecutive Non-matching Striae (CNMS)  & Hamby 252 &  6.26\% & 35.42\%  \\ 
+  \textbf{\citet{aoas}} & Hamby 252 (NIST scans) \\
+Consecutive Matching Bullets Striae (CMS) &   &  6.25\% &  33.85\% \\ 
+Consecutive Non-matching Striae (CNMS)  &  &  6.26\% & 35.42\%  \\ 
 Average Distance (D) & Winchester  &   6.25\% & 45.83\% \\ 
 Cross-correlation Function (CCF) & &  6.25\% & 17.71\%  \\ 
 Sum of Peaks (S) &  &  6.25\% &  18.23\% \\
    \hline
-   \textbf{\citet{chu2013}} & LEAs \\
-Consecutive Matching Bullets Striae (CMS) & Ruger &  0\% &  52\% \\ 
+   \textbf{\citet{chu2013}} & Hamby 252 (NIST scans) \\
+Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\ 
    \hline
-   \textbf{\citet{chu2010}} \& \textbf{\citet{ma2004}} & LEAs \\
-Cross-Correlation Function (CCF) & Ruger  &  - &  - \\ 
+   \textbf{\citet{chu2010}} & \small{6 types of firearms, 2 types of ammunition} \\
+   \textbf{\citet{ma2004}} & \small{NIST standard bullet SRM 8240} \\
+Cross-Correlation Function (CCF) &   &  - &  - \\ 
     \hline
 \end{tabular}}
 \caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature. \gk{Note that differences in error rates do not only come from different methods but also differently marking firearms and types of ammunition}}
