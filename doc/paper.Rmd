@@ -1164,6 +1164,77 @@ h44.summ %>% gather(type, value, AUC, EER) %>%
 
 ```
 
+```{r, fig.cap="h44 Overview of all of the results."}
+colnames(h44)[11]<- "coarse"
+roc44.summary <- h44 %>% group_by(wo, wv, method, coarse) %>%
+  summarize(
+    eer = EER(1-p_value, match),
+    auc = list(pROC::ci.auc(match, 1-p_value))
+  )
+
+
+roc44.summary <- roc44.summary %>% 
+  mutate(
+    lower = auc %>% purrr::map_dbl(.f = function(x) x[1]),
+    upper = auc %>% purrr::map_dbl(.f = function(x) x[3]),
+    AUC = auc %>% purrr::map_dbl(.f = function(x) x[2])
+  )
+
+errorsCV.h44 <- rbind(errorrate(h44, 0.001), 
+                   errorrate(h44, 0.005), 
+                   errorrate(h44, 0.01), 
+                   errorrate(h44, 0.05))
+
+roc44.summary <- roc44.summary %>% left_join(
+  errorsCV.h44 %>% dplyr::select(wv, wo, alpha, actual, beta) %>% 
+    dplyr::filter(alpha == 0.05)
+)
+
+
+rocs44 <- roc44.summary %>% dplyr::select(-auc, -coarse, -alpha)
+rocs44 <- rocs44 %>% mutate(
+  aucplus = sprintf("%.3f (%.3f, %.3f)", AUC, lower, upper)
+)
+rocs44 <- rocs44 %>% dplyr::filter(wv==75)
+rocs44 <- rocs44 %>% dplyr::select(-AUC, -lower, -upper, -wv)
+rocs1.44 <- rocs44 %>% dplyr::filter(method=="cs1")
+rocs2.44 <- rocs44 %>% dplyr::filter(method=="cs2")
+rocs2.44<- rocs2.44[-3,]
+rocs44_tab <- data.frame(rocs1.44 %>% ungroup() %>% dplyr::select(-wv, -method, -eer), 
+                       rocs2.44 %>% ungroup() %>% dplyr::select(actual, beta, aucplus))
+dt44 <- xtable(rocs44_tab, 
+             digits=c(0,0,3, 3,0,3,3,0))
+```
+
+
+
+\begin{table}[hbtp]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrlrrl}
+  \hline
+  & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
+$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\  
+  \hline
+90 & 0.066 & 0.512 & 0.680 (0.633, 0.727) & 0.066 & 0.512 & 0.729 (0.684, 0.774) \\ 
+  120 & 0.069 & 0.468 & 0.736 (0.693, 0.779) & 0.069 & 0.468 & 0.763 (0.720, 0.806) \\ 
+  140 & 0.070 & 0.473 & 0.741 (0.698, 0.784) & 0.070 & 0.473 & 0.767 (0.727, 0.808) \\ 
+  150 & 0.067 & 0.457 & 0.730 (0.685, 0.775) & 0.067 & 0.457 & 0.774 (0.733, 0.816) \\ 
+  180 & 0.071 & 0.446 & 0.773 (0.734, 0.813) & 0.071 & 0.446 & 0.773 (0.730, 0.816) \\ 
+  210 & 0.070 & 0.400 & 0.780 (0.740, 0.821) & 0.070 & 0.400 & 0.803 (0.763, 0.843) \\ 
+  240 & 0.070 & 0.396 & 0.784 (0.744, 0.824) & 0.070 & 0.396 & 0.801 (0.760, 0.841) \\ 
+  270 & 0.065 & 0.394 & 0.782 (0.741, 0.823) & 0.065 & 0.394 & 0.808 (0.769, 0.848) \\ 
+  300 & 0.066 & 0.394 & 0.791 (0.751, 0.832) & 0.066 & 0.394 & 0.814 (0.776, 0.852) \\ 
+  330 & 0.066 & 0.405 & 0.791 (0.753, 0.830) & 0.066 & 0.405 & 0.804 (0.765, 0.844) \\ 
+  360 & 0.066 & 0.413 & 0.788 (0.747, 0.828) & 0.066 & 0.413 & 0.803 (0.765, 0.842) \\ 
+  390 & 0.067 & 0.391 & 0.789 (0.748, 0.830) & 0.067 & 0.391 & 0.810 (0.771, 0.849) \\ 
+  480 & 0.063 & 0.419 & 0.755 (0.711, 0.800) & 0.063 & 0.419 & 0.801 (0.761, 0.841) \\ 
+   \hline
+\end{tabular}
+\end{adjustbox}
+\caption{\label{tab:aucsh44} Overview of high resolution scan results as shown in Figures \ref{fig:h44}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$), FNR is the false negative rate. Area under the curve (AUC) is shown with confidence intervals. }
+\end{table}
+
 
 # Conclusions {-}
 
