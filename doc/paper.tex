@@ -180,19 +180,16 @@ points of criticisms first raised by the National Research Council in
 Council of Advisors on Science and Technology \cite{pcast2016}.
 {\textcolor{blue}{need a sentence on striated marks}}
 
-Technological advances, such as profilometers and confocal microscopy
-allow {\textcolor{blue}{one}} to measure 3D surfaces in a
-high-resolution digitized form. This technology has become more
-accessible over the last decade, and has made its way into topological
-images of ballistics evidence, such as bullet lands and breech faces
-\cite{DeKinder1, DeKinder2, Bachrach1, vorburger2016}.
-{\textcolor{blue}{small change}}Digitized images of 3D surfaces, form
-the basis of statistical analysis of toolmarks. A statistical approach
-based on data removes both subjectivity from the assessment and allows a
-quantification of error rates for both false positive and false negative
-identifications.
-
-{\textcolor{orange}{changed citation style}}
+Technological advances, such as profilometers and confocal microscopy,
+have made it possible to capture 3D surfaces in a high-resolution
+digitized form. This technology has become more accessible over the last
+decade, and has made its way into topological images of ballistics
+evidence, such as bullet lands and breech faces
+\cite{DeKinder1, DeKinder2, Bachrach1, vorburger2016}. Digitized images
+of 3D surfaces form the basis of statistical analysis of toolmarks.
+Statistical approaches based on this data remove both subjectivity from
+the assessment and allow a quantification of error rates for false
+positive and false negative identifications.
 
 Methods for matching {\textcolor{blue}{striated}} marks for a variety of
 tools have been studied in the literature (see
@@ -290,7 +287,7 @@ Consecutive Matching Bullets Striae (CMS) &  &  0\% &  52\% \\
 Cross-Correlation Function (CCF) &   &  - &  - \\ 
     \hline
 \end{tabular}}
-\caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature. {\textcolor{orange}{Note that only error rates from the same data source can be compared directly between methods. Error rates from different sources are influenced by type of firearm and ammunition used.}}}
+\caption{\label{tab:bullets-ER} Error Rates in same-source single feature land-to-land analysis reported in the literature. Note that only error rates from the same data source can be compared directly between methods. Error rates from different sources are influenced by type of firearm and ammunition used.}
 \end{table}
 
 The Chumbley score provides us with another approach in the same-source
@@ -477,14 +474,14 @@ markings are calculated. The intuition here is that for two markings
 from the same-source the correlation for the in-phase sample should be
 high, while the correlations of the out-of-phase sample provide a
 measure for the base-level correlation for non-matching marks of a given
-length \(w_v\).
-{\textcolor{orange}{More specifically, the null hypothesis of the Chumbley score test is stated as **$H_o$: the markings come from two different sources**}}
-with the alternative given as \textbf{\(H_a\): the markings come from
-the same source}. A \(p\)-value for the Chumbley score test is \} then
-computed as a Mann Whitney U statistic to compare between in-phase
-sample and out-of-phase sample. A low \(p\)-value is then interpreted as
-a rejection of the null hypothesis in favor of the alternative
-hypothesis of \texttt{same-source}.\}
+length \(w_v\). More specifically, the null hypothesis of the Chumbley
+score test is stated as \textbf{\(H_o\): the markings come from two
+different sources} with the alternative given as \textbf{\(H_a\): the
+markings come from the same source}. A \(p\)-value for the Chumbley
+score test is then computed as a Mann Whitney U statistic to compare
+between in-phase sample and out-of-phase sample. A low \(p\)-value is
+interpreted as a rejection of the null hypothesis in favor of the
+alternative hypothesis of \texttt{same-source}.
 
 In the original method proposed in \citet{chumbley} both in-phase and
 out-of-phase sample are extracted randomly, whereas \citet{hadler}
@@ -504,7 +501,9 @@ The problem of failed tests is first mentioned in \citet{afte-chumbley}.
 Unfortunately, the authors do not provide any percentage of how many
 tests failed for their data. The algorithm fails to produce for two
 reasons: either the number of eligible same-shift pairs is zero, or the
-number of different-shift pairs is zero.
+number of different-shift pairs is zero. Section
+\ref{appendix:appxfailed} in the Appendix discusses scenarios of failed
+tests in more detail.
 
 The number of same-shift pairs will be zero, if the optimal locations
 \(t_1^{o}\) and \(t_2^{o}\) are so far apart, that no segments of size
@@ -572,15 +571,23 @@ will refer to the algorithm defined by \citet{hadler} as \textbf{(CS1)}
 and the suggested modified algorithm as \textbf{(CS2)} and compare their
 performance on the available scans of the Hamby study.
 
-{\textcolor{orange}{Performance of tests is measured with respect to the errors they make in situations where ground truth is known. We distinguish between two error rates: (1) false positive and (2) false negative rate.
-*False positives* (or *false identifications*) are situations where the test indicates a match (i.e. the test falsely rejects) but the markings come from different sources. This is also known as a *Type I* error. 
-*False negatives* (or *missed identifications*) are situations where the test fails to reject, i.e. the test indicates that the markings come from different sources, but in fact the markings come from the same source. This is a *Type II* error.}}
+Performance of tests is measured with respect to the errors a test makes
+in situations where ground truth is known. We distinguish between two
+error rates: (1) false positive and (2) false negative rate. \emph{False
+positives} (or \emph{false identifications}) are situations where the
+test indicates a match (i.e.~the test falsely rejects) but the markings
+come from different sources. This is also known as a \emph{Type I}
+error. \emph{False negatives} (or \emph{missed identifications}) are
+situations where the test fails to reject, i.e.~the test indicates that
+the markings come from different sources, but in fact the markings come
+from the same source. This is a \emph{Type II} error. In both cases
+error rates are calculated as the ratio of the number of errors observed
+and the number of tests executed.
 
-{\textcolor{orange}{Note that in all of the following land-to-land comparisons only lands are compared that are suitable for a comparison, i.e. a signature can be extracted from the scan. In particular, lands which exhibited tank rash  were removed from comparison \citep{aoas}.
-}}
-
-Section \ref{appendix:appxfailed} in the Appendix discusses various
-scenarios of failed tests.
+Note that in all of the following land-to-land comparisons only lands
+are compared that are suitable for a comparison, i.e.~a signature can be
+extracted from the scan. In particular, lands which exhibited tank rash
+were removed from comparison \citep{aoas}.
 
 \begin{figure}[hbtp]
 \centering
@@ -841,32 +848,6 @@ lower-resolution scans fail to detect.
 \caption{AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. }\label{fig:h44}
 \end{figure}
 
-\begin{verbatim}
-% latex table generated in R 3.5.1 by xtable 1.8-2 package
-% Sat Aug 18 16:58:28 2018
-\begin{table}[ht]
-\centering
-\begin{tabular}{rrrlrrl}
-  \hline
-wo & actual & beta & aucplus & actual.1 & beta.1 & aucplus.1 \\ 
-  \hline
-90 & 0.077 & 0.546 & 0.680 (0.633, 0.727) & 0.056 & 0.478 & 0.729 (0.684, 0.774) \\ 
-  120 & 0.082 & 0.485 & 0.736 (0.693, 0.779) & 0.056 & 0.452 & 0.763 (0.720, 0.806) \\ 
-  150 & 0.080 & 0.493 & 0.730 (0.685, 0.775) & 0.055 & 0.422 & 0.774 (0.733, 0.816) \\ 
-  180 & 0.087 & 0.458 & 0.773 (0.734, 0.813) & 0.055 & 0.435 & 0.773 (0.730, 0.816) \\ 
-  210 & 0.086 & 0.413 & 0.780 (0.740, 0.821) & 0.055 & 0.387 & 0.803 (0.763, 0.843) \\ 
-  240 & 0.085 & 0.427 & 0.784 (0.744, 0.824) & 0.055 & 0.365 & 0.801 (0.760, 0.841) \\ 
-  270 & 0.082 & 0.415 & 0.782 (0.741, 0.823) & 0.048 & 0.374 & 0.808 (0.769, 0.848) \\ 
-  300 & 0.082 & 0.405 & 0.791 (0.751, 0.832) & 0.051 & 0.383 & 0.814 (0.776, 0.852) \\ 
-  330 & 0.082 & 0.428 & 0.791 (0.753, 0.830) & 0.050 & 0.383 & 0.804 (0.765, 0.844) \\ 
-  360 & 0.083 & 0.427 & 0.788 (0.747, 0.828) & 0.049 & 0.400 & 0.803 (0.765, 0.842) \\ 
-  390 & 0.085 & 0.400 & 0.789 (0.748, 0.830) & 0.050 & 0.383 & 0.810 (0.771, 0.849) \\ 
-  480 & 0.081 & 0.443 & 0.755 (0.711, 0.800) & 0.046 & 0.396 & 0.801 (0.761, 0.841) \\ 
-   \hline
-\end{tabular}
-\end{table}
-\end{verbatim}
-
 \begin{table}[hbtp]
 \centering
 \begin{adjustbox}{max width=\textwidth}
@@ -875,10 +856,10 @@ wo & actual & beta & aucplus & actual.1 & beta.1 & aucplus.1 \\
   & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
 $w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\  
   \hline
-<!-- 90 & 0.077 & 0.546 & 0.680 (0.633, 0.727) & 0.056 & 0.478 & 0.729 (0.684, 0.774) \\  -->
-<!--   120 & 0.082 & 0.485 & 0.736 (0.693, 0.779) & 0.056 & 0.452 & 0.763 (0.720, 0.806) \\  -->
-<!--   150 & 0.080 & 0.493 & 0.730 (0.685, 0.775) & 0.055 & 0.422 & 0.774 (0.733, 0.816) \\  -->
-<!--   180 & 0.087 & 0.458 & 0.773 (0.734, 0.813) & 0.055 & 0.435 & 0.773 (0.730, 0.816) \\  -->
+%90 & 0.077 & 0.546 & 0.680 (0.633, 0.727) & 0.056 & 0.478 & 0.729 (0.684, 0.774) \\
+%  120 & 0.082 & 0.485 & 0.736 (0.693, 0.779) & 0.056 & 0.452 & 0.763 (0.720, 0.806) \\
+%  150 & 0.080 & 0.493 & 0.730 (0.685, 0.775) & 0.055 & 0.422 & 0.774 (0.733, 0.816) \\
+%  180 & 0.087 & 0.458 & 0.773 (0.734, 0.813) & 0.055 & 0.435 & 0.773 (0.730, 0.816) \\
   210 & 0.086 & 0.413 & 0.780 (0.740, 0.821) & 0.055 & 0.387 & 0.803 (0.763, 0.843) \\ 
   240 & 0.085 & 0.427 & 0.784 (0.744, 0.824) & 0.055 & 0.365 & 0.801 (0.760, 0.841) \\ 
   270 & 0.082 & 0.415 & 0.782 (0.741, 0.823) & 0.048 & 0.374 & 0.808 (0.769, 0.848) \\ 
@@ -954,14 +935,6 @@ in a bullet-to-bullet comparison.
 \subsection{Scenarios of failed tests}
 \label{appendix:appxfailed}
 Figures \ref{same-shift-failure} and \ref{diff-shift-failure} show scenarios in which the deterministic Chumbley score can fail. 
-In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between optimal locations is so large that no same-shift pairs can be found once the signatures are aligned. These failures are inherent to the Chumbley Score and cannot be prevented.
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=0.62\textwidth]{images/same-shift-failure.png}
-
-\caption{\label{same-shift-failure}Sketch of same-shift pairings. When the lag between optimal reference points is too large to accommodate a validation window in both signatures, both CS1 and CS2 fail.}
-\end{figure}
-
 \autoref{diff-shift-failure} shows two situations, in which CS1 fails to identify any different-shift pairings. This happens, when both relative locations are close to either end of the signature. CS2 can still be computed in this situation as long as there are at least two same-shift pairs identified. 
 
 \begin{figure}[hbtp]
@@ -969,6 +942,14 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \includegraphics[width=0.7\textwidth]{images/diff-shift-failure.png}
 
 \caption{\label{diff-shift-failure}Sketch of different-shift pairings. For CS1 no different-shift pairs can be identified, resulting in a failed test.}
+\end{figure}
+
+In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between optimal locations is so large that no same-shift pairs can be found once the signatures are aligned. These failures are inherent to the Chumbley Score and cannot be prevented.
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=0.62\textwidth]{images/same-shift-failure.png}
+
+\caption{\label{same-shift-failure}Sketch of same-shift pairings. When the lag between optimal reference points is too large to accommodate a validation window in both signatures, both CS1 and CS2 fail.}
 \end{figure}
 
 \newpage

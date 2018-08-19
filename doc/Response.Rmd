@@ -73,7 +73,7 @@ I'm also confused how the FP rate for Hare CNMS is 6.26% whereas all other FP ar
 
 The authors describe the two methods of 'failure' for the method (Sec 2.3). I agree with the authors statement that this failure 'should' only happen for non-matches. It could also happen for matches if the optimal profiles are incorrect. That is, if there are two possible optimal match pairs (with very similar correlation scores), where the top scoring pair is incorrect but the second best scoring pair is correct. I'm not sure how often that happens. Overall, I would think that failing for non-matches would be ok. It's not clear that the described failures are the biggest cause of performance hits but improving the algorithm to handle these failures seems reasonable.
 
-*You are right, a failure might occur for a match if the initial optimization fails. The new method is still susceptible to that. It would be interesting to further investigate thus problem in the furture. We have made a note of that in the conclusions*
+*You are right, a failure might occur for a match if the initial optimization fails. The new method is still susceptible to that. It would be interesting to further investigate this problem in the future. We have made a note of that in the conclusions.*
 
 The following sections list specific points that should be addressed before acceptance. They are grouped into clarification/grammar/preciseness, minor, and major revisions.
 
@@ -85,13 +85,18 @@ Some examples of clarification / grammar / preciseness issues:
 - p9 Seems to be a broken latex figure reference around line 28/29.
 These are not all the issues of this type, we encourage the authors to review the manuscript carefully clean issues like the above.
 
+*Thank you for pointing out these issues. We have fixed those accordingly.*
 
 Minor edits should be made to accuracy and clarity:
 
 - p3 "Methods for matching marks for a variety of tools" should be changed to "Methods for matching striated marks for a variety of tools". This is an important point in that it helps make clear that the authors are studying and comparing striated toolmarks and not impressed toolmarks. I would also propose that the authors make this distinction earlier in the introduction.
+
+*We have added emphasis on striae as opposed to impressed toolmarks. *
+
 - p3 "Analysis of these digitized markings require the use of statistical methods". Analysis does not *require* statistical methods. Useful information regarding common origin can be obtained from non-statistical methods. This being said, statistical methods are of course great and we should be working towards them. Authors could change to analysis "benefits from the use of statistical methods" or something similar.
 - p14 how are the false negative and false positive rates computed? 
 
+*We have added two paragraphs on the Chumbley Score test for clarification: the first paragraph expicitly states the hypotheses involved, the second defines error rates.*
 
 Major Changes Required before acceptance:
 
@@ -105,19 +110,22 @@ Major Changes Required before acceptance:
 
 - How are the original profiles (eg. Figure 2 Left) identified from the 3D surface (eg. Figure 1 Top). That is, does the user simply draw a line from one end of the LEA to the other? How is the original 3D surface resampled to the 1d profile? This is very important because if you 'cut' the 3D profile the wrong way (at the wrong angle) then you will dilate or compress the extracted profile. This needs a lot more description.
 
-*We followed the \cite{aoas} paper in extracting the profiles from scans. We have expanded on the discussion at the begining of section titled "Scans for land engraved areas" in paper*
+*We followed the \cite{aoas} paper in extracting the profiles from scans. We have expanded on the discussion at the begining of section titled "Scans for land engraved areas" in the paper.*
 
 
 - Section 2.4 is not clearly written. I'm not confident that I understand their new method. This section should be rewritten to explain what the authors are doing. My guess is that rather than taking windows in integer number of steps away from the optimal position matching a left shift on one profile with a right shift on the other, the authors simply walk from the right-end to the left-end of one profile and from the left-end to the right-end of the other profile being careful to not compare same shift windows. Note that my description is not clear either as this is a tricky thing to put into words, but is something the authors need to do.
 
-*Thank you for poining this out, you are right in your understanding of the method. We have included a figure for this and expanded out discussion, which hopefully makes the it easier to understand the method.*
+*Thank you for poining this out, you are right in your understanding of the method. We have changed figure 5 for clarification and expanded our discussion, which hopefully makes it easier to understand the method.*
 
 - The results presented on page 14 list the correct identification of "same-source and difference-source toolmarks of 93.5 to 94.1%". Does this mean the true positives are 93.5% and the true negatives are 94.1%? I don't think so because the next sentence lists the false negative rate of between 0.28 and 0.36. The authors need to explicitly list the true positive rate and the true negative rate. These must be separate because there are many more true negatives than true positives in any matching dataset. That means that an algorithm that always predicts "different source" would be correct most of the time. In fact, for the author's dataset the "always predict different" algorithm would be correct approximately 94% of the time (35 bullets where each has appx 2 matches). The lack of a true positive rate and true negative rate is is a major point that must be corrected. To be clear, the true positive rate, true negative rate, false positive rate, and false negative rate should all be reported for the first dataset, perhaps added to Table 3 or another table like Table 3.
 
-*Thank you for bringing this to our notice. We have included a table of error rates. The 93.5% to 94.1% are the True Negative rates which are being mentioned. It is computed as 1 - Observed FPR. The observed False positive rates can be seen in figure 10. The True positive rates would then be 1 - Observed FNR or about 64% to 72%.*
+*Thank you for bringing this to our notice. We have indluded a paragraph with a definition of error rates, and switched to a table to show the results as suggested below.*
 
 - The true positive rate, true negative rate, false positive rate, and false negative rate should also be presented for the second dataset (Hamby 44 scans, Sec 3.5). The authors do present AUC and EER curves but these are less informative and can often be used to hide weaker performing models.
 - The results should all be listed as either fractions or all as percent (which is preferred) and not mix them.
+
+*We have changed the reporting to error percentages.*
+
 - p21 the authors state "this kind of assessment is only feasible in the setting of a large study, such as the one we presented".  I strongly disagree with the use of the word "large". The presented work is not a large study. Ten firearms were used in each of two studies (it's not clear if both datasets used the same 10 firearms). A large study would include at least 100 different firearms and even 100 is not likely to provide statistical confidence. This is a very important point. If the paper is allowed to state that the described work is a large study it will set a precedent that will be detrimental to the field.
 
 *We agree the data available to us is by no means large. Our comment was referring to the availability of 35 bullets rater than just 2 0r 3 as might be seen in actual case work*
