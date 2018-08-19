@@ -122,13 +122,16 @@ Major Changes Required before acceptance:
 *Thank you for bringing this to our notice. We have indluded a paragraph with a definition of error rates, and switched to a table to show the results as suggested below.*
 
 - The true positive rate, true negative rate, false positive rate, and false negative rate should also be presented for the second dataset (Hamby 44 scans, Sec 3.5). The authors do present AUC and EER curves but these are less informative and can often be used to hide weaker performing models.
+
+*We have added a table with error rates for the Hamby 44 scans.*
+
 - The results should all be listed as either fractions or all as percent (which is preferred) and not mix them.
 
 *We have changed the reporting to error percentages.*
 
 - p21 the authors state "this kind of assessment is only feasible in the setting of a large study, such as the one we presented".  I strongly disagree with the use of the word "large". The presented work is not a large study. Ten firearms were used in each of two studies (it's not clear if both datasets used the same 10 firearms). A large study would include at least 100 different firearms and even 100 is not likely to provide statistical confidence. This is a very important point. If the paper is allowed to state that the described work is a large study it will set a precedent that will be detrimental to the field.
 
-*We agree the data available to us is by no means large. Our comment was referring to the availability of 35 bullets rater than just 2 0r 3 as might be seen in actual case work*
+*We agree the data available to us is by no means large. Our comment was referring to the availability of 35 bullets rater than just 2 0r 3 as might be seen in actual case work. We have changed the sentence accordingly.*
 
 Overall, this paper presents a nice incremental improvement to a promising algorithmic approach. A number of major revisions are required prior to acceptance as described above. Note that these revisions all relate to the writing and require no additional experiments to be performed. They improve the clarity and preciseness of the manuscript and serve to address questions that readers will have.
 

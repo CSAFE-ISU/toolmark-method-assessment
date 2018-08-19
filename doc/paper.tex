@@ -5,6 +5,7 @@
 \usepackage{graphicx,psfrag,epsf}
 \usepackage{enumerate}
 %\usepackage[numbers]{natbib}
+\usepackage[nomarkers]{endfloat}
 \usepackage{natbib}
 \setcitestyle{numbers} 
 \makeatletter % Reference list option change
@@ -306,7 +307,7 @@ reported as 0.06 for false negatives and 0 for false positives.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{images/B6-B2-L6-rescaled.pdf}
+\includegraphics[width=\textwidth]{images/B6-B2-L6-rescaled.png}
 
 
 \caption{\label{fig:rgl} Image of a bullet land from a confocal light microscope at 20 fold magnification (top) and a chart of the corresponding signature of the same land (bottom). The dotted lines connect some peaks visible in both visualizations.}
@@ -481,7 +482,7 @@ markings come from the same source}. A \(p\)-value for the Chumbley
 score test is then computed as a Mann Whitney U statistic to compare
 between in-phase sample and out-of-phase sample. A low \(p\)-value is
 interpreted as a rejection of the null hypothesis in favor of the
-alternative hypothesis of \texttt{same-source}.
+alternative hypothesis of \emph{same-source}.
 
 In the original method proposed in \citet{chumbley} both in-phase and
 out-of-phase sample are extracted randomly, whereas \citet{hadler}
@@ -555,15 +556,31 @@ simultaneously. Let us assume that this results in \(I\) pairs. Define
 \(k = 1, 2\),
 i.e.~\(s_{(1)}^{(k)} < s_{(2)}^{(k)} < ... < s_{(I)}^{(k)}\).
 
-We then define the pairs for different-shifts as
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
+\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. Pairings are side from opposite ends of the two markings. For an odd number of pairings the middle pair is left out. At most one of the same-shift pairings can not be matched with a different-shift pair under algorithm (CS2). }
+\end{figure}
+
+We then define the pairs for different-shifts by matching up windows
+from opposite ends of the markings, i.e.~the first pair consists of a
+matchup of the first window on the first marking and the last window on
+the second marking, the second pair consists of the second window on the
+first marking and the second to last pair on the second marking, and so
+on. In case of an odd number of pairs we need to be careful to exclude
+the middle pair from this assignment: the middle pair is already part of
+the same-shift pair, therefore we cannot re-use the same pair as part of
+the different-shift pairs.
+
+Mathematically, this assignment of pairs is written as:
 \begin{equation}\label{eq.diff2}
 \left(s_{(j)}^{(1)}, s_{(I-j+1)}^{(1)} \right) \text{ for } j = 
 \begin{cases}
 1, ..., I & \text{ for even } I \\
 1, ..., (I-1)/2, (I-1)/2 + 2, ..., I & \text{ for odd } I
-\end{cases},
-\end{equation} i.e.~for an odd number of same-shift correlations, we
-skip the middle pair for the different-shift correlations (see
+\end{cases}.
+\end{equation} Note that for an odd number of same-shift correlations,
+we skip the middle pair for the different-shift correlations (see also
 \autoref{sketch-diff-2}). This pairing ensures that the number of
 different-shift pairings is the same or at most one less than the number
 of same-shift pairings in all tests. In the remainder of the paper, we
@@ -588,12 +605,6 @@ Note that in all of the following land-to-land comparisons only lands
 are compared that are suitable for a comparison, i.e.~a signature can be
 extracted from the scan. In particular, lands which exhibited tank rash
 were removed from comparison \citep{aoas}.
-
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=.7\textwidth]{images/sketch-diff-2.png}
-\caption{\label{sketch-diff-2}Sketch of adjusted different-shift pairings. At most one of the same-shift pairings can not be matched with a different-shift pair under algorithm (CS2). }
-\end{figure}
 
 \hypertarget{testing-setup}{%
 \subsection*{\texorpdfstring{\emph{Testing
@@ -962,7 +973,6 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \caption{\label{same-shift-failure}Sketch of same-shift pairings. When the lag between optimal reference points is too large to accommodate a validation window in both signatures, both CS1 and CS2 fail.}
 \end{figure}
 
-\newpage
 \subsection{Type 2 errors: CS1 vs CS2}
 \label{appendix:appxtype2}
 \autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
