@@ -35,6 +35,7 @@ presentedat: This work was presented in the form of a poster in the AFTE 2018 49
 thank: We would like to thank the efforts of CSAFE and Roy J Carver Microscopy lab
   in scanning the Hamby-44 set and providing the scans to us. We would also like to
   thank NIST for providing the Hamby-44 bullets to us for scanning.
+  We would also like to thank the two anonymous reviewers for their helpful suggestions in improving the paper.
 abstract: The same-source problem remains a major challenge in forensic toolmark and
   firearm examination. Technological advances in surface imaging allow measurements
   of 3D surfaces at previously unforeseen resolutions and enable digitized imaging.
@@ -1073,8 +1074,9 @@ rocs1 <- rocs %>% dplyr::filter(method=="CS1")
 rocs2 <- rocs %>% dplyr::filter(method=="CS2")
 rocs_tab <- data.frame(rocs1 %>% ungroup() %>% dplyr::select(-wv, -method, -eer), 
                   rocs2 %>% ungroup() %>% dplyr::select(actual, beta, aucplus))
+rocs_tab[,c(2,3,5,6)] <- rocs_tab[,c(2,3,5,6)]*100
 dt <- xtable(rocs_tab, 
-             digits=c(0,0,3, 3,0,3,3,0))
+             digits=c(0,0,1, 1,0,1,1,0))
 #print(dt, include.rownames = FALSE)
 ```
 
@@ -1084,25 +1086,24 @@ dt <- xtable(rocs_tab,
 \begin{tabular}{rrrlrrl}
   \hline
   & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
-$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\ 
+$w_o$ & \bf \%FP & \bf \%FN & \bf AUC (95\% C.I.) & \bf \%FP & \bf \%FN & \bf AUC (95\% C.I.) \\ 
   \hline
-90 & 0.068 & 0.330 & 0.850 (0.835, 0.865) & 0.075 & 0.242 & 0.877 (0.863, 0.890) \\ 
-  120 & 0.065 & 0.309 & 0.864 (0.850, 0.878) & 0.072 & 0.236 & 0.890 (0.877, 0.903) \\ 
-  130 & 0.065 & 0.317 & 0.863 (0.850, 0.877) & 0.072 & 0.224 & 0.898 (0.886, 0.910) \\ 
-  140 & 0.065 & 0.304 & 0.873 (0.859, 0.886) & 0.071 & 0.229 & 0.902 (0.891, 0.914) \\ 
-  150 & 0.067 & 0.326 & 0.863 (0.850, 0.877) & 0.072 & 0.225 & 0.904 (0.892, 0.916) \\ 
-  180 & 0.061 & 0.326 & 0.877 (0.864, 0.890) & 0.070 & 0.229 & 0.907 (0.896, 0.919) \\ 
-  210 & 0.064 & 0.342 & 0.865 (0.851, 0.878) & 0.066 & 0.231 & 0.906 (0.895, 0.918) \\ 
-   \hline
+90 & 6.8 & 33.0 & 0.850 (0.835, 0.865) & 7.5 & 24.2 & 0.877 (0.863, 0.890) \\ 
+  120 & 6.5 & 30.9 & 0.864 (0.850, 0.878) & 7.2 & 23.6 & 0.890 (0.877, 0.903) \\ 
+  130 & 6.5 & 31.7 & 0.863 (0.850, 0.877) & 7.2 & 22.4 & 0.898 (0.886, 0.910) \\ 
+  140 & 6.5 & 30.4 & 0.873 (0.859, 0.886) & 7.1 & 22.9 & 0.902 (0.891, 0.914) \\ 
+  150 & 6.7 & 32.6 & 0.863 (0.850, 0.877) & 7.2 & 22.5 & 0.904 (0.892, 0.916) \\ 
+  180 & 6.1 & 32.6 & 0.877 (0.864, 0.890) & 7.0 & 22.9 & 0.907 (0.896, 0.919) \\ 
+  210 & 6.4 & 34.2 & 0.865 (0.851, 0.878) & 6.6 & 23.1 & 0.906 (0.895, 0.918) \\    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$), FNR is the false negative rate. Area under the curve (AUC) is shown with confidence intervals. }
+\caption{\label{tab:aucs} Overview of results as shown in Figures \ref{fig:roc} and \ref{fig:eer}. \%FP is the observed percentage of false positives (for a fixed level $\alpha = 0.05$), \%FN is the percentage of false negatives. Area under the curve (AUC) is shown with confidence intervals. }
 \end{table}
 
 
 ## *Observed versus Nominal Type I error rates* {-}
 
-\autoref{fig:type1} shows observed type I error rates (FPR) across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I error rates. 
+\autoref{fig:type1} shows the percentages of observed type I errors (\%FP) across a range of optimization windows $w_o$. Generally, observed type I errors are higher than expected. Method CS1 shows in this instance slightly better performance than method CS2, but for both an increase in the size of the optimization window leads to a decrease in the observed type I errors. 
 
 ```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
@@ -1130,7 +1131,7 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
 ## *High resolution Hamby 44 scans* {-}
 
 The high-resolution scans of Hamby set 44 are capturing images at a resolution of $0.645 \mu m$ per pixel. On average, land engraved areas are 3000 pixels in length. A coarseness of $c = 0.125$ seemed to be sufficient in removing any bullet curvature. Both methods have a failed test rate of less than 0.006, indicating, again, that the larger number of pixels alleviates the problem of test failures.
-\autoref{fig:h44} shows the resulting EER and AUC for methods CS1 and CS2 based on two sizes of validation windows ($w_v \in 75, 125$) and optimization window sizes around 300 pixels (10 percent of the average length). Both methods show an increase in performance around $w_o = 300$ pixels. CS2 out-performs CS1 in all scenarios, but the difference is not significant (using DeLong's confidence intervals). Interestingly, the overall performance of both CS1 and CS2 is a lot lower for the high resolution version of Hamby-44 than for the lower resolution scans. The area under the curve overall is significantly lower for the high resolution scans than for the previous set of scans. Partly, this might be due to the particular choice of the parameters, partly the higher-resolution scans might be picking up on real differences between the lands that the lower-resolution scans fail to detect. 
+\autoref{fig:h44} shows the resulting EER and AUC for methods CS1 and CS2 based on two sizes of validation windows ($w_v \in 75, 125$) and optimization window sizes around 300 pixels (10 percent of the average length), with corresponding errors shown numerically in \autoref{tab:aucsh44}. Both methods show an increase in performance around $w_o = 300$ pixels. CS2 out-performs CS1 in all scenarios, but the difference is not significant (using DeLong's confidence intervals). Interestingly, the overall performance of both CS1 and CS2 is a lot lower for the high resolution version of Hamby-44 than for the lower resolution scans. The area under the curve overall is significantly lower for the high resolution scans than for the previous set of scans. Partly, this might be due to the particular choice of the parameters, partly the higher-resolution scans might be picking up on real differences between the lands that the lower-resolution scans fail to detect. Re-assuringly, the observed error rate of false positives for CS2 is closer to the nominal rate of 5\% than for the lower-resolution scans. 
 
 ```{r h44, fig.width=7.75, fig.height=5, out.width='\\textwidth', fig.cap="AUC and EER for methods CS1 and CS2 based on high resolution scans of Hamby 44. "}
 if (!file.exists("../data/h44.rds")) {
@@ -1193,7 +1194,7 @@ h44.summ %>% gather(type, value, AUC, EER) %>%
 
 ```
 
-```{r, fig.cap="h44 Overview of all of the results."}
+```{r, fig.cap="Overview of all of the results."}
 colnames(h44)[11]<- "coarse"
 roc44.summary <- h44 %>% group_by(wo, wv, method, coarse) %>%
   summarize(
@@ -1238,8 +1239,9 @@ rocs2.44 <- rocs44 %>% dplyr::filter(method=="cs2")
 #rocs2.44<- rocs2.44[-3,]
 rocs44_tab <- data.frame(rocs1.44 %>% ungroup() %>% dplyr::select(-wv, -method, -eer), 
                        rocs2.44 %>% ungroup() %>% dplyr::select(actual, beta, aucplus))
+rocs44_tab[, c(2,3,5,6)] <- rocs44_tab[, c(2,3,5,6)]*100
 dt44 <- xtable(rocs44_tab, 
-             digits=c(0,0,3, 3,0,3,3,0))
+             digits=c(0,0,1,1,0,1,1,0))
 #print(dt44, include.rownames = FALSE)
 ```
 
@@ -1251,41 +1253,41 @@ dt44 <- xtable(rocs44_tab,
 \begin{tabular}{rrrlrrl}
   \hline
   & \multicolumn{3}{l}{\bf CS1} & \multicolumn{3}{l}{\bf CS2} \\
-$w_o$ & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) & \bf FPR & \bf FNR & \bf AUC (95\% C.I.) \\  
+$w_o$ & \bf \%FP & \bf \%FN & \bf AUC (95\% C.I.) & \bf \%FP & \bf \%FN & \bf AUC (95\% C.I.) \\  
   \hline
-%90 & 0.077 & 0.546 & 0.680 (0.633, 0.727) & 0.056 & 0.478 & 0.729 (0.684, 0.774) \\
-%  120 & 0.082 & 0.485 & 0.736 (0.693, 0.779) & 0.056 & 0.452 & 0.763 (0.720, 0.806) \\
-%  150 & 0.080 & 0.493 & 0.730 (0.685, 0.775) & 0.055 & 0.422 & 0.774 (0.733, 0.816) \\
-%  180 & 0.087 & 0.458 & 0.773 (0.734, 0.813) & 0.055 & 0.435 & 0.773 (0.730, 0.816) \\
-  210 & 0.086 & 0.413 & 0.780 (0.740, 0.821) & 0.055 & 0.387 & 0.803 (0.763, 0.843) \\ 
-  240 & 0.085 & 0.427 & 0.784 (0.744, 0.824) & 0.055 & 0.365 & 0.801 (0.760, 0.841) \\ 
-  270 & 0.082 & 0.415 & 0.782 (0.741, 0.823) & 0.048 & 0.374 & 0.808 (0.769, 0.848) \\ 
-  300 & 0.082 & 0.405 & 0.791 (0.751, 0.832) & 0.051 & 0.383 & 0.814 (0.776, 0.852) \\ 
-  330 & 0.082 & 0.428 & 0.791 (0.753, 0.830) & 0.050 & 0.383 & 0.804 (0.765, 0.844) \\ 
-  360 & 0.083 & 0.427 & 0.788 (0.747, 0.828) & 0.049 & 0.400 & 0.803 (0.765, 0.842) \\ 
-  390 & 0.085 & 0.400 & 0.789 (0.748, 0.830) & 0.050 & 0.383 & 0.810 (0.771, 0.849) \\ 
+  210 & 8.6 & 41.3 & 0.780 (0.740, 0.821) & 5.5 & 38.7 & 0.803 (0.763, 0.843) \\ 
+  240 & 8.5 & 42.7 & 0.784 (0.744, 0.824) & 5.5 & 36.5 & 0.801 (0.760, 0.841) \\ 
+  270 & 8.2 & 41.5 & 0.782 (0.741, 0.823) & 4.8 & 37.4 & 0.808 (0.769, 0.848) \\ 
+  300 & 8.2 & 40.5 & 0.791 (0.751, 0.832) & 5.1 & 38.3 & 0.814 (0.776, 0.852) \\ 
+  330 & 8.2 & 42.8 & 0.791 (0.753, 0.830) & 5.0 & 38.3 & 0.804 (0.765, 0.844) \\ 
+  360 & 8.3 & 42.7 & 0.788 (0.747, 0.828) & 4.9 & 40.0 & 0.803 (0.765, 0.842) \\
+  390 & 8.5 & 40.0 & 0.789 (0.748, 0.830) & 5.0 & 38.3 & 0.810 (0.771, 0.849) \\ 
    \hline
 \end{tabular}
 \end{adjustbox}
-\caption{\label{tab:aucsh44} Overview of high resolution scan results as shown in Figures \ref{fig:h44}. FPR is the observed rate of false positives (for a fixed level $\alpha = 0.05$), FNR is the false negative rate. Area under the curve (AUC) is shown with 95\% confidence intervals. }
+\caption{\label{tab:aucsh44} Overview of high resolution scan results as shown in Figures \ref{fig:h44}. \%FP is the percentage of observed  false positives (for a fixed level $\alpha = 0.05$), \%FN is the percentage of false negatives. Area under the curve (AUC) is shown with 95\% confidence intervals. }
 \end{table}
 
 
 # Conclusions {-}
 
 In assessing the suitability of the (deterministic) Chumbley Score for matching striae on bullet lands we have gained valuable insights into the process: method CS1 as proposed by \citet{hadler} has a strong dependency on the specific choice of parameters; the defaults suggested by \citet{hadler} for screw drivers are not directly applicable  for the smaller bullet lands. The coarseness parameter in particular has a strong impact on the performance of the test. However, we were able to suggest some heuristics based on the assumption that once sub-class characteristics are removed, optimal locations are distributed uniformly across the profile. For bullet lands we found  a coarseness value of $c = 0.15$ to be suitable for the low-resolution scans from NIST and a value of $c=0.125$ suitable for the higher-resolution scans from CSAFE.
-Sizes for optimization windows $w_o$ were based on cross-validation to minimize overall type 2 error rates. Unfortunately, this kind of assessment is only feasible in the setting of a large study, such as the one we presented, and does not transfer immediately to case work, where a forensic examiner would only deal with a few identifications. Parameter settings for different studies should be investigated and reported to allow for a further refinement.
+Sizes for optimization windows $w_o$ were based on cross-validation to minimize overall type 2 error rates. 
+Ideally, the exact values for parameters will be determined in a large study incorporating different types of firearms and brands of ammunition. 
+%Unfortunately, this kind of assessment is only feasible in the setting of a large study, such as the one we presented, 
+Results therefore do not transfer immediately to case work, where a forensic examiner would only deal with a few identifications. %Parameter settings for different studies should be investigated and reported to allow for a further refinement.
 
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of 0.272 for an optimized window size of 140 pixels -- which is considerably higher than the error rates achieved on matching toolmarks, but is similar to other single-feature methods proposed for bullet matching. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
  Algorithm CS2 is introduced here as a remedy for failed tests by introducing an alternate version of choosing different-shift pairs. 
-The algorithm CS2 introduced here is constructed in a way that achieves on average a ten-fold reduction in the number of failures. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates of CS2 reach a minimum of 0.217 for an optimized window size of 130 pixels. This increase in power of CS2 over CS1 should also apply to previous studies on toolmarks. It would be interesting to see these results using the adjusted algorithm. Unfortunately, none of the studies have made the data publicly accessible. 
+Algorithm CS2 is constructed in a way that achieves on average a ten-fold reduction in the number of failures. While reducing the failure rate, the algorithm also shows an increase in the power of the test. Type II error rates of CS2 reach a minimum of 0.217 for an optimized window size of 130 pixels. This increase in power of CS2 over CS1 should also apply to previous studies on toolmarks. It would be interesting to see these results using the adjusted algorithm. Unfortunately, none of the studies have made the data publicly accessible. 
 
 While significantly reduced over CS1, CS2 still has type 2 error rates on bullet lands that are  higher than the error rates achieved on the --much larger-- toolmarks.
 Applying these methods to the high-resolution scans provided by CSAFE shows that better scanning methodology does not guarantee a better matching performance. 
 
-However, bullets usually have multiple lands -- in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. We might be able to get more power out of the test by adapting CS2 to work in a bullet-to-bullet comparison.
-
+Different avenues for improving the performance of the Chumbley-score are still open: 
+(i) When making the original Chumbley Score deterministic, \citet{hadler} rely on an optimal shift based on the maximum cross-correlation between two markings. An erroneous decision in  identifying the optimial shift between markings leads almost always to a missed identification. CS2 is still susceptible to this source of errors.
+(ii) Bullets usually have multiple lands -- in the case of Ruger P85s as used in the Hamby study, there are six lands for each bullet. As shown by \citet{chu2010} in the example of the cross-correlation between lands, we will be able to get more power out of the test by adapting the algorithm to make use of the relative position of a land on the bullet to combine multiple land-to-land comparisons into a single bullet-to-bullet comparison.
 
 
 # Appendix {-}

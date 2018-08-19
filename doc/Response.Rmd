@@ -65,7 +65,7 @@ Adaptation of the Chumbley el al algorithm from screwdrivers to bullets makes se
 
 The authors do a nice job covering previous work. I appreciate the summary tables 1 and 2. Table 1 is good as-is. Table 2 can be a bit misleading because we don't know what bullet datasets were used. Because these different papers analyzed different bullet data sets the underlying difficulty of matching impacts the performance. That is, bullets from very well marking firearms are 'easier' to match than those from firearms which mark poorly. So the FP and FN reported should be taken with a grain of salt. The authors should add a statement regarding different performance on different datasets.
 
-*Thank you for pointing this out. You are right, we have added more information about the data, wherever available. We are also citing xxx to emphasize the difficulty level and resulting differences in error rates of different brands of firearms and ammunition*
+*Thank you for pointing this out. You are right, we have added more information about the data, wherever available. We have also added a sentence to emphasize different difficulty levels and resulting differences in error rates of different brands of firearms and ammunition*
 
 I'm also confused how the FP rate for Hare CNMS is 6.26% whereas all other FP are 6.25% This seems to likely be a typo. 6.25% imply close to 10,000 comparisons which I don't think the datasets have. I could be wrong but I wanted to point out this potential typo that should be checked.
 
