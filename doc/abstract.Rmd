@@ -1,0 +1,31 @@
+---
+title: "Abstract"
+author: "Heike Hofmann"
+date: "8/22/2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+The same-source problem remains a major challenge in forensic toolmark and
+  firearm examination. Technological advances in surface imaging allow measurements
+  of 3D surfaces at previously unforeseen resolutions and enable digitized imaging.
+  Here, we investigate the applicability of the Chumbley scoring method (Chumbley et al 2010, Hadler et al 2018),
+  developed for screwdriver markings, for same-source identification of  striation marks on bullet land engraved areas (LEAs). 
+  
+## Brief description of methods and results
+
+3D scans of bullets from Hamby sets 44 and 252 measured by the National Institute of Standards and Technology (NIST) and the Center for Statistical Application and Forensic Evidence (CSAFE) were used as a basis for the evaluation.  
+In the adaption of the Chumbley Scoring method, we suggest methods to identify parameters that minimize the error rates. We also suggest a remedial algorithm to alleviate the problem of failed tests in the method, increasing both the power of the test and reducing error rates. 
+
+Out of a total of 85,491 land-to-land comparisons (comprised of 84,235 known non-matches and 1256 known matches), the adapted test does not provide a result in 176 situations (down from more than 500). The Type I error rate is 7.2% (6105 out of 84235 known non-matches), the Type II error rate is 21.4% (271 out of 1256 known matches).    
+
+
+## Conclusions
+
+This puts the proposed method on similar footing as other single
+  feature matching approaches in the literature.
