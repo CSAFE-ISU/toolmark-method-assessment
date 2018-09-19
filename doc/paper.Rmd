@@ -1278,7 +1278,8 @@ In assessing the suitability of the (deterministic) Chumbley Score for matching 
 Sizes for optimization windows $w_o$ were based on cross-validation to minimize overall type 2 error rates. 
 Ideally, the exact values for parameters will be determined in a large study incorporating different types of firearms and brands of ammunition. 
 %Unfortunately, this kind of assessment is only feasible in the setting of a large study, such as the one we presented, 
-Results therefore do not transfer immediately to case work, where a forensic examiner would only deal with a few identifications. %Parameter settings for different studies should be investigated and reported to allow for a further refinement.
+Results therefore do not transfer immediately to case work, where a forensic examiner would only deal with a few identifications. 
+%Parameter settings for different studies should be investigated and reported to allow for a further refinement.
 
 Method CS1 proposed by \citet{hadler} has a minimal type 2 error rate of 0.272 for an optimized window size of 140 pixels -- which is considerably higher than the error rates achieved on matching toolmarks, but is similar to other single-feature methods proposed for bullet matching. 
 Unfortunately, method CS1 also has a high rate of failed tests -- situations, in which the algorithm does not provide a result, due to the way different-shift pairs are constructed. 
