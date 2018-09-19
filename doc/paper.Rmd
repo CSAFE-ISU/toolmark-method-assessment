@@ -926,11 +926,11 @@ errorsCV1$method <- "CS1"
 
 errorsCV <- rbind(errorsCV1, errorsCV2)
 ggerrors <- errorsCV %>%
-  ggplot(aes(x = wo, y = beta, colour=factor(alpha), linetype=factor(alpha))) +
+  ggplot(aes(x = wo, y = 100*beta, colour=factor(alpha*100), linetype=factor(100*alpha))) +
   geom_point(aes(shape=factor(wv)), size=2.5) +
   geom_smooth(aes(group=alpha), se=FALSE, method="loess", span=1,  size=.7) +
   theme_bw() +
-  scale_colour_brewer(expression("Nominal\ntype I error"~alpha),
+  scale_colour_brewer(expression("Nominal Percent \nFalse Positives "~alpha),
                       palette="Set2", guide=FALSE) +
   scale_linetype_manual(values = c(2,1,3,4), guide=FALSE)+
   scale_shape_discrete(expression("Size of\nvalidation window "~w[v])) +
@@ -938,7 +938,7 @@ ggerrors <- errorsCV %>%
     colour = guide_legend(override.aes = list(linetype= c(2,1,3,4)))
   )+
   xlab(expression("Window size for optimization "~w[o])) +
-  ylab("Type II error rate") +
+  ylab("Percent False Negatives") +
   facet_wrap(~method, labeller="label_both")
 
 ```
@@ -965,7 +965,7 @@ cvcs <- cvcs %>%
 )
 
 cvcs %>% filter(!wo %in% c(130, 140)) %>%
-  ggplot(aes(d = as.numeric(match), m = 1-p_value)) + 
+  ggplot(aes(d = as.numeric(match), m = 1-p_value)) +
   geom_roc(labels=FALSE, n.cuts=500, pointsize=0, size=0.6, 
            aes(colour = method.wo, linetype= method.wo)) + 
   facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) +
@@ -973,13 +973,16 @@ cvcs %>% filter(!wo %in% c(130, 140)) %>%
   scale_alpha_discrete(range=c(0.1, 0.6)) +
   scale_colour_manual(expression("Method /\nOptimization\nwindow size"~w[o]), values=cols) +
   theme_bw() +
-  xlab("False Positives Rate (1 - Specificity)") +
-  ylab("True Positives Rate (Sensitivity)") +
+  xlab("Percent False Positives (100 - Specificity)") +
+  ylab("Percent True Positives (Sensitivity)") +
   guides(
    colour = guide_legend(override.aes = list(linetype = c(2,2,2,2,2,1,1,1,1,1)), ncol=2)
   ) +
   geom_abline(slope=-1, intercept = 1, linetype = 3, 
-              colour="grey30", size = 0.25)
+              colour="grey30", size = 0.25) +
+  scale_x_continuous(labels=c("0", "25", "50", "75", "100")) +
+  scale_y_continuous(labels=c("0", "25", "50", "75", "100"))
+
 
 
 ```
@@ -1041,11 +1044,11 @@ roc.summary <- roc.summary %>% left_join(
 )
 
 p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
-  ggplot(aes( x = wo, y=eer, colour=method, shape=method)) +
+  ggplot(aes( x = wo, y=eer*100, colour=method, shape=method)) +
   geom_point(size=2) +
   facet_wrap(~wv, labeller = label_bquote(w[v] == .(wv))) + 
   theme_bw() +
-  ylab("Equal Error rate (EER)") +
+  ylab("Equal Error (EER) in Percent") +
   xlab("Size of optimization window in pixels") +
   theme(legend.position = "bottom") + #c(0.25, 0.25)) +
   scale_colour_brewer("Method", palette="Set1") +
@@ -1111,18 +1114,18 @@ $w_o$ & \bf \%FP & \bf \%FN & \bf AUC (95\% C.I.) & \bf \%FP & \bf \%FN & \bf AU
 ```{r type1, fig.width=7.75, fig.height=5.25, out.width='\\textwidth', fig.cap="Comparison of observed and nominal type I error rates  across a range of window sizes for optimization $wo$. The horizontal line in each facet indicates the nominal type I error rate."}
 errorsCV$wv.method <- paste(errorsCV$method, errorsCV$wv, sep=" / ")
 errorsCV %>% filter(wv %in% c(30,50)) %>%
-  ggplot(aes(x = wo, y = actual, colour=factor(alpha), 
+  ggplot(aes(x = wo, y = 100*actual, colour=factor(100*alpha), 
              linetype=method)) + 
-  geom_hline(aes(yintercept=alpha), colour="grey30", size=.5) +
+  geom_hline(aes(yintercept=100*alpha), colour="grey30", size=.5) +
   geom_point(aes(shape=factor(wv.method)), size=2.5) +
   geom_smooth(aes(group=factor(method)), 
               size=.8, se=FALSE, method="lm", alpha=.9) +
   theme_bw() +
-  ylab(expression("Observed type I error rate "~hat(alpha))) +
+  ylab(expression("Observed Percent False Positives "~hat(alpha))) +
   xlab(expression("Window size for optimization "~w[o])) +
   scale_colour_brewer(
-    expression("Nominal type I error "~alpha), palette="Set2") +
-  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha)), scales="free") +
+    expression("Nominal Percent False Positives "~alpha), palette="Set2") +
+  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha*100)), scales="free") +
   theme(legend.position="bottom") +
   scale_shape_manual(expression("Method / Validation window "~w[v]), values=c(1,2,16,17)) +
   scale_linetype_manual("Method", values=c(3,1), guide=FALSE) +
@@ -1177,9 +1180,16 @@ h44.summ <- h44.summ %>% mutate(
   Method = toupper(method)
 )
 
-h44.summ %>% gather(type, value, AUC, EER) %>% 
+h44.summ$EER <- 100*h44.summ$EER
+h44.long <- h44.summ %>% gather(type, value, AUC, EER) %>% 
   filter(wv %in% c(75, 125), coarseness==0.125,
-         between(wo, 210, 390)) %>% 
+         between(wo, 210, 390)) 
+h44.long$type <- factor(h44.long$type)
+
+
+levels(h44.long$type)[2] <- "Percent Equal Error"
+
+h44.long %>% 
   ggplot(aes(x = wo, y = value, colour=Method, shape=factor(wv)))  +
   geom_point(size=2.5) +
 #  geom_point(aes(y = lower), size=1) +
