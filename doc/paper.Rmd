@@ -1053,7 +1053,7 @@ p1 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   theme(legend.position = "bottom") + #c(0.25, 0.25)) +
   scale_colour_brewer("Method", palette="Set1") +
   scale_shape("Method") +
-  scale_y_continuous(limits=c(0, 0.25))
+  scale_y_continuous(limits=c(0, 25))
 
 p2 <- roc.summary %>% filter(!(wo %in% c(130, 140))) %>%
   ggplot(aes( x = wo, y=AUC, colour = method, shape=method)) +
@@ -1125,7 +1125,7 @@ errorsCV %>% filter(wv %in% c(30,50)) %>%
   xlab(expression("Window size for optimization "~w[o])) +
   scale_colour_brewer(
     expression("Nominal Percent False Positives "~alpha), palette="Set2") +
-  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha*100)), scales="free") +
+  facet_wrap(~alpha, labeller=label_bquote(alpha == .(alpha*100)~'%'), scales="free") +
   theme(legend.position="bottom") +
   scale_shape_manual(expression("Method / Validation window "~w[v]), values=c(1,2,16,17)) +
   scale_linetype_manual("Method", values=c(3,1), guide=FALSE) +
@@ -1332,7 +1332,7 @@ In \autoref{same-shift-failure} both CS1 and CS2 fail, because the lag between o
 \autoref{fig:type2} gives an overview of type 2 error rates of methods CS1 and CS2 for different significance levels $\alpha$. Method CS2 is outperforming CS1 significantly in every instance.
 
 ```{r type2, fig.pos = 'h', fig.height = 3, fig.width = 7.5, out.width='0.9\\textwidth', fig.cap="Type II error rates observed across a range of window sizes for optimization $w_o$. For a window size of $w_o = 130$ we see a minimum in type II error rate across all type I rates considered. Smaller validation sizes $w_v$ are typically associated with a smaller type II error."}
-ggerrors
+ggerrors # write our new?
 ```
 
 \end{appendix}
