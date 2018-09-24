@@ -18,15 +18,15 @@ We would like to thank the reviewers for their in-depth reviews and the suggesti
 
 ## Editorial changes
 
-1.  Headers are included in the abstract and they do not need to be.
+1.  Headers are included in the abstract and they do not need to be. *Done*
 
-2.  Several references include the DOI and year, volume page citations.  Currently we only need the latter if that is available.  Please correct.
+2.  Several references include the DOI and year, volume page citations.  Currently we only need the latter if that is available.  Please correct. *Done*
 
-3.  Reference 4 is a URL and when checked it indicated that it was no linger updated.  It also did not take an interested reader to the PCST report.  Please use a different reference
+3.  Reference 4 is a URL and when checked it indicated that it was no linger updated.  It also did not take an interested reader to the PCST report.  Please use a different reference. *Done*
 
-4.  Reference 9 is another URL and my check indicated that the page could not be found.  Please correct.
+4.  Reference 9 is another URL and my check indicated that the page could not be found.  Please correct. *Done*
 
-5.  Please follow the formats included in the Information for Authors and abbreviate the journal titles according to Index Medicus
+5.  Please follow the formats included in the Information for Authors and abbreviate the journal titles according to Index Medicus *Done*
 
 6.  Reference 8 was incomplete.  Please complete per the Information for Authors.
 
@@ -39,22 +39,36 @@ This revision is a major improvement from the initial submission, congratulation
 
 1. Pg.4, ln 14:  Change "impurities" to "surface imperfections"
 
+*Thank you, we have incorporated this change*
+
 2. Pg. 4, ln. 45; change to "(because the heel typically has the most contact with the rifling in the barrel)"
+
+*Thank you, we have incorporated this change*
 
 3. Pg.4, last sentence.  Please check for grammar or incomplete information.
 Also capitalize "Lowess". (?)
 Perhaps: "From these profiles, bullet signatures (16; 15) are extracted as residuals ..."
 
+*Thank you, we have changed the grammar and incorporated this change*
+
 4. Pg.5, ln. 36: Change to "because of the resulting loss in discriminating power."
+
+*Thank you, we have incorporated this change*
 
 5. Pg.7 and on;  Please add some text to clarify your definition of "sub-class".  You are designating this term as a general form or structure that has to be removed to get at the signature.  However, the term is used quite differently by firearm examiners to describe features that may reproduce in a number of tool surfaces, and its influence if detected must be considered prior to a comparison conclusion.
 
 6. Pg. 8; Thanks for pointing out what "failed test" is, and what it is not.
 
+*We are happy that we could clarify this*
+
 7. Pg. 10, ln. 32:  "tank rash" is a is a colloquialism that should be in quote marks since it would be unknown to many scientists outside of the forensic discipline.  Or longer: "random tool marks on the fired bullet surface caused by the impact with the interior surfaces of the bullet capture tank."
+
+*Thanks a lot for pointing this out, we have made the changes in the paper reflecting this*
 
 8. Pg. 10, ln. 7:  fix error "toolmaRkpack-age"
   ln. 48 space is needed between "profiles of0.854"
+  
+  *Thank you, we have incorporated this change*
   
 ## Reviewer #2
 
