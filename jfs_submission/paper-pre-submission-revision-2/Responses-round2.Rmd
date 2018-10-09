@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \newcommand{\hh}[1]{{\textcolor{orange}{#1}}}
 \newcommand{\gk}[1]{{\textcolor{blue}{#1}}}
 
-We would like to thank the reviewers for their in-depth reviews and the suggestions regarding the manuscript. Please find our detailed response addressing each of the points below.
+We would again like to thank the reviewers for their in-depth reviews and the suggestions regarding the manuscript. Please find our detailed response addressing each of the points below.
 
 
 ## Editorial changes
@@ -83,17 +83,17 @@ Thank you for making the requested revisions. I appreciate that this takes time.
 1.  p3 “These digitized markings allow the use of statistical methods to quantify the scientific mechanism of comparing markings and serve as basis for an error rate calculation.” Still a little awkward.
 
 
-*We have changed the sentence to: This data forms the basis of a statistical analysis that allow us to quantify similarity of markings and serves as a basis for error rate calculations*
+*Thank you for the comment. We have changed the sentence to: This data forms the basis of a statistical analysis that allow us to quantify similarity of markings and serves as a basis for error rate calculations*
 
 2.  The authors claim that they changed all numerical results to percentages but there are still a number of inconsistencies. The authors should use consistent terminology. Sometimes they say FPR, sometimes %FP, sometimes Type I, sometimes Type 1 error rate. It is ok to list all these as being the same term in the definition, but then they should pick one.  For example, in the conclusions CS1 is reported with a type 2 error rate of 0.272 which I assume is 27.2%. In the Results section the expected failures are listed as 0.854 and 0.120, should these be 85.5% and 12.0%? Figure 14 y-axes are not percentages and must be updated. Figure 8 both axes need to be updated. Figure 9 (left, EER) also likely needs to be updated.
 
-*We now have changed all reported numbers regarding errors to percentages, including all figures.*
+*Thank you for poining this out. We now have changed all reported numbers regarding errors to percentages, including all figures.*
 
 3.  Original comment: p8 “This severe limitation in the amount of available data poses the main challenge in”. It’s unclear what ‘this’ refers to. Do the authors mean the number of bullets and LEAs in the dataset or do they mean the number of sample points per striation profile (due to the fact that LEAs are shorter than screwdriver profiles)? Both would seem to be limitations but just because the profile is shorter doesn’t inherently mean that there are fewer or less informative striaes. You could have a shorter profile with more informative features. The authors replied: “We were indeed referring to the shorter length of the marks, which given the same amount of information decreases the power of the test, a purely technical consequence. Obviously you are right that this power calculation changes with a change in the amount of information.
 
 No change was apparently made to the manuscript. I feel an edit is required. The text is still ambiguous and the reader will not have the benefit of the author’s response letter. In addition I believe the response is incorrect. We do not have enough information to make this statement. As I mentioned, it’s possible to have a very informative short profile. Perhaps bullet lands are inherently more structured than longer screwdriver marks. For example, a small but focused photo a person is more informative than a larger blurry image.
 
-*We have softened the sentence at the end of the paragraph. We also did not mean to make this sentence an absolute statement but were rather speculating ourselves. We have made the change to the manuscript to reflect that better.*
+*Thank you for the comment. We have softened the sentence at the end of the paragraph. We also did not mean to make this sentence an absolute statement but were rather speculating ourselves. We have made the change to the manuscript to reflect that better.*
 
 
 4.  I originally wrote: The authors state “this kind of assessment is only feasible in the setting of a large study, such as the one we presented”. I strongly disagree with the use of the word “large”. The presented work is not a large study. Ten firearms were used in each of two studies (it’s not clear if both datasets used the same 10 firearms). A large study would include at least 100 different firearms and even 100 is not likely to provide statistical confidence. This is a very important point. If the paper is allowed to state that the described work is a large study it will set a precedent that will be detrimental to the field.” The authors answered: We agree the data available to us is by no means large. Our comment was referring to the availability of 35 bullets rater than just 2 0r 3 as might be seen in actual case work. We have changed the sentence accordingly.
