@@ -369,7 +369,7 @@ In the optimization step, the two markings are aligned horizontally such that wi
 \]
 This results in an optimal vertical (in-phase) shift of $t_1^o - t_2^o$ for aligning the two markings. We will denote the relative optimal locations as $t_1^*$ and $t_2^*$, where $t_i^* = t_i^o/(T_i-w_o)$ for $i=1,2$, such that $t_1^*, t_2^* \in [0,1]$. Once (sub-)class characteristics are removed, the relative optimal locations should be distributed according to a uniform distribution in $[0,1]$. 
 
-In the validation step,  two sets of windows of size $w_v$ are chosen from both markings,  \autoref[see][]{fig:win-comparison}. In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
+In the validation step,  two sets of windows of size $w_v$ are chosen from both markings,  \autoref{fig:win-comparison}. In the first set, pairs of windows are extracted from the two markings using the optimal vertical shift as determined in the first step, whereas for the second set the windows are extracted using a different (out-of-phase) shift. 
 
 More precisely, let us define starting points $s_i^{(k)}$ for each signature $k = 1, 2$ as 
 \begin{eqnarray}\label{eq.start}
